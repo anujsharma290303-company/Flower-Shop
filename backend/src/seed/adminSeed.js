@@ -9,17 +9,18 @@ const DEFAULT_ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "admin123";
 const seedAdmin = async () => {
     try {
         await sequelize.authenticate();
-        console.log("Database connection established.");
+        console.log("✅ Database connection established.");
 
-        // Ensure all models/tables are available before creating the seed record.
-        await sequelize.sync({ alter: true });
+        // Only sync the Admin model (skip full sync to avoid ENUM alter issues)
+        await Admin.sync({ alter: false });
+        console.log("✅ Admin table ready.");
 
         const existingAdmin = await Admin.findOne({
             where: { email: DEFAULT_ADMIN_EMAIL },
         });
 
         if (existingAdmin) {
-            console.log("Admin already exists. Skipping seed.");
+            console.log("⚠️ Admin already exists. Skipping seed.");
             return;
         }
 
@@ -32,12 +33,13 @@ const seedAdmin = async () => {
             isActive: true,
         });
 
-        console.log("Admin user created successfully.");
+        console.log("✅ Admin user created successfully.");
     } catch (error) {
-        console.error("Error seeding admin user:", error.message);
+        console.error("❌ Error seeding admin user:", error.message);
         process.exitCode = 1;
     } finally {
         await sequelize.close();
+        console.log("✅ Database connection closed.");
     }
 };
 
