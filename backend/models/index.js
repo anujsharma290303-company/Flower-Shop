@@ -1,0 +1,61 @@
+const Admin = require("./Admin");
+const Category = require("./Category");
+const Product = require("./Product");
+const Order = require("./Order");
+const OrderItem = require("./OrderItem");
+const RecipentAccessToken = require("./RecipentAccessToken");
+const Review = require("./Review");
+const CustomBouquet = require("./CustomBouquet");
+const Blog = require("./Blog");
+const FAQ = require("./FAQ");
+const SiteConfig = require("./SiteConfig");
+
+// Associations
+
+// Category->Self (for subcategories)
+Category.hasMany(Category, { as: "subcategories", foreignKey: "parentId" });
+Category.belongsTo(Category, { as: "parent", foreignKey: "parentId" });
+
+// Category->Product
+Category.hasMany(Product, { foreignKey: "categoryId" ,as: "products"});
+Product.belongsTo(Category, { foreignKey: "categoryId", as: "category" });
+
+// Order->OrderItem
+Order.hasMany(OrderItem, { foreignKey: "orderId", as: "items" });
+OrderItem.belongsTo(Order, { foreignKey: "orderId", as: "order" });
+
+// Product->OrderItem
+Product.hasMany(OrderItem, { foreignKey: "productId", as: "orderItems" });
+OrderItem.belongsTo(Product, { foreignKey: "productId", as: "product" });
+
+// Order->RecipentAccessToken
+Order.hasMany(RecipentAccessToken, { foreignKey: "orderId", as: "recipentTokens" });
+RecipentAccessToken.belongsTo(Order, { foreignKey: "orderId", as: "order" });
+
+// Product->RecipentAccessToken (for chosen product in custom bouquet)
+Product.hasMany(RecipentAccessToken, { foreignKey: "choosenProductId", as: "choesenFor" });
+RecipentAccessToken.belongsTo(Product, { foreignKey: "choosenProductId", as: "chosenProduct" });
+
+// Order->Review
+Order.hasOne(Review, { foreignKey: "orderId", as: "review" });
+Review.belongsTo(Order, { foreignKey: "orderId", as: "order" });
+
+// Order->CustomBouquet
+Order.hasOne(CustomBouquet, { foreignKey: "orderId", as: "customBouquet" });
+CustomBouquet.belongsTo(Order, { foreignKey: "orderId", as: "order" });
+
+
+// Export all models
+module.exports = {
+  Admin,
+  Category,
+  Product,
+  Order,
+  OrderItem,
+  RecipentAccessToken,
+  Review,
+  CustomBouquet,
+  Blog,
+  FAQ,
+  SiteConfig,
+};
