@@ -1183,6 +1183,7 @@ const seedSiteConfig = async () => {
 
   console.log("✅ SiteConfig seeded");
 };
+
 const runSeed = async () => {
   try {
     await sequelize.authenticate()
@@ -1209,13 +1210,12 @@ const runSeed = async () => {
     await seedSiteConfig()
 
     console.log('🌸 Seed complete!')
-    process.exit(0)
-
+    process.exit(0);
   } catch (err) {
     console.error('❌ Seed failed:', err.message)
-    process.exit(1)
+    process.exit(1);
   }
-}
+};
 
-runSeed()
+runSeed();
 
