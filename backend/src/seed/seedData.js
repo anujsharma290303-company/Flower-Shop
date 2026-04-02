@@ -1,88 +1,1221 @@
-require('dotenv').config();
-const sequelize = require('../config/database');
-const { Category, Product, SiteConfig, FAQ } = require('../models');
-const slugify = require('slugify');
+require("dotenv").config();
+const slugify = require("slugify");
+const { sequelize, Category, Product, FAQ, SiteConfig } = require("../models");
 
-const seedCategories = async () => {
-  console.log('🌼 Seeding categories...');
+const seedProducts = async (categories) => {
+  // helper to find category id by slug
+  const cat = (slug) => {
+    const found = categories.find((c) => c.slug === slug);
+    if (!found) throw new Error(`Category not found: ${slug}`);
+    return found.id;
+  };
 
-  const mainCategories = [
-    { name: 'Roses', displayOrder: 1 },
-    { name: 'Birthday', displayOrder: 2 },
-    { name: 'Anniversary', displayOrder: 3 },
-    { name: 'Wedding', displayOrder: 4 },
-    { name: 'Sympathy & Funeral', displayOrder: 5 },
-    { name: 'Get Well', displayOrder: 6 },
-    { name: 'Thank You', displayOrder: 7 },
-    { name: 'New Baby', displayOrder: 8 },
-    { name: 'Romance', displayOrder: 9 },
-    { name: 'Seasonal', displayOrder: 10 },
-    { name: 'Plants', displayOrder: 11 },
-    { name: 'Fruit Baskets', displayOrder: 12 },
-    { name: 'Same Day Delivery', displayOrder: 13 },
-    { name: 'Subscriptions', displayOrder: 14 },
+  const products = [
+    // ── ROSES (10 products) ──────────────────────────
+    {
+      name: "Classic Red Roses",
+      itemCode: "C15-4790",
+      price: 49.99,
+      categoryId: cat("roses"),
+      isBestSeller: true,
+      inStock: true,
+      subscriptionAvailable: true,
+    },
+    {
+      name: "Pink Rose Bouquet",
+      itemCode: "C15-4791",
+      price: 44.99,
+      categoryId: cat("roses"),
+      isBestSeller: false,
+      inStock: true,
+      subscriptionAvailable: true,
+    },
+    {
+      name: "White Rose Arrangement",
+      itemCode: "C15-4792",
+      price: 54.99,
+      categoryId: cat("roses"),
+      isBestSeller: false,
+      inStock: true,
+      subscriptionAvailable: false,
+    },
+    {
+      name: "Yellow Rose Bunch",
+      itemCode: "C15-4793",
+      price: 39.99,
+      categoryId: cat("roses"),
+      isBestSeller: false,
+      inStock: true,
+      subscriptionAvailable: false,
+    },
+    {
+      name: "Mixed Rose Garden",
+      itemCode: "C15-4794",
+      price: 64.99,
+      categoryId: cat("roses"),
+      isBestSeller: true,
+      inStock: true,
+      subscriptionAvailable: true,
+    },
+    {
+      name: "Lavender Rose Bouquet",
+      itemCode: "C15-4795",
+      price: 59.99,
+      categoryId: cat("roses"),
+      isBestSeller: false,
+      inStock: true,
+      subscriptionAvailable: false,
+    },
+    {
+      name: "Orange Sunrise Roses",
+      itemCode: "C15-4796",
+      price: 47.99,
+      categoryId: cat("roses"),
+      isBestSeller: false,
+      inStock: true,
+      subscriptionAvailable: false,
+    },
+    {
+      name: "Dozen Red Roses",
+      itemCode: "C15-4797",
+      price: 79.99,
+      categoryId: cat("roses"),
+      isBestSeller: true,
+      inStock: true,
+      subscriptionAvailable: true,
+    },
+    {
+      name: "Rainbow Rose Collection",
+      itemCode: "C15-4798",
+      price: 69.99,
+      categoryId: cat("roses"),
+      isBestSeller: false,
+      inStock: false,
+      subscriptionAvailable: false,
+    },
+    {
+      name: "Peach Rose Delight",
+      itemCode: "C15-4799",
+      price: 52.99,
+      categoryId: cat("roses"),
+      isBestSeller: false,
+      inStock: true,
+      subscriptionAvailable: false,
+    },
+
+    // ── BIRTHDAY (10 products) ───────────────────────
+    {
+      name: "Happy Birthday Bouquet",
+      itemCode: "C15-4800",
+      price: 45.99,
+      categoryId: cat("birthday"),
+      isBestSeller: true,
+      inStock: true,
+      subscriptionAvailable: false,
+    },
+    {
+      name: "Birthday Cheer Arrangement",
+      itemCode: "C15-4801",
+      price: 55.99,
+      categoryId: cat("birthday"),
+      isBestSeller: false,
+      inStock: true,
+      subscriptionAvailable: false,
+    },
+    {
+      name: "Colorful Birthday Blooms",
+      itemCode: "C15-4802",
+      price: 42.99,
+      categoryId: cat("birthday"),
+      isBestSeller: false,
+      inStock: true,
+      subscriptionAvailable: false,
+    },
+    {
+      name: "Birthday Sunflower Basket",
+      itemCode: "C15-4803",
+      price: 49.99,
+      categoryId: cat("birthday"),
+      isBestSeller: true,
+      inStock: true,
+      subscriptionAvailable: false,
+    },
+    {
+      name: "Pink Birthday Surprise",
+      itemCode: "C15-4804",
+      price: 38.99,
+      categoryId: cat("birthday"),
+      isBestSeller: false,
+      inStock: true,
+      subscriptionAvailable: false,
+    },
+    {
+      name: "Birthday Garden Mix",
+      itemCode: "C15-4805",
+      price: 62.99,
+      categoryId: cat("birthday"),
+      isBestSeller: false,
+      inStock: true,
+      subscriptionAvailable: false,
+    },
+    {
+      name: "Festive Birthday Flowers",
+      itemCode: "C15-4806",
+      price: 47.99,
+      categoryId: cat("birthday"),
+      isBestSeller: false,
+      inStock: false,
+      subscriptionAvailable: false,
+    },
+    {
+      name: "Birthday Daisy Delight",
+      itemCode: "C15-4807",
+      price: 35.99,
+      categoryId: cat("birthday"),
+      isBestSeller: false,
+      inStock: true,
+      subscriptionAvailable: false,
+    },
+    {
+      name: "Bold Birthday Blooms",
+      itemCode: "C15-4808",
+      price: 58.99,
+      categoryId: cat("birthday"),
+      isBestSeller: true,
+      inStock: true,
+      subscriptionAvailable: false,
+    },
+    {
+      name: "Birthday Lily Bouquet",
+      itemCode: "C15-4809",
+      price: 52.99,
+      categoryId: cat("birthday"),
+      isBestSeller: false,
+      inStock: true,
+      subscriptionAvailable: false,
+    },
+
+    // ── ANNIVERSARY (8 products) ─────────────────────
+    {
+      name: "Anniversary Rose Duo",
+      itemCode: "C15-4810",
+      price: 74.99,
+      categoryId: cat("anniversary"),
+      isBestSeller: true,
+      inStock: true,
+      subscriptionAvailable: false,
+    },
+    {
+      name: "Forever Love Bouquet",
+      itemCode: "C15-4811",
+      price: 89.99,
+      categoryId: cat("anniversary"),
+      isBestSeller: true,
+      inStock: true,
+      subscriptionAvailable: false,
+    },
+    {
+      name: "Silver Anniversary Flowers",
+      itemCode: "C15-4812",
+      price: 94.99,
+      categoryId: cat("anniversary"),
+      isBestSeller: false,
+      inStock: true,
+      subscriptionAvailable: false,
+    },
+    {
+      name: "Golden Years Bouquet",
+      itemCode: "C15-4813",
+      price: 99.99,
+      categoryId: cat("anniversary"),
+      isBestSeller: false,
+      inStock: true,
+      subscriptionAvailable: false,
+    },
+    {
+      name: "Timeless Romance Flowers",
+      itemCode: "C15-4814",
+      price: 79.99,
+      categoryId: cat("anniversary"),
+      isBestSeller: false,
+      inStock: true,
+      subscriptionAvailable: false,
+    },
+    {
+      name: "Anniversary Blush Bouquet",
+      itemCode: "C15-4815",
+      price: 69.99,
+      categoryId: cat("anniversary"),
+      isBestSeller: false,
+      inStock: true,
+      subscriptionAvailable: false,
+    },
+    {
+      name: "Ruby Anniversary Roses",
+      itemCode: "C15-4816",
+      price: 109.99,
+      categoryId: cat("anniversary"),
+      isBestSeller: true,
+      inStock: true,
+      subscriptionAvailable: false,
+    },
+    {
+      name: "Anniversary Garden Basket",
+      itemCode: "C15-4817",
+      price: 84.99,
+      categoryId: cat("anniversary"),
+      isBestSeller: false,
+      inStock: false,
+      subscriptionAvailable: false,
+    },
+
+    // ── WEDDING (8 products) ─────────────────────────
+    {
+      name: "Bridal White Bouquet",
+      itemCode: "C15-4820",
+      price: 129.99,
+      categoryId: cat("wedding"),
+      isBestSeller: true,
+      inStock: true,
+      subscriptionAvailable: false,
+    },
+    {
+      name: "Wedding Table Centerpiece",
+      itemCode: "C15-4821",
+      price: 149.99,
+      categoryId: cat("wedding"),
+      isBestSeller: false,
+      inStock: true,
+      subscriptionAvailable: false,
+    },
+    {
+      name: "Bridesmaid Flower Bundle",
+      itemCode: "C15-4822",
+      price: 89.99,
+      categoryId: cat("wedding"),
+      isBestSeller: false,
+      inStock: true,
+      subscriptionAvailable: false,
+    },
+    {
+      name: "Wedding Arch Flowers",
+      itemCode: "C15-4823",
+      price: 199.99,
+      categoryId: cat("wedding"),
+      isBestSeller: false,
+      inStock: true,
+      subscriptionAvailable: false,
+    },
+    {
+      name: "Elegant Wedding Roses",
+      itemCode: "C15-4824",
+      price: 119.99,
+      categoryId: cat("wedding"),
+      isBestSeller: true,
+      inStock: true,
+      subscriptionAvailable: false,
+    },
+    {
+      name: "Wedding Pew Decorations",
+      itemCode: "C15-4825",
+      price: 79.99,
+      categoryId: cat("wedding"),
+      isBestSeller: false,
+      inStock: true,
+      subscriptionAvailable: false,
+    },
+    {
+      name: "Flower Girl Basket",
+      itemCode: "C15-4826",
+      price: 49.99,
+      categoryId: cat("wedding"),
+      isBestSeller: false,
+      inStock: true,
+      subscriptionAvailable: false,
+    },
+    {
+      name: "Wedding Bouquet Deluxe",
+      itemCode: "C15-4827",
+      price: 159.99,
+      categoryId: cat("wedding"),
+      isBestSeller: false,
+      inStock: false,
+      subscriptionAvailable: false,
+    },
+
+    // ── SYMPATHY SUBCATEGORIES (5 each = 30 products)
+    {
+      name: "Classic White Wreath",
+      itemCode: "C15-4830",
+      price: 89.99,
+      categoryId: cat("wreaths"),
+      isBestSeller: true,
+      inStock: true,
+      subscriptionAvailable: false,
+    },
+    {
+      name: "Peaceful Garden Wreath",
+      itemCode: "C15-4831",
+      price: 99.99,
+      categoryId: cat("wreaths"),
+      isBestSeller: false,
+      inStock: true,
+      subscriptionAvailable: false,
+    },
+    {
+      name: "Rose Memorial Wreath",
+      itemCode: "C15-4832",
+      price: 119.99,
+      categoryId: cat("wreaths"),
+      isBestSeller: false,
+      inStock: true,
+      subscriptionAvailable: false,
+    },
+    {
+      name: "Evergreen Sympathy Wreath",
+      itemCode: "C15-4833",
+      price: 79.99,
+      categoryId: cat("wreaths"),
+      isBestSeller: false,
+      inStock: true,
+      subscriptionAvailable: false,
+    },
+    {
+      name: "Lily Tribute Wreath",
+      itemCode: "C15-4834",
+      price: 109.99,
+      categoryId: cat("wreaths"),
+      isBestSeller: false,
+      inStock: false,
+      subscriptionAvailable: false,
+    },
+
+    {
+      name: "White Standing Spray",
+      itemCode: "C15-4835",
+      price: 129.99,
+      categoryId: cat("standing-sprays"),
+      isBestSeller: true,
+      inStock: true,
+      subscriptionAvailable: false,
+    },
+    {
+      name: "Mixed Flower Standing Spray",
+      itemCode: "C15-4836",
+      price: 139.99,
+      categoryId: cat("standing-sprays"),
+      isBestSeller: false,
+      inStock: true,
+      subscriptionAvailable: false,
+    },
+    {
+      name: "Rose Standing Spray",
+      itemCode: "C15-4837",
+      price: 149.99,
+      categoryId: cat("standing-sprays"),
+      isBestSeller: false,
+      inStock: true,
+      subscriptionAvailable: false,
+    },
+    {
+      name: "Lily Standing Spray",
+      itemCode: "C15-4838",
+      price: 134.99,
+      categoryId: cat("standing-sprays"),
+      isBestSeller: false,
+      inStock: true,
+      subscriptionAvailable: false,
+    },
+    {
+      name: "Garden Tribute Spray",
+      itemCode: "C15-4839",
+      price: 124.99,
+      categoryId: cat("standing-sprays"),
+      isBestSeller: false,
+      inStock: false,
+      subscriptionAvailable: false,
+    },
+
+    {
+      name: "White Casket Spray",
+      itemCode: "C15-4840",
+      price: 179.99,
+      categoryId: cat("casket-flowers"),
+      isBestSeller: true,
+      inStock: true,
+      subscriptionAvailable: false,
+    },
+    {
+      name: "Rose Casket Arrangement",
+      itemCode: "C15-4841",
+      price: 199.99,
+      categoryId: cat("casket-flowers"),
+      isBestSeller: false,
+      inStock: true,
+      subscriptionAvailable: false,
+    },
+    {
+      name: "Lily Casket Spray",
+      itemCode: "C15-4842",
+      price: 189.99,
+      categoryId: cat("casket-flowers"),
+      isBestSeller: false,
+      inStock: true,
+      subscriptionAvailable: false,
+    },
+    {
+      name: "Garden Casket Flowers",
+      itemCode: "C15-4843",
+      price: 169.99,
+      categoryId: cat("casket-flowers"),
+      isBestSeller: false,
+      inStock: true,
+      subscriptionAvailable: false,
+    },
+    {
+      name: "Elegant Casket Cover",
+      itemCode: "C15-4844",
+      price: 219.99,
+      categoryId: cat("casket-flowers"),
+      isBestSeller: false,
+      inStock: false,
+      subscriptionAvailable: false,
+    },
+
+    {
+      name: "Sympathy Flower Basket",
+      itemCode: "C15-4845",
+      price: 69.99,
+      categoryId: cat("sympathy-baskets"),
+      isBestSeller: true,
+      inStock: true,
+      subscriptionAvailable: false,
+    },
+    {
+      name: "Peaceful White Basket",
+      itemCode: "C15-4846",
+      price: 79.99,
+      categoryId: cat("sympathy-baskets"),
+      isBestSeller: false,
+      inStock: true,
+      subscriptionAvailable: false,
+    },
+    {
+      name: "Garden Sympathy Basket",
+      itemCode: "C15-4847",
+      price: 89.99,
+      categoryId: cat("sympathy-baskets"),
+      isBestSeller: false,
+      inStock: true,
+      subscriptionAvailable: false,
+    },
+    {
+      name: "Mixed Blooms Basket",
+      itemCode: "C15-4848",
+      price: 74.99,
+      categoryId: cat("sympathy-baskets"),
+      isBestSeller: false,
+      inStock: true,
+      subscriptionAvailable: false,
+    },
+    {
+      name: "Rose Sympathy Basket",
+      itemCode: "C15-4849",
+      price: 84.99,
+      categoryId: cat("sympathy-baskets"),
+      isBestSeller: false,
+      inStock: false,
+      subscriptionAvailable: false,
+    },
+
+    {
+      name: "Peace Lily Plant",
+      itemCode: "C15-4850",
+      price: 54.99,
+      categoryId: cat("memorial-plants"),
+      isBestSeller: true,
+      inStock: true,
+      subscriptionAvailable: false,
+    },
+    {
+      name: "Orchid Memorial Plant",
+      itemCode: "C15-4851",
+      price: 64.99,
+      categoryId: cat("memorial-plants"),
+      isBestSeller: false,
+      inStock: true,
+      subscriptionAvailable: false,
+    },
+    {
+      name: "Bamboo Sympathy Plant",
+      itemCode: "C15-4852",
+      price: 49.99,
+      categoryId: cat("memorial-plants"),
+      isBestSeller: false,
+      inStock: true,
+      subscriptionAvailable: false,
+    },
+    {
+      name: "Garden Rose Plant",
+      itemCode: "C15-4853",
+      price: 59.99,
+      categoryId: cat("memorial-plants"),
+      isBestSeller: false,
+      inStock: true,
+      subscriptionAvailable: false,
+    },
+    {
+      name: "Chrysanthemum Memorial",
+      itemCode: "C15-4854",
+      price: 44.99,
+      categoryId: cat("memorial-plants"),
+      isBestSeller: false,
+      inStock: false,
+      subscriptionAvailable: false,
+    },
+
+    {
+      name: "Soft Sympathy Bouquet",
+      itemCode: "C15-4855",
+      price: 59.99,
+      categoryId: cat("sympathy-bouquets"),
+      isBestSeller: true,
+      inStock: true,
+      subscriptionAvailable: false,
+    },
+    {
+      name: "White Lily Sympathy",
+      itemCode: "C15-4856",
+      price: 64.99,
+      categoryId: cat("sympathy-bouquets"),
+      isBestSeller: false,
+      inStock: true,
+      subscriptionAvailable: false,
+    },
+    {
+      name: "Peaceful Pastel Bouquet",
+      itemCode: "C15-4857",
+      price: 54.99,
+      categoryId: cat("sympathy-bouquets"),
+      isBestSeller: false,
+      inStock: true,
+      subscriptionAvailable: false,
+    },
+    {
+      name: "Garden Remembrance Blooms",
+      itemCode: "C15-4858",
+      price: 69.99,
+      categoryId: cat("sympathy-bouquets"),
+      isBestSeller: false,
+      inStock: true,
+      subscriptionAvailable: false,
+    },
+    {
+      name: "Rose Sympathy Bouquet",
+      itemCode: "C15-4859",
+      price: 74.99,
+      categoryId: cat("sympathy-bouquets"),
+      isBestSeller: false,
+      inStock: false,
+      subscriptionAvailable: false,
+    },
+
+    // ── GET WELL (6 products) ────────────────────────
+    {
+      name: "Get Well Cheer Bouquet",
+      itemCode: "C15-4860",
+      price: 39.99,
+      categoryId: cat("get-well"),
+      isBestSeller: true,
+      inStock: true,
+      subscriptionAvailable: false,
+    },
+    {
+      name: "Sunshine Get Well Flowers",
+      itemCode: "C15-4861",
+      price: 44.99,
+      categoryId: cat("get-well"),
+      isBestSeller: false,
+      inStock: true,
+      subscriptionAvailable: false,
+    },
+    {
+      name: "Bright Daisy Get Well",
+      itemCode: "C15-4862",
+      price: 34.99,
+      categoryId: cat("get-well"),
+      isBestSeller: false,
+      inStock: true,
+      subscriptionAvailable: false,
+    },
+    {
+      name: "Colorful Recovery Bouquet",
+      itemCode: "C15-4863",
+      price: 49.99,
+      categoryId: cat("get-well"),
+      isBestSeller: false,
+      inStock: true,
+      subscriptionAvailable: false,
+    },
+    {
+      name: "Healing Garden Flowers",
+      itemCode: "C15-4864",
+      price: 42.99,
+      categoryId: cat("get-well"),
+      isBestSeller: false,
+      inStock: true,
+      subscriptionAvailable: false,
+    },
+    {
+      name: "Speedy Recovery Blooms",
+      itemCode: "C15-4865",
+      price: 37.99,
+      categoryId: cat("get-well"),
+      isBestSeller: false,
+      inStock: false,
+      subscriptionAvailable: false,
+    },
+
+    // ── THANK YOU (6 products) ───────────────────────
+    {
+      name: "Thank You Tulip Bouquet",
+      itemCode: "C15-4870",
+      price: 38.99,
+      categoryId: cat("thank-you"),
+      isBestSeller: true,
+      inStock: true,
+      subscriptionAvailable: false,
+    },
+    {
+      name: "Gratitude Garden Flowers",
+      itemCode: "C15-4871",
+      price: 44.99,
+      categoryId: cat("thank-you"),
+      isBestSeller: false,
+      inStock: true,
+      subscriptionAvailable: false,
+    },
+    {
+      name: "Appreciation Rose Bunch",
+      itemCode: "C15-4872",
+      price: 49.99,
+      categoryId: cat("thank-you"),
+      isBestSeller: false,
+      inStock: true,
+      subscriptionAvailable: false,
+    },
+    {
+      name: "Cheerful Thank You Blooms",
+      itemCode: "C15-4873",
+      price: 36.99,
+      categoryId: cat("thank-you"),
+      isBestSeller: false,
+      inStock: true,
+      subscriptionAvailable: false,
+    },
+    {
+      name: "Thank You Mixed Bouquet",
+      itemCode: "C15-4874",
+      price: 42.99,
+      categoryId: cat("thank-you"),
+      isBestSeller: false,
+      inStock: true,
+      subscriptionAvailable: false,
+    },
+    {
+      name: "Sunflower Thank You",
+      itemCode: "C15-4875",
+      price: 39.99,
+      categoryId: cat("thank-you"),
+      isBestSeller: false,
+      inStock: false,
+      subscriptionAvailable: false,
+    },
+
+    // ── NEW BABY (6 products) ────────────────────────
+    {
+      name: "Pink New Baby Bouquet",
+      itemCode: "C15-4880",
+      price: 44.99,
+      categoryId: cat("new-baby"),
+      isBestSeller: true,
+      inStock: true,
+      subscriptionAvailable: false,
+    },
+    {
+      name: "Blue Baby Boy Flowers",
+      itemCode: "C15-4881",
+      price: 44.99,
+      categoryId: cat("new-baby"),
+      isBestSeller: false,
+      inStock: true,
+      subscriptionAvailable: false,
+    },
+    {
+      name: "Welcome Baby Arrangement",
+      itemCode: "C15-4882",
+      price: 54.99,
+      categoryId: cat("new-baby"),
+      isBestSeller: false,
+      inStock: true,
+      subscriptionAvailable: false,
+    },
+    {
+      name: "New Baby Mixed Blooms",
+      itemCode: "C15-4883",
+      price: 49.99,
+      categoryId: cat("new-baby"),
+      isBestSeller: false,
+      inStock: true,
+      subscriptionAvailable: false,
+    },
+    {
+      name: "Baby Shower Flowers",
+      itemCode: "C15-4884",
+      price: 39.99,
+      categoryId: cat("new-baby"),
+      isBestSeller: false,
+      inStock: true,
+      subscriptionAvailable: false,
+    },
+    {
+      name: "Sweet Baby Daisy Bunch",
+      itemCode: "C15-4885",
+      price: 34.99,
+      categoryId: cat("new-baby"),
+      isBestSeller: false,
+      inStock: false,
+      subscriptionAvailable: false,
+    },
+
+    // ── ROMANCE (6 products) ─────────────────────────
+    {
+      name: "Romantic Red Rose Box",
+      itemCode: "C15-4890",
+      price: 79.99,
+      categoryId: cat("romance"),
+      isBestSeller: true,
+      inStock: true,
+      subscriptionAvailable: true,
+    },
+    {
+      name: "Love Letter Bouquet",
+      itemCode: "C15-4891",
+      price: 64.99,
+      categoryId: cat("romance"),
+      isBestSeller: false,
+      inStock: true,
+      subscriptionAvailable: true,
+    },
+    {
+      name: "Sweetheart Pink Roses",
+      itemCode: "C15-4892",
+      price: 54.99,
+      categoryId: cat("romance"),
+      isBestSeller: false,
+      inStock: true,
+      subscriptionAvailable: false,
+    },
+    {
+      name: "Passionate Red Bouquet",
+      itemCode: "C15-4893",
+      price: 69.99,
+      categoryId: cat("romance"),
+      isBestSeller: false,
+      inStock: true,
+      subscriptionAvailable: false,
+    },
+    {
+      name: "Date Night Flowers",
+      itemCode: "C15-4894",
+      price: 59.99,
+      categoryId: cat("romance"),
+      isBestSeller: false,
+      inStock: true,
+      subscriptionAvailable: false,
+    },
+    {
+      name: "Cupid Rose Arrangement",
+      itemCode: "C15-4895",
+      price: 74.99,
+      categoryId: cat("romance"),
+      isBestSeller: false,
+      inStock: false,
+      subscriptionAvailable: false,
+    },
+
+    // ── SEASONAL (5 products) ────────────────────────
+    {
+      name: "Spring Garden Bouquet",
+      itemCode: "C15-4900",
+      price: 44.99,
+      categoryId: cat("seasonal"),
+      isBestSeller: true,
+      inStock: true,
+      subscriptionAvailable: false,
+    },
+    {
+      name: "Summer Sunflower Mix",
+      itemCode: "C15-4901",
+      price: 39.99,
+      categoryId: cat("seasonal"),
+      isBestSeller: false,
+      inStock: true,
+      subscriptionAvailable: false,
+    },
+    {
+      name: "Autumn Harvest Bouquet",
+      itemCode: "C15-4902",
+      price: 49.99,
+      categoryId: cat("seasonal"),
+      isBestSeller: false,
+      inStock: true,
+      subscriptionAvailable: false,
+    },
+    {
+      name: "Winter White Arrangement",
+      itemCode: "C15-4903",
+      price: 54.99,
+      categoryId: cat("seasonal"),
+      isBestSeller: false,
+      inStock: true,
+      subscriptionAvailable: false,
+    },
+    {
+      name: "Holiday Festive Flowers",
+      itemCode: "C15-4904",
+      price: 59.99,
+      categoryId: cat("seasonal"),
+      isBestSeller: false,
+      inStock: false,
+      subscriptionAvailable: false,
+    },
+
+    // ── PLANTS (5 products) ──────────────────────────
+    {
+      name: "Potted Orchid Plant",
+      itemCode: "C15-4910",
+      price: 49.99,
+      categoryId: cat("plants"),
+      isBestSeller: true,
+      inStock: true,
+      subscriptionAvailable: false,
+    },
+    {
+      name: "Succulent Garden Box",
+      itemCode: "C15-4911",
+      price: 34.99,
+      categoryId: cat("plants"),
+      isBestSeller: false,
+      inStock: true,
+      subscriptionAvailable: false,
+    },
+    {
+      name: "Peace Lily Potted",
+      itemCode: "C15-4912",
+      price: 44.99,
+      categoryId: cat("plants"),
+      isBestSeller: false,
+      inStock: true,
+      subscriptionAvailable: false,
+    },
+    {
+      name: "Mini Rose Bush Plant",
+      itemCode: "C15-4913",
+      price: 39.99,
+      categoryId: cat("plants"),
+      isBestSeller: false,
+      inStock: true,
+      subscriptionAvailable: false,
+    },
+    {
+      name: "Bamboo Lucky Plant",
+      itemCode: "C15-4914",
+      price: 29.99,
+      categoryId: cat("plants"),
+      isBestSeller: false,
+      inStock: false,
+      subscriptionAvailable: false,
+    },
+
+    // ── FRUIT BASKETS (5 products) ───────────────────
+    {
+      name: "Classic Fruit Basket",
+      itemCode: "C15-4920",
+      price: 59.99,
+      categoryId: cat("fruit-baskets"),
+      isBestSeller: true,
+      inStock: true,
+      subscriptionAvailable: false,
+    },
+    {
+      name: "Flowers and Fruit Combo",
+      itemCode: "C15-4921",
+      price: 74.99,
+      categoryId: cat("fruit-baskets"),
+      isBestSeller: false,
+      inStock: true,
+      subscriptionAvailable: false,
+    },
+    {
+      name: "Tropical Fruit Bouquet",
+      itemCode: "C15-4922",
+      price: 69.99,
+      categoryId: cat("fruit-baskets"),
+      isBestSeller: false,
+      inStock: true,
+      subscriptionAvailable: false,
+    },
+    {
+      name: "Berry and Bloom Basket",
+      itemCode: "C15-4923",
+      price: 64.99,
+      categoryId: cat("fruit-baskets"),
+      isBestSeller: false,
+      inStock: true,
+      subscriptionAvailable: false,
+    },
+    {
+      name: "Deluxe Fruit Tower",
+      itemCode: "C15-4924",
+      price: 89.99,
+      categoryId: cat("fruit-baskets"),
+      isBestSeller: false,
+      inStock: false,
+      subscriptionAvailable: false,
+    },
+
+    // ── SAME DAY DELIVERY (5 products) ──────────────
+    {
+      name: "Rush Red Roses",
+      itemCode: "C15-4930",
+      price: 59.99,
+      categoryId: cat("same-day-delivery"),
+      isBestSeller: true,
+      inStock: true,
+      subscriptionAvailable: false,
+    },
+    {
+      name: "Same Day Surprise Bouquet",
+      itemCode: "C15-4931",
+      price: 54.99,
+      categoryId: cat("same-day-delivery"),
+      isBestSeller: false,
+      inStock: true,
+      subscriptionAvailable: false,
+    },
+    {
+      name: "Express Flower Delivery",
+      itemCode: "C15-4932",
+      price: 49.99,
+      categoryId: cat("same-day-delivery"),
+      isBestSeller: false,
+      inStock: true,
+      subscriptionAvailable: false,
+    },
+    {
+      name: "Quick Bloom Arrangement",
+      itemCode: "C15-4933",
+      price: 44.99,
+      categoryId: cat("same-day-delivery"),
+      isBestSeller: false,
+      inStock: true,
+      subscriptionAvailable: false,
+    },
+    {
+      name: "Last Minute Love Bouquet",
+      itemCode: "C15-4934",
+      price: 64.99,
+      categoryId: cat("same-day-delivery"),
+      isBestSeller: false,
+      inStock: false,
+      subscriptionAvailable: false,
+    },
+
+    // ── SUBSCRIPTIONS (5 products) ───────────────────
+    {
+      name: "Weekly Fresh Flowers",
+      itemCode: "C15-4940",
+      price: 29.99,
+      categoryId: cat("subscriptions"),
+      isBestSeller: true,
+      inStock: true,
+      subscriptionAvailable: true,
+    },
+    {
+      name: "Bi-Weekly Bloom Box",
+      itemCode: "C15-4941",
+      price: 49.99,
+      categoryId: cat("subscriptions"),
+      isBestSeller: false,
+      inStock: true,
+      subscriptionAvailable: true,
+    },
+    {
+      name: "Monthly Flower Subscription",
+      itemCode: "C15-4942",
+      price: 39.99,
+      categoryId: cat("subscriptions"),
+      isBestSeller: false,
+      inStock: true,
+      subscriptionAvailable: true,
+    },
+    {
+      name: "Premium Weekly Bouquet",
+      itemCode: "C15-4943",
+      price: 59.99,
+      categoryId: cat("subscriptions"),
+      isBestSeller: false,
+      inStock: true,
+      subscriptionAvailable: true,
+    },
+    {
+      name: "Seasonal Subscription Box",
+      itemCode: "C15-4944",
+      price: 44.99,
+      categoryId: cat("subscriptions"),
+      isBestSeller: false,
+      inStock: false,
+      subscriptionAvailable: true,
+    },
   ];
 
-  // Create main categories
-  const createdCategories = {};
-  for (const cat of mainCategories) {
-    const category = await Category.create({
-      name: cat.name,
-      slug: slugify(cat.name, { lower: true, strict: true }),
-      displayOrder: cat.displayOrder,
-      isActive: true,
-    });
-    createdCategories[cat.name] = category;
-    console.log(`  ✓ Created: ${cat.name}`);
-  }
+  // add slug to every product
+  const productsWithSlugs = products.map((p) => ({
+    ...p,
+    slug: slugify(p.name, { lower: true, strict: true }),
+    description: `Beautiful ${p.name.toLowerCase()} arrangement, perfect for any occasion.`,
+    image: [],
+  }));
 
-  // Subcategories under Sympathy & Funeral
-  const sympathyParent = createdCategories['Sympathy & Funeral'];
-  const subcategories = [
-    { name: 'Wreaths', displayOrder: 1 },
-    { name: 'Standing Sprays', displayOrder: 2 },
-    { name: 'Casket Flowers', displayOrder: 3 },
-    { name: 'Sympathy Baskets', displayOrder: 4 },
-    { name: 'Memorial Plants', displayOrder: 5 },
-    { name: 'Sympathy Bouquets', displayOrder: 6 },
-  ];
-
-  for (const subcat of subcategories) {
-    const category = await Category.create({
-      name: subcat.name,
-      slug: slugify(subcat.name, { lower: true, strict: true }),
-      displayOrder: subcat.displayOrder,
-      parentId: sympathyParent.id,
-      isActive: true,
-    });
-    console.log(`  ✓ Created subcategory: ${subcat.name} (parent: Sympathy & Funeral)`);
-  }
-
-  console.log(
-    `✅ Successfully seeded ${mainCategories.length + subcategories.length} categories\n`
-  );
-  return createdCategories;
+  await Product.bulkCreate(productsWithSlugs);
+  console.log(`✅ ${productsWithSlugs.length} products seeded`);
 };
 
+const seedFAQs = async () => {
+  const faqs = [
+    {
+      question: "How do I place an order?",
+      answer:
+        "Browse our collection, add items to cart, and complete checkout.",
+      displayOrder: 1,
+      isActive: true,
+    },
+    {
+      question: "Do you offer same day delivery?",
+      answer: "Yes! Order before 12pm for same day delivery in most areas.",
+      displayOrder: 2,
+      isActive: true,
+    },
+    {
+      question: "Can I schedule a delivery date?",
+      answer: "Absolutely. Choose your preferred delivery date at checkout.",
+      displayOrder: 3,
+      isActive: true,
+    },
+    {
+      question: "What if my flowers arrive damaged?",
+      answer:
+        "Contact us within 24 hours with a photo and we will replace them free.",
+      displayOrder: 4,
+      isActive: true,
+    },
+    {
+      question: "Do you offer subscriptions?",
+      answer:
+        "Yes! Weekly, bi-weekly, and monthly subscription options available.",
+      displayOrder: 5,
+      isActive: true,
+    },
+    {
+      question: "Can the recipient choose their flowers?",
+      answer: "Yes — use our Recipient Choice option at checkout.",
+      displayOrder: 6,
+      isActive: true,
+    },
+    {
+      question: "What areas do you deliver to?",
+      answer:
+        "We deliver nationwide. Enter your zip code to confirm availability.",
+      displayOrder: 7,
+      isActive: true,
+    },
+    {
+      question: "How do I cancel or modify an order?",
+      answer: "Contact us within 2 hours of placing the order.",
+      displayOrder: 8,
+      isActive: true,
+    },
+    {
+      question: "Can I add a personal message?",
+      answer: "Yes — add your message in the card message field at checkout.",
+      displayOrder: 9,
+      isActive: true,
+    },
+    {
+      question: "What payment methods do you accept?",
+      answer: "We accept all major credit cards, PayPal, and Apple Pay.",
+      displayOrder: 10,
+      isActive: true,
+    },
+  ];
+
+  await FAQ.bulkCreate(faqs);
+  console.log(`✅ ${faqs.length} FAQs seeded`);
+};
+
+const seedSiteConfig = async () => {
+  const existing = await SiteConfig.findOne();
+  if (existing) {
+    console.log("⚠️  SiteConfig already exists, skipping.");
+    return;
+  }
+
+  await SiteConfig.create({
+    heroTitle: "Fresh Flowers Delivered With Love",
+    heroSubTitle:
+      "Handcrafted bouquets for every occasion, delivered to their door.",
+    heroCTA1: "Shop Now",
+    heroCTA2: "View Subscriptions",
+    contactEmail: "hello@flowershop.com",
+    contactPhone: "+1 (555) 123-4567",
+  });
+
+  console.log("✅ SiteConfig seeded");
+};
 const runSeed = async () => {
   try {
-    await sequelize.authenticate();
-    console.log('✅ Database connected\n');
+    await sequelize.authenticate()
+    console.log('✅ DB connected')
 
-    // Seed categories
-    const categories = await seedCategories();
+    await sequelize.sync({ alter: true })
 
-    await sequelize.close();
-    console.log('✅ Database connection closed');
-  } catch (error) {
-    console.error('❌ Seed error:', error.message);
-    process.exit(1);
+    // check if already seeded
+    const productCount = await Product.count()
+    if (productCount > 0) {
+      console.log(`⚠️  Products already seeded (${productCount} found). Skipping products.`)
+    } else {
+      const allCategories = await Category.findAll()
+      await seedProducts(allCategories)
+    }
+
+    const faqCount = await FAQ.count()
+    if (faqCount > 0) {
+      console.log(`⚠️  FAQs already seeded (${faqCount} found). Skipping FAQs.`)
+    } else {
+      await seedFAQs()
+    }
+
+    await seedSiteConfig()
+
+    console.log('🌸 Seed complete!')
+    process.exit(0)
+
+  } catch (err) {
+    console.error('❌ Seed failed:', err.message)
+    process.exit(1)
   }
-};
-
-// Run if executed directly
-if (require.main === module) {
-  runSeed();
 }
 
-module.exports = { seedCategories, runSeed };
+runSeed()
+
