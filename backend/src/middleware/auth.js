@@ -1,18 +1,28 @@
 const jwt = require('jsonwebtoken');
 
 const verifyToken = (req, res, next) => {
-  const authHeader = req.headers['authorization'];
-  const token = authHeader && authHeader.split(' ')[1]; // Bearer <token>
+  if (!process.env.JWT_SECRET) {
+    return res.status(500).json({ message: 'Authentication is not configured' });
+  }
 
-  if (!token) {
+  const authHeader = req.headers.authorization;
+
+  if (!authHeader) {
     return res.status(401).json({ message: 'Access token is missing' });
   }
 
+  const [scheme, token] = authHeader.split(' ');
+
+  if (scheme !== 'Bearer' || !token) {
+    return res.status(401).json({ message: 'Authorization header must be Bearer token' });
+  }
+
+
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    req.admin = decoded; 
+    req.admin = decoded;
     next();
-    } catch (err) {
+  } catch (err) {
     return res.status(403).json({ message: 'Invalid or expired token' });
   }
 };
