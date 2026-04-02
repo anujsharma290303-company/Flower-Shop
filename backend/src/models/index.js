@@ -1,3 +1,4 @@
+const sequelize = require("../config/database");
 const Admin = require("./Admin");
 const Category = require("./Category");
 const Product = require("./Product");
@@ -47,6 +48,7 @@ CustomBouquet.belongsTo(Order, { foreignKey: "orderId", as: "order" });
 
 // Export all models
 module.exports = {
+  sequelize,
   Admin,
   Category,
   Product,

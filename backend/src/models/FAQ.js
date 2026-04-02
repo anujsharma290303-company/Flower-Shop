@@ -9,8 +9,8 @@ const FAQ = sequelize.define(
       primaryKey: true,
       autoIncrement: true,
     },
-    questions: {
-      type: DataTypes.TEXT,
+    question: {
+      type: DataTypes.STRING,
       allowNull: false,
     },
     answer: {

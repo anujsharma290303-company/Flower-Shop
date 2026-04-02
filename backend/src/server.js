@@ -2,6 +2,8 @@ require('dotenv').config();
 const express = require('express');
 const sequelize = require('./config/database');
 const authRoutes = require('./routes/authRoutes');
+const { publicRouter, adminRouter } = require('./routes/productRoutes');
+const { publicRouter: categoryPublicRouter, adminRouter: categoryAdminRouter } = require('./routes/categoryRoutes');
 
 // IMPORTANT: load all models + associations BEFORE sync
 require('./models');
@@ -25,6 +27,10 @@ app.get('/api/health', (req, res) => {
 
 // Routes
 app.use('/api/auth', authRoutes);
+app.use('/api/products', publicRouter);
+app.use('/api/admin/products', adminRouter);
+app.use('/api/categories', categoryPublicRouter);
+app.use('/api/admin/categories', categoryAdminRouter);
 
 app.use((req, res) => {
   res.status(404).json({ message: 'Route not found' });
