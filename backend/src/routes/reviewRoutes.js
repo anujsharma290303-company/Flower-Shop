@@ -10,16 +10,20 @@ const {
   remove,
 } = require('../controllers/reviewController');
 
-const router = express.Router();
+const publicRouter = express.Router();
+const adminRouter = express.Router();
 
 // Public routes
-router.get('/', getAll);
-router.post('/', validateReview, create);
+publicRouter.get('/', getAll);
+publicRouter.post('/', validateReview, create);
 
 // Admin routes
-router.get('/admin', verifyToken, getAllAdmin);
-router.patch('/admin/:id/approve', verifyToken, approve);
-router.patch('/admin/:id/reject', verifyToken, reject);
-router.delete('/admin/:id', verifyToken, remove);
+adminRouter.get('/', verifyToken, getAllAdmin);
+adminRouter.patch('/:id/approve', verifyToken, approve);
+adminRouter.patch('/:id/reject', verifyToken, reject);
+adminRouter.delete('/:id', verifyToken, remove);
 
-module.exports = router;
+module.exports = {
+  publicRouter,
+  adminRouter,
+};

@@ -12,9 +12,9 @@ const handleValidation = (req, res, next) => {
   if (!errors.isEmpty()) {
     return res.status(422).json({
       success: false,
-      message: 'Validation error',
+      message: 'Validation failed',
       errors: errors.array().map((err) => ({
-        field: err.param,
+        field: err.path || err.param,
         message: err.msg,
       })),
     });
@@ -80,9 +80,10 @@ const validateCategory = [
 const validateUpdateCategory = [
   (req, res, next) => {
     if (!req.body || Object.keys(req.body).length === 0) {
-      return res.status(400).json({
+      return res.status(422).json({
         success: false,
-        message: 'At least one field is required to update',
+        message: 'Validation failed',
+        errors: [{ field: 'body', message: 'At least one field is required to update' }],
       });
     }
     next();
@@ -106,6 +107,12 @@ const validateUpdateCategory = [
     .optional({ checkFalsy: true })
     .isString()
     .withMessage('Icon must be a string')
+    .trim(),
+
+  body('image')
+    .optional({ checkFalsy: true })
+    .isString()
+    .withMessage('Image must be a string')
     .trim(),
 
   body('displayOrder')

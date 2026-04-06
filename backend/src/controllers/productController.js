@@ -26,10 +26,10 @@ const handleControllerError = (res, error, context) => {
 	console.error(`${context}:`, error.message);
 
 	if (error.name === 'SequelizeUniqueConstraintError') {
-		return res.status(409).json({ message: 'Duplicate value for slug or itemCode' });
+		return res.status(409).json({ success: false, message: 'Duplicate value for slug or itemCode' });
 	}
 
-	return res.status(500).json({ message: 'Internal server error' });
+	return res.status(500).json({ success: false, message: 'Internal server error' });
 };
 
 const buildUniqueSlug = async (name, excludeId) => {
@@ -84,11 +84,11 @@ const getAll = async (req, res) => {
 		const parsedLimit = Number(limit ?? 10);
 
 		if (!Number.isInteger(parsedPage) || parsedPage <= 0) {
-			return res.status(400).json({ message: 'page must be a positive integer' });
+			return res.status(400).json({ success: false, message: 'page must be a positive integer' });
 		}
 
 		if (!Number.isInteger(parsedLimit) || parsedLimit <= 0) {
-			return res.status(400).json({ message: 'limit must be a positive integer' });
+			return res.status(400).json({ success: false, message: 'limit must be a positive integer' });
 		}
 
 		const offset = (parsedPage - 1) * parsedLimit;
@@ -100,7 +100,7 @@ const getAll = async (req, res) => {
 			const parsedCategoryId = Number(rawCategory);
 
 			if (!Number.isInteger(parsedCategoryId) || parsedCategoryId <= 0) {
-				return res.status(400).json({ message: 'categoryId must be a positive integer' });
+				return res.status(400).json({ success: false, message: 'categoryId must be a positive integer' });
 			}
 
 			where.categoryId = parsedCategoryId;
@@ -110,7 +110,7 @@ const getAll = async (req, res) => {
 			const parsedBestSeller = parseBoolean(isBestSeller);
 
 			if (parsedBestSeller === undefined) {
-				return res.status(400).json({ message: 'isBestSeller must be true or false' });
+				return res.status(400).json({ success: false, message: 'isBestSeller must be true or false' });
 			}
 
 			where.isBestSeller = parsedBestSeller;
@@ -120,7 +120,7 @@ const getAll = async (req, res) => {
 			const parsedInStock = parseBoolean(inStock);
 
 			if (parsedInStock === undefined) {
-				return res.status(400).json({ message: 'inStock must be true or false' });
+				return res.status(400).json({ success: false, message: 'inStock must be true or false' });
 			}
 
 			where.inStock = parsedInStock;
@@ -147,16 +147,19 @@ const getAll = async (req, res) => {
 		});
 
 		return res.status(200).json({
-			totalItems: count,
-			page: parsedPage,
-			limit: parsedLimit,
-			totalPages: Math.ceil(count / parsedLimit),
-			count: rows.length,
-			products: rows,
+			success: true,
+			data: {
+				totalItems: count,
+				page: parsedPage,
+				limit: parsedLimit,
+				totalPages: Math.ceil(count / parsedLimit),
+				count: rows.length,
+				products: rows,
+			},
 		});
 	} catch (error) {
 		console.error('Get products error:', error.message);
-		return res.status(500).json({ message: 'Internal server error' });
+		return res.status(500).json({ success: false, message: 'Internal server error' });
 	}
 };
 
@@ -166,7 +169,7 @@ const getOne = async (req, res) => {
 		const productId = Number(id);
 
 		if (!Number.isInteger(productId) || productId <= 0) {
-			return res.status(400).json({ message: 'Product id must be a positive integer' });
+			return res.status(400).json({ success: false, message: 'Product id must be a positive integer' });
 		}
 
 		const product = await Product.findByPk(productId, {
@@ -180,13 +183,13 @@ const getOne = async (req, res) => {
 		});
 
 		if (!product) {
-			return res.status(404).json({ message: 'Product not found' });
+			return res.status(404).json({ success: false, message: 'Product not found' });
 		}
 
-		return res.status(200).json({ product });
+		return res.status(200).json({ success: true, data: product });
 	} catch (error) {
 		console.error('Get product error:', error.message);
-		return res.status(500).json({ message: 'Internal server error' });
+		return res.status(500).json({ success: false, message: 'Internal server error' });
 	}
 };
 
@@ -195,7 +198,7 @@ const getBySlug = async (req, res) => {
 		const { slug } = req.params;
 
 		if (!slug || !String(slug).trim()) {
-			return res.status(400).json({ message: 'Slug is required' });
+			return res.status(400).json({ success: false, message: 'Slug is required' });
 		}
 
 		const product = await Product.findOne({
@@ -210,10 +213,10 @@ const getBySlug = async (req, res) => {
 		});
 
 		if (!product) {
-			return res.status(404).json({ message: 'Product not found' });
+			return res.status(404).json({ success: false, message: 'Product not found' });
 		}
 
-		return res.status(200).json({ product });
+		return res.status(200).json({ success: true, data: product });
 	} catch (error) {
 		return handleControllerError(res, error, 'Get product by slug error');
 	}
@@ -226,13 +229,13 @@ const create = async (req, res) => {
 		const { error, values: boolValues } = parseBooleanFields(req.body, booleanFields);
 
 		if (error) {
-			return res.status(400).json({ message: error });
+			return res.status(400).json({ success: false, message: error });
 		}
 
 		const categoryExists = await Category.findByPk(categoryId);
 
 		if (!categoryExists) {
-			return res.status(404).json({ message: 'Category not found' });
+			return res.status(404).json({ success: false, message: 'Category not found' });
 		}
 
 		const imagePaths = Array.isArray(req.files) ? req.files.map((file) => file.path) : [];
@@ -260,7 +263,7 @@ const create = async (req, res) => {
 			],
 		});
 
-		return res.status(201).json({ message: 'Product created', product });
+		return res.status(201).json({ success: true, message: 'Product created', data: product });
 	} catch (error) {
 		return handleControllerError(res, error, 'Create product error');
 	}
@@ -272,13 +275,13 @@ const update = async (req, res) => {
 		const productId = Number(id);
 
 		if (!Number.isInteger(productId) || productId <= 0) {
-			return res.status(400).json({ message: 'Product id must be a positive integer' });
+			return res.status(400).json({ success: false, message: 'Product id must be a positive integer' });
 		}
 
 		const product = await Product.findByPk(productId);
 
 		if (!product) {
-			return res.status(404).json({ message: 'Product not found' });
+			return res.status(404).json({ success: false, message: 'Product not found' });
 		}
 
 		const updateData = {};
@@ -294,7 +297,7 @@ const update = async (req, res) => {
 			const categoryExists = await Category.findByPk(updateData.categoryId);
 
 			if (!categoryExists) {
-				return res.status(404).json({ message: 'Category not found' });
+				return res.status(404).json({ success: false, message: 'Category not found' });
 			}
 		}
 
@@ -302,7 +305,7 @@ const update = async (req, res) => {
 		const { error, values: boolValues } = parseBooleanFields(req.body, booleanFields);
 
 		if (error) {
-			return res.status(400).json({ message: error });
+			return res.status(400).json({ success: false, message: error });
 		}
 
 		Object.assign(updateData, boolValues);
@@ -327,7 +330,7 @@ const update = async (req, res) => {
 			],
 		});
 
-		return res.status(200).json({ message: 'Product updated', product: updatedProduct });
+		return res.status(200).json({ success: true, message: 'Product updated', data: updatedProduct });
 	} catch (error) {
 		return handleControllerError(res, error, 'Update product error');
 	}
@@ -339,17 +342,17 @@ const remove = async (req, res) => {
 		const productId = Number(id);
 
 		if (!Number.isInteger(productId) || productId <= 0) {
-			return res.status(400).json({ message: 'Product id must be a positive integer' });
+			return res.status(400).json({ success: false, message: 'Product id must be a positive integer' });
 		}
 
 		const product = await Product.findByPk(productId);
 
 		if (!product) {
-			return res.status(404).json({ message: 'Product not found' });
+			return res.status(404).json({ success: false, message: 'Product not found' });
 		}
 
 		await product.destroy();
-		return res.status(200).json({ message: 'Product deleted' });
+		return res.status(200).json({ success: true, message: 'Product deleted', data: { id: productId } });
 	} catch (error) {
 		return handleControllerError(res, error, 'Delete product error');
 	}
@@ -363,11 +366,12 @@ const toggle = async (req, res) => {
 		const allowedFields = ['isBestSeller', 'inStock', 'subscriptionAvailable'];
 
 		if (!Number.isInteger(productId) || productId <= 0) {
-			return res.status(400).json({ message: 'Product id must be a positive integer' });
+			return res.status(400).json({ success: false, message: 'Product id must be a positive integer' });
 		}
 
 		if (!allowedFields.includes(field)) {
 			return res.status(400).json({
+				success: false,
 				message: 'field must be one of: isBestSeller, inStock, subscriptionAvailable',
 			});
 		}
@@ -375,16 +379,19 @@ const toggle = async (req, res) => {
 		const product = await Product.findByPk(productId);
 
 		if (!product) {
-			return res.status(404).json({ message: 'Product not found' });
+			return res.status(404).json({ success: false, message: 'Product not found' });
 		}
 
 		product[field] = !product[field];
 		await product.save();
 
 		return res.status(200).json({
+			success: true,
 			message: `${field} updated`,
-			field,
-			value: product[field],
+			data: {
+				field,
+				value: product[field],
+			},
 		});
 	} catch (error) {
 		return handleControllerError(res, error, 'Toggle product field error');

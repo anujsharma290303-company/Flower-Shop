@@ -23,7 +23,13 @@ const handleValidation = (req, res, next) => {
 	const errors = validationResult(req);
 
 	if (!errors.isEmpty()) {
-		return res.status(422).json({ errors: errors.array() });
+		return res.status(422).json({
+			message: 'Validation failed',
+			errors: errors.array().map((err) => ({
+				field: err.path || err.param,
+				message: err.msg,
+			})),
+		});
 	}
 
 	return next();
@@ -82,7 +88,10 @@ const validateReview = [
 const validateUpdateReview = [
 	(req, res, next) => {
 		if (!req.body || Object.keys(req.body).length === 0) {
-			return res.status(400).json({ errors: [{ message: 'At least one field is required to update review' }] });
+			return res.status(422).json({
+				message: 'Validation failed',
+				errors: [{ field: 'body', message: 'At least one field is required to update review' }],
+			});
 		}
 
 		return next();

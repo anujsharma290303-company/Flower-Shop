@@ -2,12 +2,17 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { Admin } = require('../models/index');
 
+const handleControllerError = (res, error, context) => {
+  console.error(`[AuthController] ${context}:`, error.message);
+  return res.status(500).json({ success: false, message: 'Internal server error' });
+};
+
 const login = async (req, res) => {
   const { email, password } = req.body;
 
   if (!process.env.JWT_SECRET) {
     console.error('JWT_SECRET is not configured');
-    return res.status(500).json({ message: 'Authentication is not configured' });
+    return res.status(500).json({ success: false, message: 'Authentication is not configured' });
   }
 
   try {
@@ -15,17 +20,17 @@ const login = async (req, res) => {
     const admin = await Admin.findOne({ where: { email: normalizedEmail } });
 
     if (!admin) {
-      return res.status(401).json({ message: 'Invalid email or password' });
+      return res.status(401).json({ success: false, message: 'Invalid email or password' });
     }
 
     if (!admin.isActive) {
-      return res.status(403).json({ message: 'Account is inactive' });
+      return res.status(403).json({ success: false, message: 'Account is inactive' });
     }
 
     const isMatch = await bcrypt.compare(password, admin.passwordHash);
 
     if (!isMatch) {
-      return res.status(401).json({ message: 'Invalid email or password' });
+      return res.status(401).json({ success: false, message: 'Invalid email or password' });
     }
 
     const token = jwt.sign(
@@ -35,13 +40,15 @@ const login = async (req, res) => {
     );
 
     res.json({
+      success: true,
       message: 'Login successful',
-      token,
-      admin: { id: admin.id, email: admin.email, role: admin.role },
+      data: {
+        token,
+        admin: { id: admin.id, email: admin.email, role: admin.role },
+      },
     });
   } catch (error) {
-    console.error('Login error:', error.message);
-    res.status(500).json({ message: 'Internal server error' });
+    return handleControllerError(res, error, 'Login error');
   }
 };
 
@@ -52,13 +59,12 @@ const me = async (req, res) => {
     });
 
     if (!admin) {
-      return res.status(404).json({ message: 'Admin not found' });
+      return res.status(404).json({ success: false, message: 'Admin not found' });
     }
 
-    return res.json({ admin });
+    return res.json({ success: true, data: admin });
   } catch (error) {
-    console.error('Fetch current admin error:', error.message);
-    return res.status(500).json({ message: 'Internal server error' });
+    return handleControllerError(res, error, 'Fetch current admin error');
   }
 };
 

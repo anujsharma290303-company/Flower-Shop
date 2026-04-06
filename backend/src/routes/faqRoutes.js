@@ -13,14 +13,18 @@ const {
 	toggleActive,
 } = require('../controllers/faqControllers');
 
-const router = express.Router();
+const publicRouter = express.Router();
+const adminRouter = express.Router();
 
-router.post('/admin', verifyToken, validateFaq, create);
-router.put('/admin/:id', verifyToken, validateUpdateFaq, update);
-router.delete('/admin/:id', verifyToken, remove);
-router.patch('/admin/:id/toggle', verifyToken, toggleActive);
+adminRouter.post('/', verifyToken, validateFaq, create);
+adminRouter.put('/:id', verifyToken, validateUpdateFaq, update);
+adminRouter.delete('/:id', verifyToken, remove);
+adminRouter.patch('/:id/toggle', verifyToken, toggleActive);
 
-router.get('/', getAll);
-router.get('/:id', getOne);
+publicRouter.get('/', getAll);
+publicRouter.get('/:id', getOne);
 
-module.exports = router;
+module.exports = {
+	publicRouter,
+	adminRouter,
+};

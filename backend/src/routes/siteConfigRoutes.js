@@ -4,12 +4,16 @@ const { get, update } = require('../controllers/siteConfigController');
 const { validateUpdateSiteConfig } = require('../validators/siteConfigValidator');
 const upload = require('../middleware/upload');
 
-const router = express.Router();
+const publicRouter = express.Router();
+const adminRouter = express.Router();
 
 // Public routes
-router.get('/', get);
+publicRouter.get('/', get);
 
 // Admin protected routes
-router.put('/admin', verifyToken, upload.single('heroImage'), validateUpdateSiteConfig, update);
+adminRouter.put('/', verifyToken, upload.single('heroImage'), validateUpdateSiteConfig, update);
 
-module.exports = router;
+module.exports = {
+	publicRouter,
+	adminRouter,
+};

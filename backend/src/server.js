@@ -21,9 +21,18 @@ const {
   publicRouter: orderPublic,
   adminRouter: orderAdmin,
 } = require("./routes/orderRoutes");
-const faqRoutes = require("./routes/faqRoutes");
-const siteConfigRoutes = require("./routes/siteConfigRoutes");
-const reviewRoutes = require("./routes/reviewRoutes");
+const {
+  publicRouter: faqPublic,
+  adminRouter: faqAdmin,
+} = require("./routes/faqRoutes");
+const {
+  publicRouter: siteConfigPublic,
+  adminRouter: siteConfigAdmin,
+} = require("./routes/siteConfigRoutes");
+const {
+  publicRouter: reviewPublic,
+  adminRouter: reviewAdmin,
+} = require("./routes/reviewRoutes");
 const contactRoutes = require("./routes/contactRoutes");
 const recipientRoutes = require("./routes/recipientRoutes");
 
@@ -64,9 +73,9 @@ app.use("/api/auth", authRoutes);
 app.use("/api/products", productPublic);
 app.use("/api/categories", categoryPublic);
 app.use("/api/orders", orderPublic);
-app.use("/api/faqs", faqRoutes);
-app.use("/api/siteconfig", siteConfigRoutes);
-app.use("/api/reviews", reviewRoutes);
+app.use("/api/faqs", faqPublic);
+app.use("/api/siteconfig", siteConfigPublic);
+app.use("/api/reviews", reviewPublic);
 app.use("/api/contact", contactRoutes);
 app.use("/api/recipient", recipientRoutes);
 
@@ -74,16 +83,19 @@ app.use("/api/recipient", recipientRoutes);
 app.use("/api/admin/products", productAdmin);
 app.use("/api/admin/categories", categoryAdmin);
 app.use("/api/admin/orders", orderAdmin);
+app.use("/api/admin/faqs", faqAdmin);
+app.use("/api/admin/siteconfig", siteConfigAdmin);
+app.use("/api/admin/reviews", reviewAdmin);
 
 // 404
 app.use((req, res) => {
-  res.status(404).json({ message: "Route not found" });
+  res.status(404).json({ success: false, message: "Route not found" });
 });
 
 // Error handler
 app.use((err, req, res, next) => {
   console.error("Unhandled error:", err.message);
-  res.status(500).json({ message: "Internal server error" });
+  res.status(500).json({ success: false, message: "Internal server error" });
 });
 
 const startServer = async () => {
