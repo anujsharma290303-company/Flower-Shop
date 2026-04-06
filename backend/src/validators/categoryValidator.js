@@ -10,7 +10,7 @@ const parseBooleanLike = (value) => {
 const handleValidation = (req, res, next) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
-    return res.status(400).json({
+    return res.status(422).json({
       success: false,
       message: 'Validation error',
       errors: errors.array().map((err) => ({
@@ -42,6 +42,12 @@ const validateCategory = [
     .optional({ checkFalsy: true })
     .isString()
     .withMessage('Icon must be a string')
+    .trim(),
+
+  body('image')
+    .optional({ checkFalsy: true })
+    .isString()
+    .withMessage('Image must be a string')
     .trim(),
 
   body('displayOrder')
@@ -129,4 +135,4 @@ const validateUpdateCategory = [
   handleValidation,
 ];
 
-module.exports = { validateCategory, validateUpdateCategory };
+module.exports = { validateCategory, validateUpdateCategory, handleValidation };

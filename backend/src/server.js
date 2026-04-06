@@ -18,6 +18,7 @@ const {
   adminRouter: categoryAdmin,
 } = require("./routes/categoryRoutes");
 const faqRoutes = require("./routes/faqRoutes");
+const siteConfigRoutes = require("./routes/siteConfigRoutes");
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -56,6 +57,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/products", productPublic);
 app.use("/api/categories", categoryPublic);
 app.use("/api/faqs", faqRoutes);
+app.use("/api/siteconfig", siteConfigRoutes);
 
 // Admin routes
 app.use("/api/admin/products", productAdmin);
