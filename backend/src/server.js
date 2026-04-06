@@ -18,13 +18,6 @@ const {
   adminRouter: categoryAdmin,
 } = require("./routes/categoryRoutes");
 const faqRoutes = require("./routes/faqRoutes");
-const siteConfigRoutes = require("./routes/siteConfigRoutes");
-const reviewRoutes = require("./routes/reviewRoutes");
-const contactRoutes = require("./routes/contactRoutes");
-const orderRoutes = require("./routes/orderRoutes");
-const recipientRoutes = require("./routes/recipientRoutes");
-const { adminRouter: adminOrderRouter } = require("./routes/orderRoutes");
-const { adminRouter: adminReviewRouter } = require("./routes/reviewRoutes");
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -63,17 +56,10 @@ app.use("/api/auth", authRoutes);
 app.use("/api/products", productPublic);
 app.use("/api/categories", categoryPublic);
 app.use("/api/faqs", faqRoutes);
-app.use("/api/siteconfig", siteConfigRoutes);
-app.use("/api/reviews", reviewRoutes);
-app.use("/api/contact", contactRoutes);
-app.use("/api/orders", orderRoutes);
-app.use("/api/recipient", recipientRoutes);
 
 // Admin routes
 app.use("/api/admin/products", productAdmin);
 app.use("/api/admin/categories", categoryAdmin);
-app.use("/api/admin/orders", adminOrderRouter);
-app.use("/api/admin/reviews", adminReviewRouter);
 
 // 404
 app.use((req, res) => {

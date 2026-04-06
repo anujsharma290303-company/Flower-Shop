@@ -1,4 +1,3 @@
-const { Op } = require('sequelize');
 const { FAQ } = require('../models');
 
 const handleControllerError = (res, error, defaultCode = 500) => {
