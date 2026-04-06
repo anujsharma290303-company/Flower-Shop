@@ -17,10 +17,15 @@ const {
   publicRouter: categoryPublic,
   adminRouter: categoryAdmin,
 } = require("./routes/categoryRoutes");
+const {
+  publicRouter: orderPublic,
+  adminRouter: orderAdmin,
+} = require("./routes/orderRoutes");
 const faqRoutes = require("./routes/faqRoutes");
 const siteConfigRoutes = require("./routes/siteConfigRoutes");
 const reviewRoutes = require("./routes/reviewRoutes");
 const contactRoutes = require("./routes/contactRoutes");
+const recipientRoutes = require("./routes/recipientRoutes");
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -58,14 +63,17 @@ app.get("/api/health", (req, res) => {
 app.use("/api/auth", authRoutes);
 app.use("/api/products", productPublic);
 app.use("/api/categories", categoryPublic);
+app.use("/api/orders", orderPublic);
 app.use("/api/faqs", faqRoutes);
 app.use("/api/siteconfig", siteConfigRoutes);
 app.use("/api/reviews", reviewRoutes);
 app.use("/api/contact", contactRoutes);
+app.use("/api/recipient", recipientRoutes);
 
 // Admin routes
 app.use("/api/admin/products", productAdmin);
 app.use("/api/admin/categories", categoryAdmin);
+app.use("/api/admin/orders", orderAdmin);
 
 // 404
 app.use((req, res) => {
