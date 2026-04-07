@@ -1,13 +1,13 @@
 const express = require('express');
-const { login, me } = require('../controllers/authControllers');
-const verifyToken = require('../middleware/auth');
-const { loginValidationRules } = require('../validators/authValidator');
+const { register, login, me } = require('../controllers/customerAuthController');
+const verifyCustomerToken = require('../middleware/customerAuth');
+const { registerValidationRules, loginValidationRules } = require('../validators/authValidator');
 const validate = require('../middleware/validateRequest');
 
 const router = express.Router();
 
-// Login route with validation rules and middleware
+router.post('/register', registerValidationRules(), validate, register);
 router.post('/login', loginValidationRules(), validate, login);
-router.get('/me', verifyToken, me);
+router.get('/me', verifyCustomerToken, me);
 
 module.exports = router;

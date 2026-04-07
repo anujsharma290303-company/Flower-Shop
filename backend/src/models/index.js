@@ -1,5 +1,6 @@
 const sequelize = require("../config/database");
 const Admin = require("./Admin");
+const User = require("./User");
 const Category = require("./Category");
 const Product = require("./Product");
 const Order = require("./Order");
@@ -61,6 +62,7 @@ Payment.belongsTo(Order, { foreignKey: "orderId", as: "order" });
 module.exports = {
   sequelize,
   Admin,
+  User,
   Category,
   Product,
   Order,

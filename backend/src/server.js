@@ -9,6 +9,7 @@ const sequelize = require("./config/database");
 require("./models");
 
 const authRoutes = require("./routes/authRoutes");
+const adminAuthRoutes = require("./routes/adminAuthRoutes");
 const adminRoutes = require("./routes/adminRoutes");
 const {
   publicRouter: productPublic,
@@ -81,6 +82,7 @@ app.get("/api/health", (req, res) => {
 
 // Public routes
 app.use("/api/auth", authRoutes);
+app.use("/api/admin/auth", adminAuthRoutes);
 app.use("/api/products", productPublic);
 app.use("/api/categories", categoryPublic);
 app.use("/api/orders", orderPublic);
