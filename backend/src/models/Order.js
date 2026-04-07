@@ -47,6 +47,10 @@ const Order = sequelize.define(
       allowNull: true,
       defaultValue: '',
     },
+    deliveryDate: {
+      type: DataTypes.DATEONLY,
+      allowNull: true,
+    },
     message: {
       type: DataTypes.TEXT,
       allowNull: true,

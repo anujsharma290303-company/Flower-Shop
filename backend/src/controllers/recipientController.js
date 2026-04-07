@@ -9,6 +9,20 @@ const handleControllerError = (res, error, defaultCode = 500) => {
 
 const isExpired = (expiresAt) => new Date() > new Date(expiresAt);
 
+const isValidDeliveryDate = (dateString) => {
+  if (!dateString || typeof dateString !== 'string') return false;
+  const date = new Date(`${dateString}T00:00:00.000Z`);
+  if (Number.isNaN(date.getTime())) return false;
+
+  const today = new Date();
+  const todayStart = new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate()));
+  if (date < todayStart) return false;
+
+  // Sunday is not deliverable.
+  if (date.getUTCDay() === 0) return false;
+  return true;
+};
+
 const logNotification = async (type, source, recipient, subject, message, metadata = {}) => {
   try {
     await NotificationLog.create({
@@ -89,11 +103,16 @@ const accept = async (req, res) => {
   const transaction = await sequelize.transaction();
 
   try {
-    const { token, chosenProductId, deliveryAddress } = req.body || {};
+    const { token, chosenProductId, deliveryAddress, chosenDeliveryDate } = req.body || {};
 
-    if (!token || !chosenProductId || !deliveryAddress) {
+    if (!token || !chosenProductId || !deliveryAddress || !chosenDeliveryDate) {
       await transaction.rollback();
-      return res.status(400).json({ success: false, message: 'token, chosenProductId and deliveryAddress are required' });
+      return res.status(400).json({ success: false, message: 'token, chosenProductId, deliveryAddress and chosenDeliveryDate are required' });
+    }
+
+    if (!isValidDeliveryDate(chosenDeliveryDate)) {
+      await transaction.rollback();
+      return res.status(400).json({ success: false, message: 'chosenDeliveryDate must be a valid non-Sunday date (today or future)' });
     }
 
     const record = await RecipentAccessToken.findOne({
@@ -132,6 +151,8 @@ const accept = async (req, res) => {
       {
         status: 'accepted',
         choosenProductId: Number(chosenProductId),
+        chosenDeliveryDate,
+        chosenDeliveryAddress: deliveryAddress,
         acceptedAt: new Date(),
         declinedAt: null,
       },
@@ -167,6 +188,7 @@ const accept = async (req, res) => {
     await order.update(
       {
         deliveryAddress,
+        deliveryDate: chosenDeliveryDate,
         status: 'recipient_accepted',
       },
       { transaction },
@@ -192,6 +214,7 @@ const accept = async (req, res) => {
     console.log(`Order ID: ${order.id}`);
     console.log(`Recipient: ${order.recipientName} (${order.recipientEmail})`);
     console.log(`Chosen Product: ${product.name} (ID: ${product.id})`);
+    console.log(`Delivery Date: ${chosenDeliveryDate}`);
     console.log(`Delivery Address: ${deliveryAddress}`);
     console.log('═══════════════════════════════════════════════════\n');
 
@@ -200,13 +223,14 @@ const accept = async (req, res) => {
       'recipient-flow',
       order.recipientEmail,
       `Flowers Accepted for Order #${order.id}`,
-      `${order.recipientName} has accepted and chosen: ${product.name}. Delivery will be to: ${deliveryAddress}`,
+      `${order.recipientName} has accepted and chosen: ${product.name}. Delivery date: ${chosenDeliveryDate}. Delivery address: ${deliveryAddress}`,
       {
         orderId: order.id,
         recipientName: order.recipientName,
         recipientEmail: order.recipientEmail,
         chosenProductId: product.id,
         chosenProductName: product.name,
+        chosenDeliveryDate,
         deliveryAddress,
         acceptedAt: new Date().toISOString(),
       }

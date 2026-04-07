@@ -95,6 +95,11 @@ const validateOrder = [
     .trim()
     .isLength({ min: 5, max: 1000 })
     .withMessage('Delivery address must be between 5 and 1000 characters when provided'),
+  body('deliveryDate')
+    .optional({ nullable: true })
+    .isISO8601()
+    .withMessage('Delivery date must be a valid ISO date')
+    .customSanitizer((value) => (value ? String(value).slice(0, 10) : value)),
   body('message')
     .optional({ nullable: true })
     .isString()
@@ -202,6 +207,11 @@ const validateUpdateOrder = [
     .trim()
     .isLength({ min: 5, max: 1000 })
     .withMessage('Delivery address must be between 5 and 1000 characters'),
+  body('deliveryDate')
+    .optional({ nullable: true })
+    .isISO8601()
+    .withMessage('Delivery date must be a valid ISO date')
+    .customSanitizer((value) => (value ? String(value).slice(0, 10) : value)),
   body('message')
     .optional({ nullable: true })
     .isString()
