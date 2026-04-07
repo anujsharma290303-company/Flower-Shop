@@ -51,8 +51,11 @@ const Order = sequelize.define(
     status: {
       type: DataTypes.ENUM(
         "pending",
-        "confirmed",
-        "out for delivery",
+        "paid",
+        "awaiting_recipient",
+        "recipient_accepted",
+        "processing",
+        "out_for_delivery",
         "delivered",
         "cancelled",
       ),

@@ -1,4 +1,4 @@
-const { RecipentAccessToken, Order, Product, Category, sequelize } = require('../models');
+const { RecipentAccessToken, Order, OrderStatusLog, Product, Category, sequelize } = require('../models');
 
 const handleControllerError = (res, error, defaultCode = 500) => {
   console.error('[RecipientController Error]', error);
@@ -130,10 +130,23 @@ const accept = async (req, res) => {
       return res.status(404).json({ success: false, message: 'Related order not found for token' });
     }
 
+    const previousStatus = order.status;
+
     await order.update(
       {
         deliveryAddress,
-        status: 'confirmed',
+        status: 'recipient_accepted',
+      },
+      { transaction },
+    );
+
+    await OrderStatusLog.create(
+      {
+        orderId: order.id,
+        fromStatus: previousStatus,
+        toStatus: 'recipient_accepted',
+        source: 'recipient',
+        note: 'Recipient accepted flower choice',
       },
       { transaction },
     );
@@ -142,7 +155,7 @@ const accept = async (req, res) => {
 
     return res.json({
       success: true,
-      message: 'Flowers accepted! Your order has been confirmed.',
+      message: 'Flowers accepted! Your order has been accepted by recipient.',
       data: {
         orderId: order.id,
         chosenProductId: Number(chosenProductId),

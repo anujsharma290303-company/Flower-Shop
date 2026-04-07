@@ -4,6 +4,7 @@ const Category = require("./Category");
 const Product = require("./Product");
 const Order = require("./Order");
 const OrderItem = require("./OrderItem");
+const OrderStatusLog = require("./OrderStatusLog");
 const RecipentAccessToken = require("./RecipentAccessToken");
 const Review = require("./Review");
 const CustomBouquet = require("./CustomBouquet");
@@ -25,6 +26,10 @@ Product.belongsTo(Category, { foreignKey: "categoryId", as: "category" });
 // Order->OrderItem
 Order.hasMany(OrderItem, { foreignKey: "orderId", as: "items" });
 OrderItem.belongsTo(Order, { foreignKey: "orderId", as: "order" });
+
+// Order->OrderStatusLog
+Order.hasMany(OrderStatusLog, { foreignKey: "orderId", as: "statusLogs" });
+OrderStatusLog.belongsTo(Order, { foreignKey: "orderId", as: "order" });
 
 // Product->OrderItem
 Product.hasMany(OrderItem, { foreignKey: "productId", as: "orderItems" });
@@ -59,6 +64,7 @@ module.exports = {
   Product,
   Order,
   OrderItem,
+  OrderStatusLog,
   RecipentAccessToken,
   Review,
   CustomBouquet,

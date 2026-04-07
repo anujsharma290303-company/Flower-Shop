@@ -1,5 +1,5 @@
 const { v4: uuidv4 } = require('uuid');
-const { Payment, Order, sequelize } = require('../models');
+const { Payment, Order, OrderStatusLog, sequelize } = require('../models');
 
 const DEFAULT_DELAY_MS = 2000;
 
@@ -56,10 +56,23 @@ const pay = async (req, res) => {
 
     if (isSuccess) {
       await payment.update({ status: 'success' }, { transaction });
+      const nextOrderStatus = order.isRecipientChoice ? 'awaiting_recipient' : 'paid';
+      const previousStatus = order.status;
       await order.update(
         {
           paymentStatus: 'paid',
-          status: 'confirmed',
+          status: nextOrderStatus,
+        },
+        { transaction },
+      );
+
+      await OrderStatusLog.create(
+        {
+          orderId: order.id,
+          fromStatus: previousStatus,
+          toStatus: nextOrderStatus,
+          source: 'payment',
+          note: 'Mock payment success',
         },
         { transaction },
       );

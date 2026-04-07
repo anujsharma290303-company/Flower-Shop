@@ -49,7 +49,7 @@ const seedOrders = async (products) => {
       ],
     },
 
-    // ── ORDER 3 — confirmed, paid, recipient choice ──────────────────────────
+    // ── ORDER 3 — recipient accepted, paid, recipient choice ────────────────
     {
       order: {
         customerName:    'David Chen',
@@ -60,7 +60,7 @@ const seedOrders = async (products) => {
         deliveryAddress: '310 West 55th Street, New York, NY 10019',
         message:         'Thinking of you, choose what you love! 💐',
         totalPrice:      120.00,
-        status:          'confirmed',
+        status:          'recipient_accepted',
         paymentStatus:   'paid',
         isRecipientChoice: true,
         isSubscription:  false,
@@ -91,7 +91,7 @@ const seedOrders = async (products) => {
       ],
     },
 
-    // ── ORDER 5 — out for delivery, paid ────────────────────────────────────
+    // ── ORDER 5 — out_for_delivery, paid ────────────────────────────────────
     {
       order: {
         customerName:    'Robert Kim',
@@ -102,7 +102,7 @@ const seedOrders = async (products) => {
         deliveryAddress: '400 South Grand Ave, Los Angeles, CA 90071',
         message:         'Get well soon! We miss you! 🌼',
         totalPrice:      105.00,
-        status:          'out for delivery',
+        status:          'out_for_delivery',
         paymentStatus:   'paid',
         isRecipientChoice: false,
         isSubscription:  false,
@@ -154,7 +154,7 @@ const seedOrders = async (products) => {
       ],
     },
 
-    // ── ORDER 8 — confirmed, paid, subscription ──────────────────────────────
+    // ── ORDER 8 — paid, subscription ────────────────────────────────────────
     {
       order: {
         customerName:    'Sophie Laurent',
@@ -165,7 +165,7 @@ const seedOrders = async (products) => {
         deliveryAddress: '1234 NW Lovejoy St, Portland, OR 97209',
         message:         'Weekly flowers for myself — I deserve it!',
         totalPrice:      120.00,
-        status:          'confirmed',
+        status:          'paid',
         paymentStatus:   'paid',
         isRecipientChoice: false,
         isSubscription:  true,

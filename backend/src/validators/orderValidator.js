@@ -1,6 +1,6 @@
 const { body, validationResult } = require('express-validator');
 
-const ORDER_STATUS = ['pending', 'confirmed', 'out for delivery', 'delivered', 'cancelled'];
+const ORDER_STATUS = ['pending', 'paid', 'awaiting_recipient', 'recipient_accepted', 'processing', 'out_for_delivery', 'delivered', 'cancelled'];
 const PAYMENT_STATUS = ['unpaid', 'paid', 'refunded'];
 const SUBSCRIPTION_FREQUENCY = ['weekly', 'biweekly', 'monthly'];
 
