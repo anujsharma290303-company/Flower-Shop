@@ -1,5 +1,14 @@
 const express = require('express');
-const { getAll, getOne, getBySlug, create, update, remove, toggle } = require('../controllers/productController');
+const {
+	getAll,
+	getOne,
+	getBySlug,
+	getProductByItemCode,
+	create,
+	update,
+	remove,
+	toggle,
+} = require('../controllers/productController');
 const { validateProduct, validateUpdateProduct } = require('../validators/productValidator');
 const verifyToken = require('../middleware/auth');
 const upload = require('../middleware/upload');
@@ -10,6 +19,7 @@ const adminRouter = express.Router();
 // Public routes (no authentication required)
 publicRouter.get('/', getAll);
 publicRouter.get('/slug/:slug', getBySlug);
+publicRouter.get('/item/:itemCode', getProductByItemCode);
 publicRouter.get('/:id', getOne);
 
 // Protected admin routes (authentication required)

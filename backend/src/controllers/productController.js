@@ -222,6 +222,23 @@ const getBySlug = async (req, res) => {
 	}
 };
 
+const getProductByItemCode = async (req, res) => {
+	try {
+		const product = await Product.findOne({
+			where: { itemCode: req.params.itemCode },
+			include: [{ model: Category, as: 'category' }],
+		});
+
+		if (!product) {
+			return res.status(404).json({ success: false, message: 'Product not found' });
+		}
+
+		return res.json({ success: true, data: product });
+	} catch (error) {
+		return handleControllerError(res, error, 'Get product by itemCode error');
+	}
+};
+
 const create = async (req, res) => {
 	try {
 		const { name, price, categoryId, itemCode, description, size } = req.body;
@@ -402,6 +419,7 @@ module.exports = {
 	getAll,
 	getOne,
 	getBySlug,
+	getProductByItemCode,
 	create,
 	update,
 	remove,

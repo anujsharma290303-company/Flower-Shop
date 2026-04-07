@@ -108,6 +108,27 @@ const getBySlug = async (req, res) => {
   }
 };
 
+const getCategoriesWithSubs = async (req, res) => {
+  try {
+    const categories = await Category.findAll({
+      where: { parentId: null, isActive: true },
+      include: [
+        {
+          model: Category,
+          as: 'subcategories',
+          where: { isActive: true },
+          required: false,
+        },
+      ],
+      order: [['displayOrder', 'ASC']],
+    });
+
+    return res.json({ success: true, data: categories });
+  } catch (error) {
+    return handleControllerError(res, error);
+  }
+};
+
 const create = async (req, res) => {
   try {
     const { name, description, icon, displayOrder, isActive, parentId } = req.body;
@@ -263,4 +284,13 @@ const toggleActive = async (req, res) => {
   }
 };
 
-module.exports = { getAll, getOne, getBySlug, create, update, remove, toggleActive };
+module.exports = {
+  getAll,
+  getOne,
+  getBySlug,
+  getCategoriesWithSubs,
+  create,
+  update,
+  remove,
+  toggleActive,
+};

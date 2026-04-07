@@ -23,13 +23,18 @@ const seedCategories = async () => {
     "everyday",
   ];
 
-  const sympathyChildSlugs = [
-    "wreaths",
-    "standing-sprays",
-    "casket-flowers",
-    "sympathy-baskets",
-    "memorial-plants",
-    "sympathy-bouquets",
+  const sympathyChildCategories = [
+    { name: "Wreaths", slug: "wreaths", displayOrder: 1 },
+    { name: "Standing Sprays", slug: "standing-sprays", displayOrder: 2 },
+    { name: "Casket Flowers", slug: "casket-flowers", displayOrder: 3 },
+    { name: "Sympathy Baskets", slug: "sympathy-baskets", displayOrder: 4 },
+    { name: "Memorial Plants", slug: "memorial-plants", displayOrder: 5 },
+    { name: "Sympathy Bouquets", slug: "sympathy-bouquets", displayOrder: 6 },
+    { name: "Table Arrangements", slug: "table-arrangements", displayOrder: 7 },
+    { name: "Baskets", slug: "baskets", displayOrder: 8 },
+    { name: "Plants", slug: "plants-sympathy", displayOrder: 9 },
+    { name: "Hearts", slug: "hearts", displayOrder: 10 },
+    { name: "Crosses", slug: "crosses", displayOrder: 11 },
   ];
 
   for (let i = 0; i < parentCategorySlugs.length; i += 1) {
@@ -54,18 +59,15 @@ const seedCategories = async () => {
     throw new Error("Category not found after seeding: sympathy");
   }
 
-  for (let i = 0; i < sympathyChildSlugs.length; i += 1) {
-    const slug = slugify(sympathyChildSlugs[i], { lower: true, strict: true });
-    const name = sympathyChildSlugs[i]
-      .split("-")
-      .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-      .join(" ");
+  for (let i = 0; i < sympathyChildCategories.length; i += 1) {
+    const slug = slugify(sympathyChildCategories[i].slug, { lower: true, strict: true });
+    const name = sympathyChildCategories[i].name;
 
     await Category.upsert({
       name,
       slug,
       parentId: sympathyCategory.id,
-      displayOrder: i + 1,
+      displayOrder: sympathyChildCategories[i].displayOrder,
       isActive: true,
     });
   }

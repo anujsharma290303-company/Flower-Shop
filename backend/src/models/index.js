@@ -10,6 +10,7 @@ const CustomBouquet = require("./CustomBouquet");
 const Blog = require("./Blog");
 const FAQ = require("./FAQ");
 const SiteConfig = require("./SiteConfig");
+const Payment = require("./Payment");
 
 // Associations
 
@@ -45,6 +46,10 @@ Review.belongsTo(Order, { foreignKey: "orderId", as: "order" });
 Order.hasOne(CustomBouquet, { foreignKey: "orderId", as: "customBouquet" });
 CustomBouquet.belongsTo(Order, { foreignKey: "orderId", as: "order" });
 
+// Order->Payment
+Order.hasMany(Payment, { foreignKey: "orderId", as: "payments" });
+Payment.belongsTo(Order, { foreignKey: "orderId", as: "order" });
+
 
 // Export all models
 module.exports = {
@@ -60,4 +65,5 @@ module.exports = {
   Blog,
   FAQ,
   SiteConfig,
+  Payment,
 };

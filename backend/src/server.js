@@ -9,6 +9,7 @@ const sequelize = require("./config/database");
 require("./models");
 
 const authRoutes = require("./routes/authRoutes");
+const adminRoutes = require("./routes/adminRoutes");
 const {
   publicRouter: productPublic,
   adminRouter: productAdmin,
@@ -41,6 +42,7 @@ const {
   publicRouter: bouquetPublic,
   adminRouter: bouquetAdmin,
 } = require("./routes/customBouquetRoutes");
+const paymentRoutes = require("./routes/paymentRoutes");
 const contactRoutes = require("./routes/contactRoutes");
 const recipientRoutes = require("./routes/recipientRoutes");
 
@@ -86,8 +88,12 @@ app.use("/api/siteconfig", siteConfigPublic);
 app.use("/api/reviews", reviewPublic);
 app.use("/api/blogs", blogPublic);
 app.use("/api/bouquets", bouquetPublic);
+app.use("/api/payments", paymentRoutes);
 app.use("/api/contact", contactRoutes);
 app.use("/api/recipient", recipientRoutes);
+
+// Admin shared routes
+app.use("/api/admin", adminRoutes);
 
 // Admin routes
 app.use("/api/admin/products", productAdmin);

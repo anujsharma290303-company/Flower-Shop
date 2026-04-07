@@ -63,6 +63,14 @@ const Order = sequelize.define(
       type: DataTypes.ENUM("unpaid", "paid", "refunded"),
       defaultValue: "unpaid",
     },
+    deliveryMode: {
+      type: DataTypes.ENUM("recipient-provides", "sender-provides", "social-media"),
+      defaultValue: "recipient-provides",
+    },
+    creditsEarned: {
+      type: DataTypes.DECIMAL(10, 2),
+      defaultValue: 0,
+    },
     isSubscription: {
       type: DataTypes.BOOLEAN,
       defaultValue: false,

@@ -39,6 +39,14 @@ const RecipentAccessToken = sequelize.define(
       type: DataTypes.INTEGER,
       allowNull: true,
     },
+    chosenDeliveryDate: {
+      type: DataTypes.DATEONLY,
+      allowNull: true,
+    },
+    chosenDeliveryAddress: {
+      type: DataTypes.TEXT,
+      allowNull: true,
+    },
   },
   {
     tableName: "recipent_access_tokens",

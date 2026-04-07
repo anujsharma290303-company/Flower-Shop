@@ -4,6 +4,7 @@ const {
   getAll,
   getOne,
   getBySlug,
+  getCategoriesWithSubs,
   create,
   update,
   remove,
@@ -17,6 +18,7 @@ const adminRouter = express.Router();
 
 // Public routes
 publicRouter.get('/', getAll);
+publicRouter.get('/with-subs', getCategoriesWithSubs);
 publicRouter.get('/slug/:slug', getBySlug);
 publicRouter.get('/:id', getOne);
 
