@@ -49,6 +49,7 @@ const deliveryRoutes = require("./routes/deliveryRoutes");
 const contactRoutes = require("./routes/contactRoutes");
 const recipientRoutes = require("./routes/recipientRoutes");
 const notificationRoutes = require("./routes/notificationRoutes");
+const mediaRoutes = require("./routes/mediaRoutes");
 const verifyCustomerToken = require("./middleware/customerAuth");
 const { create: createWishlist, getByToken: getWishlistByToken } = require("./controllers/wishlistController");
 
@@ -116,6 +117,7 @@ app.use("/api/admin/reviews", reviewAdmin);
 app.use("/api/admin/blogs", blogAdmin);
 app.use("/api/admin/bouquets", bouquetAdmin);
 app.use("/api/admin/notifications", notificationRoutes);
+app.use("/api/admin/media", mediaRoutes);
 
 // 404
 app.use((req, res) => {

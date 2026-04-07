@@ -10,39 +10,53 @@ const hasCloudinaryConfig = Boolean(
   && process.env.CLOUDINARY_API_SECRET,
 );
 
-let storage;
+const buildStorage = ({ folder, allowedFormats, resourceType = 'image' }) => {
+  if (hasCloudinaryConfig) {
+    cloudinary.config({
+      cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+      api_key: process.env.CLOUDINARY_API_KEY,
+      api_secret: process.env.CLOUDINARY_API_SECRET,
+    });
 
-if (hasCloudinaryConfig) {
-  cloudinary.config({
-    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-    api_key: process.env.CLOUDINARY_API_KEY,
-    api_secret: process.env.CLOUDINARY_API_SECRET,
-  });
+    const params = {
+      folder,
+      allowed_formats: allowedFormats,
+      resource_type: resourceType,
+    };
 
-  storage = new CloudinaryStorage({
-    cloudinary,
-    params: {
-      folder: 'flower-shop',
-      allowed_formats: ['jpg', 'jpeg', 'png', 'webp'],
-      transformation: [{ width: 800, height: 800, crop: 'limit' }],
-    },
-  });
-} else {
-  const uploadsDir = path.join(process.cwd(), 'uploads');
+    if (resourceType === 'image') {
+      params.transformation = [{ width: 800, height: 800, crop: 'limit' }];
+    }
+
+    return new CloudinaryStorage({
+      cloudinary,
+      params,
+    });
+  }
+
+  const uploadsDir = path.join(process.cwd(), 'uploads', folder);
   fs.mkdirSync(uploadsDir, { recursive: true });
 
-  storage = multer.diskStorage({
+  return multer.diskStorage({
     destination: (req, file, cb) => cb(null, uploadsDir),
     filename: (req, file, cb) => {
       const ext = path.extname(file.originalname || '').toLowerCase();
       cb(null, `${Date.now()}-${Math.round(Math.random() * 1e9)}${ext}`);
     },
   });
-}
+};
 
-const upload = multer({
-  storage,
-  limits: { fileSize: 5 * 1024 * 1024 },
+const createUploader = ({ folder, allowedFormats, resourceType = 'image', fileFilter, maxFileSize }) => multer({
+  storage: buildStorage({ folder, allowedFormats, resourceType }),
+  limits: { fileSize: maxFileSize },
+  fileFilter,
+});
+
+const upload = createUploader({
+  folder: 'flower-shop',
+  allowedFormats: ['jpg', 'jpeg', 'png', 'webp'],
+  resourceType: 'image',
+  maxFileSize: 5 * 1024 * 1024,
   fileFilter: (req, file, cb) => {
     if (file.mimetype && file.mimetype.startsWith('image/')) {
       return cb(null, true);
@@ -52,4 +66,23 @@ const upload = multer({
   },
 });
 
+const mediaUpload = createUploader({
+  folder: 'flower-shop/media',
+  allowedFormats: ['jpg', 'jpeg', 'png', 'webp', 'mp4', 'mov', 'm4v', 'webm', 'avi'],
+  resourceType: 'auto',
+  maxFileSize: 50 * 1024 * 1024,
+  fileFilter: (req, file, cb) => {
+    if (!file.mimetype) {
+      return cb(new Error('Media file is required'));
+    }
+
+    if (file.mimetype.startsWith('image/') || file.mimetype.startsWith('video/')) {
+      return cb(null, true);
+    }
+
+    return cb(new Error('Only image and video files are allowed'));
+  },
+});
+
 module.exports = upload;
+module.exports.mediaUpload = mediaUpload;

@@ -3,6 +3,7 @@ const Admin = require("./Admin");
 const User = require("./User");
 const CreditTransaction = require("./CreditTransaction");
 const Wishlist = require("./Wishlist");
+const OrderMedia = require("./OrderMedia");
 const Category = require("./Category");
 const Product = require("./Product");
 const Order = require("./Order");
@@ -71,6 +72,14 @@ CreditTransaction.belongsTo(User, { foreignKey: 'userId', as: 'user' });
 User.hasMany(Wishlist, { foreignKey: 'userId', as: 'wishlists' });
 Wishlist.belongsTo(User, { foreignKey: 'userId', as: 'user' });
 
+// User->OrderMedia
+User.hasMany(OrderMedia, { foreignKey: 'userId', as: 'sharedMedia' });
+OrderMedia.belongsTo(User, { foreignKey: 'userId', as: 'user' });
+
+// Order->OrderMedia
+Order.hasMany(OrderMedia, { foreignKey: 'orderId', as: 'media' });
+OrderMedia.belongsTo(Order, { foreignKey: 'orderId', as: 'order' });
+
 // Order->CreditTransaction
 Order.hasMany(CreditTransaction, { foreignKey: 'orderId', as: 'creditTransactions' });
 CreditTransaction.belongsTo(Order, { foreignKey: 'orderId', as: 'order' });
@@ -83,6 +92,7 @@ module.exports = {
   User,
   CreditTransaction,
   Wishlist,
+  OrderMedia,
   Category,
   Product,
   Order,

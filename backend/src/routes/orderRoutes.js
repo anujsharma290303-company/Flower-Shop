@@ -1,6 +1,7 @@
 const express = require('express');
 const verifyToken = require('../middleware/auth');
 const optionalCustomerAuth = require('../middleware/optionalCustomerAuth');
+const upload = require('../middleware/upload');
 const {
   create,
   getAllAdmin,
@@ -10,6 +11,7 @@ const {
   updateStatus,
   updatePayment,
 } = require('../controllers/orderController');
+const { create: createMedia } = require('../controllers/orderMediaController');
 const { validateOrder } = require('../validators/orderValidator');
 
 const publicRouter = express.Router();
@@ -17,6 +19,7 @@ const adminRouter = express.Router();
 
 // Public routes
 publicRouter.post('/', optionalCustomerAuth, validateOrder, create);
+publicRouter.post('/:id/media', optionalCustomerAuth, upload.mediaUpload.single('media'), createMedia);
 
 // Admin routes
 adminRouter.get('/', verifyToken, getAllAdmin);
