@@ -19,6 +19,12 @@ const parsePositiveInt = (value) => {
   return numberValue;
 };
 
+const buildRecipientLink = (token) => {
+  if (!token) return null;
+  const baseUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+  return `${baseUrl.replace(/\/$/, '')}/recipient/${token}`;
+};
+
 const create = async (req, res) => {
   const transaction = await sequelize.transaction();
 
@@ -146,12 +152,15 @@ const create = async (req, res) => {
       ],
     });
 
+    const recipientLink = buildRecipientLink(recipientToken);
+
     return res.status(201).json({
       success: true,
       message: 'Order created successfully',
       data: {
         order: fullOrder,
         recipientToken,
+        recipientLink,
       },
     });
   } catch (error) {
@@ -293,10 +302,57 @@ const updatePayment = async (req, res) => {
   }
 };
 
+const getRecipientLink = async (req, res) => {
+  try {
+    const orderId = parsePositiveInt(req.params.id);
+    if (!orderId) {
+      return res.status(400).json({ success: false, message: 'Order id must be a positive integer' });
+    }
+
+    const order = await Order.findByPk(orderId);
+    if (!order) {
+      return res.status(404).json({ success: false, message: 'Order not found' });
+    }
+
+    if (!order.isRecipientChoice) {
+      return res.status(400).json({
+        success: false,
+        message: 'Recipient link is only available for recipient-choice orders',
+      });
+    }
+
+    const tokenRecord = await RecipentAccessToken.findOne({
+      where: { orderId },
+      order: [
+        ['status', 'ASC'],
+        ['createdAt', 'DESC'],
+      ],
+    });
+
+    if (!tokenRecord) {
+      return res.status(404).json({ success: false, message: 'Recipient link not available for this order' });
+    }
+
+    return res.json({
+      success: true,
+      data: {
+        orderId,
+        token: tokenRecord.token,
+        link: buildRecipientLink(tokenRecord.token),
+        status: tokenRecord.status,
+        expiresAt: tokenRecord.expiresAt,
+      },
+    });
+  } catch (error) {
+    return handleControllerError(res, error, 500);
+  }
+};
+
 module.exports = {
   create,
   getAllAdmin,
   getOne,
+  getRecipientLink,
   updateStatus,
   updatePayment,
 };
