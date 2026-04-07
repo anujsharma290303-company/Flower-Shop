@@ -103,16 +103,29 @@ const accept = async (req, res) => {
   const transaction = await sequelize.transaction();
 
   try {
-    const { token, chosenProductId, deliveryAddress, chosenDeliveryDate } = req.body || {};
+    const {
+      token,
+      chosenProductId,
+      deliveryAddress,
+      deliveryDate,
+      chosenDeliveryDate,
+    } = req.body || {};
+    const resolvedDeliveryDate = deliveryDate || chosenDeliveryDate;
 
-    if (!token || !chosenProductId || !deliveryAddress || !chosenDeliveryDate) {
+    if (!token || !chosenProductId || !deliveryAddress || !resolvedDeliveryDate) {
       await transaction.rollback();
-      return res.status(400).json({ success: false, message: 'token, chosenProductId, deliveryAddress and chosenDeliveryDate are required' });
+      return res.status(400).json({
+        success: false,
+        message: 'token, chosenProductId, deliveryAddress and deliveryDate are required',
+      });
     }
 
-    if (!isValidDeliveryDate(chosenDeliveryDate)) {
+    if (!isValidDeliveryDate(resolvedDeliveryDate)) {
       await transaction.rollback();
-      return res.status(400).json({ success: false, message: 'chosenDeliveryDate must be a valid non-Sunday date (today or future)' });
+      return res.status(400).json({
+        success: false,
+        message: 'deliveryDate must be a valid non-Sunday date (today or future)',
+      });
     }
 
     const record = await RecipentAccessToken.findOne({
@@ -151,7 +164,7 @@ const accept = async (req, res) => {
       {
         status: 'accepted',
         choosenProductId: Number(chosenProductId),
-        chosenDeliveryDate,
+        chosenDeliveryDate: resolvedDeliveryDate,
         chosenDeliveryAddress: deliveryAddress,
         acceptedAt: new Date(),
         declinedAt: null,
@@ -188,7 +201,7 @@ const accept = async (req, res) => {
     await order.update(
       {
         deliveryAddress,
-        deliveryDate: chosenDeliveryDate,
+        deliveryDate: resolvedDeliveryDate,
         status: 'recipient_accepted',
       },
       { transaction },
@@ -214,7 +227,7 @@ const accept = async (req, res) => {
     console.log(`Order ID: ${order.id}`);
     console.log(`Recipient: ${order.recipientName} (${order.recipientEmail})`);
     console.log(`Chosen Product: ${product.name} (ID: ${product.id})`);
-    console.log(`Delivery Date: ${chosenDeliveryDate}`);
+    console.log(`Delivery Date: ${resolvedDeliveryDate}`);
     console.log(`Delivery Address: ${deliveryAddress}`);
     console.log('═══════════════════════════════════════════════════\n');
 
@@ -223,14 +236,14 @@ const accept = async (req, res) => {
       'recipient-flow',
       order.recipientEmail,
       `Flowers Accepted for Order #${order.id}`,
-      `${order.recipientName} has accepted and chosen: ${product.name}. Delivery date: ${chosenDeliveryDate}. Delivery address: ${deliveryAddress}`,
+      `${order.recipientName} has accepted and chosen: ${product.name}. Delivery date: ${resolvedDeliveryDate}. Delivery address: ${deliveryAddress}`,
       {
         orderId: order.id,
         recipientName: order.recipientName,
         recipientEmail: order.recipientEmail,
         chosenProductId: product.id,
         chosenProductName: product.name,
-        chosenDeliveryDate,
+        chosenDeliveryDate: resolvedDeliveryDate,
         deliveryAddress,
         acceptedAt: new Date().toISOString(),
       }
