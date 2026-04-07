@@ -1,6 +1,7 @@
 const sequelize = require("../config/database");
 const Admin = require("./Admin");
 const User = require("./User");
+const CreditTransaction = require("./CreditTransaction");
 const Category = require("./Category");
 const Product = require("./Product");
 const Order = require("./Order");
@@ -57,12 +58,25 @@ CustomBouquet.belongsTo(Order, { foreignKey: "orderId", as: "order" });
 Order.hasMany(Payment, { foreignKey: "orderId", as: "payments" });
 Payment.belongsTo(Order, { foreignKey: "orderId", as: "order" });
 
+// User->Order
+User.hasMany(Order, { foreignKey: 'userId', as: 'orders' });
+Order.belongsTo(User, { foreignKey: 'userId', as: 'user' });
+
+// User->CreditTransaction
+User.hasMany(CreditTransaction, { foreignKey: 'userId', as: 'creditTransactions' });
+CreditTransaction.belongsTo(User, { foreignKey: 'userId', as: 'user' });
+
+// Order->CreditTransaction
+Order.hasMany(CreditTransaction, { foreignKey: 'orderId', as: 'creditTransactions' });
+CreditTransaction.belongsTo(Order, { foreignKey: 'orderId', as: 'order' });
+
 
 // Export all models
 module.exports = {
   sequelize,
   Admin,
   User,
+  CreditTransaction,
   Category,
   Product,
   Order,

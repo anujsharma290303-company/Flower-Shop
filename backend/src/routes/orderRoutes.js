@@ -1,5 +1,6 @@
 const express = require('express');
 const verifyToken = require('../middleware/auth');
+const optionalCustomerAuth = require('../middleware/optionalCustomerAuth');
 const {
   create,
   getAllAdmin,
@@ -15,7 +16,7 @@ const publicRouter = express.Router();
 const adminRouter = express.Router();
 
 // Public routes
-publicRouter.post('/', validateOrder, create);
+publicRouter.post('/', optionalCustomerAuth, validateOrder, create);
 
 // Admin routes
 adminRouter.get('/', verifyToken, getAllAdmin);

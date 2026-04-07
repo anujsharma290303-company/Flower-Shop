@@ -9,6 +9,10 @@ const Order = sequelize.define(
       primaryKey: true,
       autoIncrement: true,
     },
+    userId: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+    },
     customerName: {
       type: DataTypes.STRING,
       allowNull: false,
@@ -76,6 +80,11 @@ const Order = sequelize.define(
     },
     creditsEarned: {
       type: DataTypes.DECIMAL(10, 2),
+      defaultValue: 0,
+    },
+    creditsUsed: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
       defaultValue: 0,
     },
     isSubscription: {

@@ -124,6 +124,14 @@ const validateOrder = [
     .custom((value) => parseBooleanLike(value) !== undefined)
     .withMessage('isRecipientChoice must be a boolean')
     .customSanitizer((value) => parseBooleanLike(value)),
+  body('creditsToUse')
+    .optional({ nullable: true })
+    .customSanitizer((value) => {
+      const numberValue = Number(value);
+      return Number.isNaN(numberValue) ? value : numberValue;
+    })
+    .isInt({ min: 0 })
+    .withMessage('creditsToUse must be a non-negative integer'),
   body('subscriptionFrequency').custom((value, { req }) => {
     const subscriptionFlag = req.body.isSubscription;
     const isSubscription = subscriptionFlag === true;

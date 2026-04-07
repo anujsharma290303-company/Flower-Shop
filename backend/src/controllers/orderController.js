@@ -1,4 +1,4 @@
-const { Order, OrderItem, Product, RecipentAccessToken, OrderStatusLog, NotificationLog, sequelize } = require('../models');
+const { Order, OrderItem, Product, RecipentAccessToken, OrderStatusLog, NotificationLog, CreditTransaction, User, sequelize } = require('../models');
 const { v4: uuidv4 } = require('uuid');
 
 const ORDER_STATUS = ['pending', 'paid', 'awaiting_recipient', 'recipient_accepted', 'processing', 'out_for_delivery', 'delivered', 'cancelled'];
@@ -112,6 +112,7 @@ const create = async (req, res) => {
       isSubscription,
       subscriptionFrequency,
       isRecipientChoice,
+      creditsToUse,
       items,
     } = req.body;
 
@@ -163,19 +164,55 @@ const create = async (req, res) => {
       return res.status(400).json({ success: false, message: firstError.error });
     }
 
-    const totalPrice = normalizedItems.reduce((sum, item) => sum + (item.priceAtPurchase * item.quantity), 0);
+    const subtotal = normalizedItems.reduce((sum, item) => sum + (item.priceAtPurchase * item.quantity), 0);
+
+    const parsedCreditsToUse = Number.isInteger(Number(creditsToUse)) ? Math.max(0, Number(creditsToUse)) : 0;
+    let creditsApplied = 0;
+    let userId = null;
+
+    if (parsedCreditsToUse > 0) {
+      if (!req.user?.id) {
+        await transaction.rollback();
+        return res.status(401).json({ success: false, message: 'Customer login required to apply credits' });
+      }
+
+      const user = await User.findByPk(req.user.id, {
+        transaction,
+        lock: transaction.LOCK.UPDATE,
+      });
+
+      if (!user) {
+        await transaction.rollback();
+        return res.status(404).json({ success: false, message: 'User not found for credit usage' });
+      }
+
+      if (Number(user.credits) < parsedCreditsToUse) {
+        await transaction.rollback();
+        return res.status(400).json({ success: false, message: 'Insufficient credit balance' });
+      }
+
+      userId = user.id;
+      creditsApplied = Math.min(parsedCreditsToUse, Math.floor(subtotal));
+      await user.update({ credits: Number(user.credits) - creditsApplied }, { transaction });
+    } else if (req.user?.id) {
+      userId = req.user.id;
+    }
+
+    const totalPrice = Math.max(0, subtotal - creditsApplied);
 
     const order = await Order.create(
       {
         customerName,
         customerEmail,
         customerPhone,
+        userId,
         recipientName,
         recipientEmail: recipientEmail || null,
         recipientPhone,
         deliveryAddress,
         message: message || null,
         totalPrice: Number(totalPrice.toFixed(2)),
+        creditsUsed: creditsApplied,
         isSubscription: Boolean(isSubscription),
         subscriptionFrequency: subscriptionFrequency || null,
         isRecipientChoice: Boolean(isRecipientChoice),
@@ -224,6 +261,19 @@ const create = async (req, res) => {
       );
 
       recipientToken = tokenRecord.token;
+    }
+
+    if (creditsApplied > 0 && userId) {
+      await CreditTransaction.create(
+        {
+          userId,
+          orderId: order.id,
+          amount: creditsApplied,
+          type: 'redeem',
+          reason: 'checkout_credit_applied',
+        },
+        { transaction }
+      );
     }
 
     await transaction.commit();
