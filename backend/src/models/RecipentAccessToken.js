@@ -47,6 +47,14 @@ const RecipentAccessToken = sequelize.define(
       type: DataTypes.TEXT,
       allowNull: true,
     },
+    acceptedAt: {
+      type: DataTypes.DATE,
+      allowNull: true,
+    },
+    declinedAt: {
+      type: DataTypes.DATE,
+      allowNull: true,
+    },
   },
   {
     tableName: "recipent_access_tokens",

@@ -75,6 +75,11 @@ const validateOrder = [
     .trim()
     .isLength({ min: 2, max: 120 })
     .withMessage('Recipient name must be between 2 and 120 characters'),
+  body('recipientEmail')
+    .optional({ nullable: true })
+    .isEmail()
+    .withMessage('Recipient email must be valid')
+    .normalizeEmail(),
   body('recipientPhone')
     .notEmpty()
     .withMessage('Recipient phone is required')
@@ -170,6 +175,11 @@ const validateUpdateOrder = [
     .trim()
     .isLength({ min: 2, max: 120 })
     .withMessage('Recipient name must be between 2 and 120 characters'),
+  body('recipientEmail')
+    .optional({ nullable: true })
+    .isEmail()
+    .withMessage('Recipient email must be valid')
+    .normalizeEmail(),
   body('recipientPhone')
     .optional({ nullable: true })
     .isString()

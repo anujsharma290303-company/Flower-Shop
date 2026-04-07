@@ -1,4 +1,4 @@
-const { RecipentAccessToken, Order, OrderStatusLog, Product, Category, sequelize } = require('../models');
+const { RecipentAccessToken, Order, OrderItem, OrderStatusLog, Product, Category, sequelize } = require('../models');
 
 const handleControllerError = (res, error, defaultCode = 500) => {
   console.error('[RecipientController Error]', error);
@@ -116,6 +116,8 @@ const accept = async (req, res) => {
       {
         status: 'accepted',
         choosenProductId: Number(chosenProductId),
+        acceptedAt: new Date(),
+        declinedAt: null,
       },
       { transaction },
     );
@@ -129,6 +131,20 @@ const accept = async (req, res) => {
       await transaction.rollback();
       return res.status(404).json({ success: false, message: 'Related order not found for token' });
     }
+
+    // Keep order line items consistent with the recipient's chosen product.
+    await OrderItem.destroy({ where: { orderId: order.id }, transaction });
+    await OrderItem.create(
+      {
+        orderId: order.id,
+        productId: product.id,
+        productName: product.name,
+        productImage: Array.isArray(product.image) ? (product.image[0] || null) : null,
+        quantity: 1,
+        priceAtPurchase: product.price,
+      },
+      { transaction },
+    );
 
     const previousStatus = order.status;
 
@@ -193,7 +209,7 @@ const reject = async (req, res) => {
       return res.status(400).json({ success: false, message: `Token already ${record.status}` });
     }
 
-    await record.update({ status: 'declined' }, { transaction });
+    await record.update({ status: 'declined', declinedAt: new Date() }, { transaction });
     const order = await Order.findByPk(record.orderId, {
       transaction,
       lock: transaction.LOCK.UPDATE,
