@@ -1,4 +1,4 @@
-const { Order, OrderItem, Product, RecipentAccessToken, OrderStatusLog, sequelize } = require('../models');
+const { Order, OrderItem, Product, RecipentAccessToken, OrderStatusLog, NotificationLog, sequelize } = require('../models');
 const { v4: uuidv4 } = require('uuid');
 
 const ORDER_STATUS = ['pending', 'paid', 'awaiting_recipient', 'recipient_accepted', 'processing', 'out_for_delivery', 'delivered', 'cancelled'];
@@ -9,6 +9,22 @@ const handleControllerError = (res, error, defaultCode = 500) => {
   const status = error.statusCode || defaultCode;
   const message = error.message || 'Internal server error';
   return res.status(status).json({ success: false, message });
+};
+
+const logNotification = async (type, source, recipient, subject, message, metadata = {}) => {
+  try {
+    await NotificationLog.create({
+      type,
+      source,
+      recipient,
+      subject,
+      message,
+      metadata,
+      status: 'logged',
+    });
+  } catch (error) {
+    console.error('[LogNotification] Failed to save notification log:', error.message);
+  }
 };
 
 const parsePositiveInt = (value) => {
@@ -413,12 +429,41 @@ const getRecipientLink = async (req, res) => {
       return res.status(404).json({ success: false, message: 'Recipient link not available for this order' });
     }
 
+    const recipientLink = buildRecipientLink(tokenRecord.token);
+
+    // Log recipient link generation
+    console.log('\n═══════════════════════════════════════════════════');
+    console.log('🔗 RECIPIENT LINK GENERATED');
+    console.log('═══════════════════════════════════════════════════');
+    console.log(`Order ID: ${orderId}`);
+    console.log(`Recipient: ${order.recipientName} (${order.recipientEmail})`);
+    console.log(`Token: ${tokenRecord.token}`);
+    console.log(`Link: ${recipientLink}`);
+    console.log(`Expires At: ${tokenRecord.expiresAt}`);
+    console.log('═══════════════════════════════════════════════════\n');
+
+    await logNotification(
+      'recipient-link',
+      'order-system',
+      order.recipientEmail,
+      `Recipient Link Generated for Order #${orderId}`,
+      `Recipient ${order.recipientName} can now choose their flowers at: ${recipientLink}`,
+      {
+        orderId,
+        recipientName: order.recipientName,
+        recipientEmail: order.recipientEmail,
+        token: tokenRecord.token,
+        link: recipientLink,
+        expiresAt: tokenRecord.expiresAt,
+      }
+    );
+
     return res.json({
       success: true,
       data: {
         orderId,
         token: tokenRecord.token,
-        link: buildRecipientLink(tokenRecord.token),
+        link: recipientLink,
         status: tokenRecord.status,
         expiresAt: tokenRecord.expiresAt,
       },

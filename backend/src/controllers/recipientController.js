@@ -1,4 +1,4 @@
-const { RecipentAccessToken, Order, OrderItem, OrderStatusLog, Product, Category, sequelize } = require('../models');
+const { RecipentAccessToken, Order, OrderItem, OrderStatusLog, Product, Category, NotificationLog, sequelize } = require('../models');
 
 const handleControllerError = (res, error, defaultCode = 500) => {
   console.error('[RecipientController Error]', error);
@@ -8,6 +8,22 @@ const handleControllerError = (res, error, defaultCode = 500) => {
 };
 
 const isExpired = (expiresAt) => new Date() > new Date(expiresAt);
+
+const logNotification = async (type, source, recipient, subject, message, metadata = {}) => {
+  try {
+    await NotificationLog.create({
+      type,
+      source,
+      recipient,
+      subject,
+      message,
+      metadata,
+      status: 'logged',
+    });
+  } catch (error) {
+    console.error('[LogNotification] Failed to save notification log:', error.message);
+  }
+};
 
 const getByToken = async (req, res) => {
   try {
@@ -169,6 +185,33 @@ const accept = async (req, res) => {
 
     await transaction.commit();
 
+    // Log recipient acceptance
+    console.log('\n═══════════════════════════════════════════════════');
+    console.log('✅ RECIPIENT ACCEPTED FLOWERS');
+    console.log('═══════════════════════════════════════════════════');
+    console.log(`Order ID: ${order.id}`);
+    console.log(`Recipient: ${order.recipientName} (${order.recipientEmail})`);
+    console.log(`Chosen Product: ${product.name} (ID: ${product.id})`);
+    console.log(`Delivery Address: ${deliveryAddress}`);
+    console.log('═══════════════════════════════════════════════════\n');
+
+    await logNotification(
+      'recipient-accepted',
+      'recipient-flow',
+      order.recipientEmail,
+      `Flowers Accepted for Order #${order.id}`,
+      `${order.recipientName} has accepted and chosen: ${product.name}. Delivery will be to: ${deliveryAddress}`,
+      {
+        orderId: order.id,
+        recipientName: order.recipientName,
+        recipientEmail: order.recipientEmail,
+        chosenProductId: product.id,
+        chosenProductName: product.name,
+        deliveryAddress,
+        acceptedAt: new Date().toISOString(),
+      }
+    );
+
     return res.json({
       success: true,
       message: 'Flowers accepted! Your order has been accepted by recipient.',
@@ -223,6 +266,30 @@ const reject = async (req, res) => {
     await order.update({ status: 'cancelled' }, { transaction });
 
     await transaction.commit();
+
+    // Log recipient rejection
+    console.log('\n═══════════════════════════════════════════════════');
+    console.log('❌ RECIPIENT DECLINED FLOWERS');
+    console.log('═══════════════════════════════════════════════════');
+    console.log(`Order ID: ${order.id}`);
+    console.log(`Recipient: ${order.recipientName} (${order.recipientEmail})`);
+    console.log('Order Status: Cancelled');
+    console.log('═══════════════════════════════════════════════════\n');
+
+    await logNotification(
+      'recipient-accepted',
+      'recipient-flow',
+      order.recipientEmail,
+      `Flowers Declined for Order #${order.id}`,
+      `${order.recipientName} has declined the flowers. Order has been cancelled.`,
+      {
+        orderId: order.id,
+        recipientName: order.recipientName,
+        recipientEmail: order.recipientEmail,
+        declinedAt: new Date().toISOString(),
+        status: 'cancelled',
+      }
+    );
 
     return res.json({
       success: true,

@@ -1,5 +1,4 @@
-const nodemailer = require('nodemailer');
-const { SiteConfig } = require('../models');
+const { SiteConfig, NotificationLog } = require('../models');
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -9,37 +8,20 @@ const handleError = (res, error, context) => {
 	return res.status(status).json({ success: false, message: error.message || 'Internal server error' });
 };
 
-const escapeHtml = (value = '') => value
-	.replace(/&/g, '&amp;')
-	.replace(/</g, '&lt;')
-	.replace(/>/g, '&gt;')
-	.replace(/"/g, '&quot;')
-	.replace(/'/g, '&#39;');
-
-const hasEmailConfig = () => {
-	const host = process.env.SMTP_HOST || process.env.EMAIL_HOST;
-	const user = process.env.SMTP_USER || process.env.EMAIL_USER;
-	const pass = process.env.SMTP_PASS || process.env.EMAIL_PASS;
-	return Boolean(host && user && pass);
-};
-
-const parseEmailTransport = () => {
-	const host = process.env.SMTP_HOST || process.env.EMAIL_HOST;
-	const port = Number(process.env.SMTP_PORT || process.env.EMAIL_PORT || 587);
-	const secure = String(process.env.SMTP_SECURE || process.env.EMAIL_SECURE || '').toLowerCase() === 'true' || port === 465;
-	const user = process.env.SMTP_USER || process.env.EMAIL_USER;
-	const pass = process.env.SMTP_PASS || process.env.EMAIL_PASS;
-
-	if (!host || !user || !pass) {
-		throw new Error('Email service is not configured. Please set SMTP_HOST, SMTP_PORT, SMTP_USER, and SMTP_PASS.');
+const logNotification = async (type, source, recipient, subject, message, metadata = {}) => {
+	try {
+		await NotificationLog.create({
+			type,
+			source,
+			recipient,
+			subject,
+			message,
+			metadata,
+			status: 'logged',
+		});
+	} catch (error) {
+		console.error('[LogNotification] Failed to save notification log:', error.message);
 	}
-
-	return nodemailer.createTransport({
-		host,
-		port,
-		secure,
-		auth: { user, pass },
-	});
 };
 
 const send = async (req, res) => {
@@ -103,55 +85,43 @@ const send = async (req, res) => {
 			});
 		}
 
-		if (!hasEmailConfig()) {
-			console.warn('[ContactController] SMTP not configured. Logging contact submission.');
-			console.log({
-				name: cleanName,
-				email: cleanEmail,
-				phone: cleanPhone || null,
-				subject: subject || null,
-				message: cleanMessage,
-				recipientEmail,
-			});
-
-			return res.status(200).json({
-				success: true,
-				message: 'Message received. We will be in touch soon.',
-				data: { delivered: false },
-			});
-		}
-
-		const transporter = parseEmailTransport();
-		const fromAddress = process.env.EMAIL_FROM || process.env.SMTP_USER || process.env.EMAIL_USER;
 		const mailSubject = subject && subject.trim() ? subject.trim() : `New contact message from ${cleanName}`;
-		const safeName = escapeHtml(cleanName);
-		const safeEmail = escapeHtml(cleanEmail);
-		const safePhone = escapeHtml(cleanPhone || 'Not provided');
-		const safeSubject = escapeHtml(mailSubject);
-		const safeMessage = escapeHtml(cleanMessage).replace(/\n/g, '<br />');
+		const notificationMessage = `Name: ${cleanName}\nEmail: ${cleanEmail}\nPhone: ${cleanPhone || 'Not provided'}\n\nMessage:\n${cleanMessage}`;
 
-		const info = await transporter.sendMail({
-			from: fromAddress,
-			to: recipientEmail,
-			replyTo: cleanEmail,
-			subject: mailSubject,
-			text: `Name: ${cleanName}\nEmail: ${cleanEmail}\nPhone: ${cleanPhone || 'Not provided'}\n\nMessage:\n${cleanMessage}`,
-			html: `
-				<h2>New Contact Message</h2>
-				<p><strong>Name:</strong> ${safeName}</p>
-				<p><strong>Email:</strong> ${safeEmail}</p>
-				<p><strong>Phone:</strong> ${safePhone}</p>
-				<p><strong>Subject:</strong> ${safeSubject}</p>
-				<p><strong>Message:</strong></p>
-				<p>${safeMessage}</p>
-			`,
-		});
+		// Log to console
+		console.log('\n═══════════════════════════════════════════════════');
+		console.log('📧 NEW CONTACT SUBMISSION');
+		console.log('═══════════════════════════════════════════════════');
+		console.log(`Name: ${cleanName}`);
+		console.log(`Email: ${cleanEmail}`);
+		console.log(`Phone: ${cleanPhone || 'Not provided'}`);
+		console.log(`Subject: ${mailSubject}`);
+		console.log(`Recipient Email: ${recipientEmail}`);
+		console.log('Message:');
+		console.log(cleanMessage);
+		console.log('═══════════════════════════════════════════════════\n');
+
+		// Log to database
+		await logNotification(
+			'contact',
+			'contact-form',
+			recipientEmail,
+			mailSubject,
+			notificationMessage,
+			{
+				contactName: cleanName,
+				contactEmail: cleanEmail,
+				contactPhone: cleanPhone,
+				timestamp: new Date().toISOString(),
+			}
+		);
 
 		return res.status(200).json({
 			success: true,
-			message: 'Contact message sent successfully',
+			message: 'Contact message received and logged successfully',
 			data: {
-				messageId: info.messageId,
+				received: true,
+				logged: true,
 			},
 		});
 	} catch (error) {

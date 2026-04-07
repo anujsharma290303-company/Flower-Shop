@@ -12,6 +12,7 @@ const Blog = require("./Blog");
 const FAQ = require("./FAQ");
 const SiteConfig = require("./SiteConfig");
 const Payment = require("./Payment");
+const NotificationLog = require("./NotificationLog");
 
 // Associations
 
@@ -72,4 +73,5 @@ module.exports = {
   FAQ,
   SiteConfig,
   Payment,
+  NotificationLog,
 };

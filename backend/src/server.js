@@ -45,6 +45,7 @@ const {
 const paymentRoutes = require("./routes/paymentRoutes");
 const contactRoutes = require("./routes/contactRoutes");
 const recipientRoutes = require("./routes/recipientRoutes");
+const notificationRoutes = require("./routes/notificationRoutes");
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -104,6 +105,7 @@ app.use("/api/admin/siteconfig", siteConfigAdmin);
 app.use("/api/admin/reviews", reviewAdmin);
 app.use("/api/admin/blogs", blogAdmin);
 app.use("/api/admin/bouquets", bouquetAdmin);
+app.use("/api/admin/notifications", notificationRoutes);
 
 // 404
 app.use((req, res) => {
