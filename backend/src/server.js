@@ -33,6 +33,14 @@ const {
   publicRouter: reviewPublic,
   adminRouter: reviewAdmin,
 } = require("./routes/reviewRoutes");
+const {
+  publicRouter: blogPublic,
+  adminRouter: blogAdmin,
+} = require("./routes/blogRoutes");
+const {
+  publicRouter: bouquetPublic,
+  adminRouter: bouquetAdmin,
+} = require("./routes/customBouquetRoutes");
 const contactRoutes = require("./routes/contactRoutes");
 const recipientRoutes = require("./routes/recipientRoutes");
 
@@ -76,6 +84,8 @@ app.use("/api/orders", orderPublic);
 app.use("/api/faqs", faqPublic);
 app.use("/api/siteconfig", siteConfigPublic);
 app.use("/api/reviews", reviewPublic);
+app.use("/api/blogs", blogPublic);
+app.use("/api/bouquets", bouquetPublic);
 app.use("/api/contact", contactRoutes);
 app.use("/api/recipient", recipientRoutes);
 
@@ -86,6 +96,8 @@ app.use("/api/admin/orders", orderAdmin);
 app.use("/api/admin/faqs", faqAdmin);
 app.use("/api/admin/siteconfig", siteConfigAdmin);
 app.use("/api/admin/reviews", reviewAdmin);
+app.use("/api/admin/blogs", blogAdmin);
+app.use("/api/admin/bouquets", bouquetAdmin);
 
 // 404
 app.use((req, res) => {

@@ -30,12 +30,19 @@ const Order = sequelize.define(
       type: DataTypes.STRING,
       allowNull: false,
     },
+    
+
+
+
     deliveryAddress: {
       type: DataTypes.TEXT,
-      allowNull: false,
+      allowNull: true,
+      defaultValue: '',
     },
     message: {
       type: DataTypes.TEXT,
+      allowNull: true,
+      defaultValue: '',
     },
     totalPrice: {
       type: DataTypes.DECIMAL(10, 2),

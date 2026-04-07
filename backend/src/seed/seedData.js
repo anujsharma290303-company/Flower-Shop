@@ -2,6 +2,78 @@ require("dotenv").config();
 const slugify = require("slugify");
 const { sequelize, Category, Product, FAQ, SiteConfig } = require("../models");
 
+const seedCategories = async () => {
+  const parentCategorySlugs = [
+    "roses",
+    "birthday",
+    "anniversary",
+    "wedding",
+    "sympathy",
+    "get-well",
+    "thank-you",
+    "new-baby",
+    "romance",
+    "seasonal",
+    "plants",
+    "fruit-baskets",
+    "same-day-delivery",
+    "subscriptions",
+    "im-sorry",
+    "high-end",
+    "everyday",
+  ];
+
+  const sympathyChildSlugs = [
+    "wreaths",
+    "standing-sprays",
+    "casket-flowers",
+    "sympathy-baskets",
+    "memorial-plants",
+    "sympathy-bouquets",
+  ];
+
+  for (let i = 0; i < parentCategorySlugs.length; i += 1) {
+    const slug = slugify(parentCategorySlugs[i], { lower: true, strict: true });
+    const name = parentCategorySlugs[i]
+      .split("-")
+      .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+      .join(" ")
+      .replace("Im ", "I'm ");
+
+    await Category.upsert({
+      name,
+      slug,
+      parentId: null,
+      displayOrder: i + 1,
+      isActive: true,
+    });
+  }
+
+  const sympathyCategory = await Category.findOne({ where: { slug: "sympathy" } });
+  if (!sympathyCategory) {
+    throw new Error("Category not found after seeding: sympathy");
+  }
+
+  for (let i = 0; i < sympathyChildSlugs.length; i += 1) {
+    const slug = slugify(sympathyChildSlugs[i], { lower: true, strict: true });
+    const name = sympathyChildSlugs[i]
+      .split("-")
+      .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+      .join(" ");
+
+    await Category.upsert({
+      name,
+      slug,
+      parentId: sympathyCategory.id,
+      displayOrder: i + 1,
+      isActive: true,
+    });
+  }
+
+  console.log("✅ Categories seeded");
+  return Category.findAll();
+};
+
 const seedProducts = async (categories) => {
   // helper to find category id by slug
   const cat = (slug) => {
@@ -1191,12 +1263,13 @@ const runSeed = async () => {
 
     await sequelize.sync({ alter: true })
 
+    const allCategories = await seedCategories()
+
     // check if already seeded
     const productCount = await Product.count()
     if (productCount > 0) {
       console.log(`⚠️  Products already seeded (${productCount} found). Skipping products.`)
     } else {
-      const allCategories = await Category.findAll()
       await seedProducts(allCategories)
     }
 

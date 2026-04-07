@@ -23,7 +23,7 @@ const seedOrders = async (products) => {
         isSubscription:  false,
       },
       items: [
-        { itemCode: 'E8-4304', quantity: 1 },
+        { itemCode: 'C15-4800', quantity: 1 },
       ],
     },
 
@@ -44,8 +44,8 @@ const seedOrders = async (products) => {
         isSubscription:  false,
       },
       items: [
-        { itemCode: 'T128-2A', quantity: 1 },
-        { itemCode: 'E2-4305', quantity: 1 },
+        { itemCode: 'C15-4810', quantity: 1 },
+        { itemCode: 'C15-4811', quantity: 1 },
       ],
     },
 
@@ -87,7 +87,7 @@ const seedOrders = async (products) => {
         isSubscription:  false,
       },
       items: [
-        { itemCode: 'C12-4792', quantity: 1 },
+        { itemCode: 'C15-4792', quantity: 1 },
       ],
     },
 
@@ -108,7 +108,7 @@ const seedOrders = async (products) => {
         isSubscription:  false,
       },
       items: [
-        { itemCode: 'S3-4440', quantity: 1 },
+        { itemCode: 'C15-4860', quantity: 1 },
       ],
     },
 
@@ -129,7 +129,7 @@ const seedOrders = async (products) => {
         isSubscription:  false,
       },
       items: [
-        { itemCode: 'C16-4839', quantity: 1 },
+        { itemCode: 'C15-4891', quantity: 1 },
       ],
     },
 
@@ -150,7 +150,7 @@ const seedOrders = async (products) => {
         isSubscription:  false,
       },
       items: [
-        { itemCode: 'T601-5C', quantity: 1 },
+        { itemCode: 'C15-4827', quantity: 1 },
       ],
     },
 
@@ -172,7 +172,7 @@ const seedOrders = async (products) => {
         subscriptionFrequency: 'weekly',
       },
       items: [
-        { itemCode: 'E2-4305', quantity: 1 },
+        { itemCode: 'C15-4940', quantity: 1 },
       ],
     },
   ]

@@ -84,13 +84,12 @@ const validateOrder = [
     .isLength({ min: 7, max: 30 })
     .withMessage('Recipient phone must be between 7 and 30 characters'),
   body('deliveryAddress')
-    .notEmpty()
-    .withMessage('Delivery address is required')
+    .optional({ nullable: true })
     .isString()
     .withMessage('Delivery address must be a string')
     .trim()
     .isLength({ min: 5, max: 1000 })
-    .withMessage('Delivery address must be between 5 and 1000 characters'),
+    .withMessage('Delivery address must be between 5 and 1000 characters when provided'),
   body('message')
     .optional({ nullable: true })
     .isString()
