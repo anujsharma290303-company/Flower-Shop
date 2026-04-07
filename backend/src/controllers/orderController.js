@@ -109,6 +109,7 @@ const create = async (req, res) => {
       recipientPhone,
       deliveryAddress,
       deliveryDate,
+      deliveryMode,
       message,
       isSubscription,
       subscriptionFrequency,
@@ -200,6 +201,14 @@ const create = async (req, res) => {
     }
 
     const totalPrice = Math.max(0, subtotal - creditsApplied);
+    const normalizedDeliveryMode = ['recipient-provides', 'sender-provides', 'social-media'].includes(deliveryMode)
+      ? deliveryMode
+      : 'recipient-provides';
+
+    if (normalizedDeliveryMode === 'sender-provides' && (!deliveryAddress || !String(deliveryAddress).trim())) {
+      await transaction.rollback();
+      return res.status(400).json({ success: false, message: 'deliveryAddress is required when deliveryMode is sender-provides' });
+    }
 
     const order = await Order.create(
       {
@@ -212,6 +221,7 @@ const create = async (req, res) => {
         recipientPhone,
         deliveryAddress,
         deliveryDate: deliveryDate || null,
+        deliveryMode: normalizedDeliveryMode,
         message: message || null,
         totalPrice: Number(totalPrice.toFixed(2)),
         creditsUsed: creditsApplied,
@@ -246,7 +256,8 @@ const create = async (req, res) => {
     );
 
     let recipientToken = null;
-    if (Boolean(isRecipientChoice)) {
+    const shouldGenerateRecipientToken = Boolean(isRecipientChoice) && normalizedDeliveryMode !== 'sender-provides';
+    if (shouldGenerateRecipientToken) {
       const expiresAt = new Date();
       expiresAt.setHours(expiresAt.getHours() + 48);
 

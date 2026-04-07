@@ -3,6 +3,7 @@ const { body, validationResult } = require('express-validator');
 const ORDER_STATUS = ['pending', 'paid', 'awaiting_recipient', 'recipient_accepted', 'processing', 'out_for_delivery', 'delivered', 'cancelled'];
 const PAYMENT_STATUS = ['unpaid', 'paid', 'refunded'];
 const SUBSCRIPTION_FREQUENCY = ['weekly', 'biweekly', 'monthly'];
+const DELIVERY_MODE = ['recipient-provides', 'sender-provides', 'social-media'];
 
 const parseBooleanLike = (value) => {
   if (typeof value === 'boolean') {
@@ -115,6 +116,10 @@ const validateOrder = [
     .optional({ nullable: true })
     .isIn(PAYMENT_STATUS)
     .withMessage(`Payment status must be one of: ${PAYMENT_STATUS.join(', ')}`),
+  body('deliveryMode')
+    .optional({ nullable: true })
+    .isIn(DELIVERY_MODE)
+    .withMessage(`Delivery mode must be one of: ${DELIVERY_MODE.join(', ')}`),
   body('isSubscription')
     .optional({ nullable: true })
     .custom((value) => parseBooleanLike(value) !== undefined)
@@ -233,6 +238,10 @@ const validateUpdateOrder = [
     .optional({ nullable: true })
     .isIn(PAYMENT_STATUS)
     .withMessage(`Payment status must be one of: ${PAYMENT_STATUS.join(', ')}`),
+  body('deliveryMode')
+    .optional({ nullable: true })
+    .isIn(DELIVERY_MODE)
+    .withMessage(`Delivery mode must be one of: ${DELIVERY_MODE.join(', ')}`),
   body('isSubscription')
     .optional({ nullable: true })
     .custom((value) => parseBooleanLike(value) !== undefined)

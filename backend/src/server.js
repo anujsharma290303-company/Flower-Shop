@@ -49,6 +49,8 @@ const deliveryRoutes = require("./routes/deliveryRoutes");
 const contactRoutes = require("./routes/contactRoutes");
 const recipientRoutes = require("./routes/recipientRoutes");
 const notificationRoutes = require("./routes/notificationRoutes");
+const verifyCustomerToken = require("./middleware/customerAuth");
+const { create: createWishlist, getByToken: getWishlistByToken } = require("./controllers/wishlistController");
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -96,6 +98,8 @@ app.use("/api/bouquets", bouquetPublic);
 app.use("/api/payments", paymentRoutes);
 app.use("/api/credits", creditsRoutes);
 app.use("/api/delivery", deliveryRoutes);
+app.post("/api/wishlist", verifyCustomerToken, createWishlist);
+app.get("/api/wishlist/:token", getWishlistByToken);
 app.use("/api/contact", contactRoutes);
 app.use("/api/recipient", recipientRoutes);
 

@@ -2,6 +2,7 @@ const sequelize = require("../config/database");
 const Admin = require("./Admin");
 const User = require("./User");
 const CreditTransaction = require("./CreditTransaction");
+const Wishlist = require("./Wishlist");
 const Category = require("./Category");
 const Product = require("./Product");
 const Order = require("./Order");
@@ -66,6 +67,10 @@ Order.belongsTo(User, { foreignKey: 'userId', as: 'user' });
 User.hasMany(CreditTransaction, { foreignKey: 'userId', as: 'creditTransactions' });
 CreditTransaction.belongsTo(User, { foreignKey: 'userId', as: 'user' });
 
+// User->Wishlist
+User.hasMany(Wishlist, { foreignKey: 'userId', as: 'wishlists' });
+Wishlist.belongsTo(User, { foreignKey: 'userId', as: 'user' });
+
 // Order->CreditTransaction
 Order.hasMany(CreditTransaction, { foreignKey: 'orderId', as: 'creditTransactions' });
 CreditTransaction.belongsTo(Order, { foreignKey: 'orderId', as: 'order' });
@@ -77,6 +82,7 @@ module.exports = {
   Admin,
   User,
   CreditTransaction,
+  Wishlist,
   Category,
   Product,
   Order,
