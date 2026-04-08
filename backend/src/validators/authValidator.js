@@ -52,7 +52,59 @@ const registerValidationRules = () => {
   ];
 };
 
+// Validation rules for customer profile update
+const updateProfileValidationRules = () => {
+  return [
+    body('firstName')
+      .optional()
+      .isString()
+      .withMessage('First name must be a string')
+      .trim()
+      .isLength({ min: 2, max: 100 })
+      .withMessage('First name must be between 2 and 100 characters long'),
+    body('lastName')
+      .optional()
+      .isString()
+      .withMessage('Last name must be a string')
+      .trim()
+      .isLength({ min: 2, max: 100 })
+      .withMessage('Last name must be between 2 and 100 characters long'),
+    body().custom((value) => {
+      const hasFirstName = value && Object.prototype.hasOwnProperty.call(value, 'firstName');
+      const hasLastName = value && Object.prototype.hasOwnProperty.call(value, 'lastName');
+      if (!hasFirstName && !hasLastName) {
+        throw new Error('At least one field is required: firstName or lastName');
+      }
+      return true;
+    }),
+  ];
+};
+
+// Validation rules for customer password change
+const changePasswordValidationRules = () => {
+  return [
+    body('oldPassword')
+      .notEmpty()
+      .withMessage('Old password is required')
+      .isLength({ min: 6 })
+      .withMessage('Old password must be at least 6 characters long'),
+    body('newPassword')
+      .notEmpty()
+      .withMessage('New password is required')
+      .isLength({ min: 6 })
+      .withMessage('New password must be at least 6 characters long')
+      .custom((newPassword, { req }) => {
+        if (newPassword === req.body.oldPassword) {
+          throw new Error('New password must be different from old password');
+        }
+        return true;
+      }),
+  ];
+};
+
 module.exports = {
   registerValidationRules,
   loginValidationRules,
+  updateProfileValidationRules,
+  changePasswordValidationRules,
 };

@@ -116,8 +116,72 @@ const me = async (req, res) => {
   }
 };
 
+const updateMe = async (req, res) => {
+  try {
+    const user = await User.findByPk(req.user.id);
+
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+
+    const updates = {};
+    if (req.body.firstName !== undefined) {
+      updates.firstName = String(req.body.firstName).trim();
+    }
+    if (req.body.lastName !== undefined) {
+      updates.lastName = String(req.body.lastName).trim();
+    }
+
+    await user.update(updates);
+
+    return res.json({
+      success: true,
+      message: 'Profile updated successfully',
+      data: {
+        id: user.id,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        email: user.email,
+        credits: user.credits,
+        isActive: user.isActive,
+      },
+    });
+  } catch (error) {
+    return handleControllerError(res, error, 'Update profile error');
+  }
+};
+
+const changePassword = async (req, res) => {
+  try {
+    const user = await User.findByPk(req.user.id);
+
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+
+    const { oldPassword, newPassword } = req.body;
+    const isMatch = await bcrypt.compare(oldPassword, user.passwordHash);
+
+    if (!isMatch) {
+      return res.status(401).json({ success: false, message: 'Old password is incorrect' });
+    }
+
+    const newPasswordHash = await bcrypt.hash(newPassword, 12);
+    await user.update({ passwordHash: newPasswordHash });
+
+    return res.json({
+      success: true,
+      message: 'Password updated successfully',
+    });
+  } catch (error) {
+    return handleControllerError(res, error, 'Change password error');
+  }
+};
+
 module.exports = {
   register,
   login,
   me,
+  updateMe,
+  changePassword,
 };
