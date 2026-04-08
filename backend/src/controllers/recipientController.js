@@ -10,6 +10,45 @@ const handleControllerError = (res, error, defaultCode = 500) => {
 
 const isExpired = (expiresAt) => new Date() > new Date(expiresAt);
 
+const markTokenExpired = async (record, transaction) => {
+  if (!record || record.status === 'expired') {
+    return;
+  }
+
+  await record.update({ status: 'expired' }, { transaction });
+
+  const order = await Order.findByPk(record.orderId, {
+    transaction,
+    lock: transaction?.LOCK?.UPDATE,
+  });
+
+  if (!order) {
+    return;
+  }
+
+  const voidResult = await voidAuthorizedPaymentForOrder(order.id, transaction);
+  const nextPaymentStatus = voidResult.voided ? 'voided' : order.paymentStatus;
+
+  await order.update(
+    {
+      status: 'expired',
+      paymentStatus: nextPaymentStatus,
+    },
+    { transaction },
+  );
+
+  await OrderStatusLog.create(
+    {
+      orderId: order.id,
+      fromStatus: order.status,
+      toStatus: 'expired',
+      source: 'system',
+      note: 'Recipient token expired',
+    },
+    { transaction },
+  );
+};
+
 const isValidDeliveryDate = (dateString) => {
   if (!dateString || typeof dateString !== 'string') return false;
   const date = new Date(`${dateString}T00:00:00.000Z`);
@@ -66,6 +105,14 @@ const getByToken = async (req, res) => {
     }
 
     if (isExpired(record.expiresAt)) {
+      const transaction = await sequelize.transaction();
+      try {
+        await markTokenExpired(record, transaction);
+        await transaction.commit();
+      } catch (error) {
+        await transaction.rollback();
+        throw error;
+      }
       return res.status(400).json({ success: false, message: 'This recipient link has expired' });
     }
 
@@ -146,7 +193,8 @@ const accept = async (req, res) => {
     }
 
     if (isExpired(record.expiresAt)) {
-      await transaction.rollback();
+      await markTokenExpired(record, transaction);
+      await transaction.commit();
       return res.status(400).json({ success: false, message: 'Token has expired' });
     }
 
@@ -291,6 +339,12 @@ const reject = async (req, res) => {
       return res.status(400).json({ success: false, message: `Token already ${record.status}` });
     }
 
+    if (isExpired(record.expiresAt)) {
+      await markTokenExpired(record, transaction);
+      await transaction.commit();
+      return res.status(400).json({ success: false, message: 'Token has expired' });
+    }
+
     await record.update({ status: 'declined', declinedAt: new Date() }, { transaction });
     const order = await Order.findByPk(record.orderId, {
       transaction,
@@ -345,8 +399,92 @@ const reject = async (req, res) => {
   }
 };
 
+const updatePrivacy = async (req, res) => {
+  const transaction = await sequelize.transaction();
+
+  try {
+    const token = String(req.params.token || '').trim();
+    const { cardName, cardMessage } = req.body || {};
+
+    if (!token) {
+      await transaction.rollback();
+      return res.status(400).json({ success: false, message: 'Valid token is required' });
+    }
+
+    if (cardName === undefined && cardMessage === undefined) {
+      await transaction.rollback();
+      return res.status(400).json({ success: false, message: 'At least one field is required: cardName or cardMessage' });
+    }
+
+    const record = await RecipentAccessToken.findOne({
+      where: { token },
+      transaction,
+      lock: transaction.LOCK.UPDATE,
+    });
+
+    if (!record) {
+      await transaction.rollback();
+      return res.status(404).json({ success: false, message: 'Invalid token' });
+    }
+
+    if (record.status !== 'pending') {
+      await transaction.rollback();
+      return res.status(400).json({ success: false, message: `Token already ${record.status}` });
+    }
+
+    if (isExpired(record.expiresAt)) {
+      await markTokenExpired(record, transaction);
+      await transaction.commit();
+      return res.status(400).json({ success: false, message: 'Token has expired' });
+    }
+
+    const order = await Order.findByPk(record.orderId, {
+      transaction,
+      lock: transaction.LOCK.UPDATE,
+    });
+
+    if (!order) {
+      await transaction.rollback();
+      return res.status(404).json({ success: false, message: 'Related order not found for token' });
+    }
+
+    const tokenUpdates = {};
+    const orderUpdates = {};
+
+    if (cardName !== undefined) {
+      const normalizedCardName = String(cardName).trim();
+      tokenUpdates.chosenCardName = normalizedCardName || null;
+      orderUpdates.senderDisplayName = normalizedCardName || null;
+    }
+
+    if (cardMessage !== undefined) {
+      const normalizedCardMessage = String(cardMessage).trim();
+      orderUpdates.cardMessage = normalizedCardMessage || null;
+    }
+
+    await record.update(tokenUpdates, { transaction });
+    await order.update(orderUpdates, { transaction });
+
+    await transaction.commit();
+
+    return res.json({
+      success: true,
+      message: 'Recipient privacy preferences updated successfully',
+      data: {
+        token: record.token,
+        chosenCardName: record.chosenCardName,
+        cardMessage: order.cardMessage,
+      },
+    });
+  } catch (error) {
+    await transaction.rollback();
+    return handleControllerError(res, error, 500);
+  }
+};
+
 module.exports = {
   getByToken,
   accept,
   reject,
+  updatePrivacy,
 };

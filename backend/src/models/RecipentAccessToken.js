@@ -24,7 +24,7 @@ const RecipentAccessToken = sequelize.define(
       allowNull: false,
     },
     status: {
-      type: DataTypes.ENUM("pending", "accepted", "declined"),
+      type: DataTypes.ENUM("pending", "accepted", "declined", "expired"),
     
       defaultValue: "pending",
     },
@@ -45,6 +45,10 @@ const RecipentAccessToken = sequelize.define(
     },
     chosenDeliveryAddress: {
       type: DataTypes.TEXT,
+      allowNull: true,
+    },
+    chosenCardName: {
+      type: DataTypes.STRING,
       allowNull: true,
     },
     acceptedAt: {
