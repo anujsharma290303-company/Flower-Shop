@@ -68,7 +68,39 @@ const validateMockPayment = [
   handleValidation,
 ];
 
+const validateAuthorizePayment = [
+  body('orderId')
+    .notEmpty()
+    .withMessage('orderId is required')
+    .customSanitizer((value) => {
+      const numberValue = Number(value);
+      return Number.isNaN(numberValue) ? value : numberValue;
+    })
+    .isInt({ min: 1 })
+    .withMessage('orderId must be a positive integer'),
+  body('method')
+    .notEmpty()
+    .withMessage('method is required')
+    .isIn(PAYMENT_METHODS)
+    .withMessage(`method must be one of: ${PAYMENT_METHODS.join(', ')}`),
+  body('simulateSuccess')
+    .optional({ nullable: true })
+    .custom((value) => parseBooleanLike(value) !== undefined)
+    .withMessage('simulateSuccess must be a boolean')
+    .customSanitizer((value) => parseBooleanLike(value)),
+  body('processingDelayMs')
+    .optional({ nullable: true })
+    .customSanitizer((value) => {
+      const numberValue = Number(value);
+      return Number.isNaN(numberValue) ? value : numberValue;
+    })
+    .isInt({ min: 0, max: 10000 })
+    .withMessage('processingDelayMs must be an integer between 0 and 10000'),
+  handleValidation,
+];
+
 module.exports = {
   validateMockPayment,
+  validateAuthorizePayment,
   handleValidation,
 };

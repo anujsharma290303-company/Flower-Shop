@@ -4,6 +4,8 @@ const ORDER_STATUS = ['pending', 'paid', 'awaiting_recipient', 'recipient_accept
 const PAYMENT_STATUS = ['unpaid', 'paid', 'refunded'];
 const SUBSCRIPTION_FREQUENCY = ['weekly', 'biweekly', 'monthly'];
 const DELIVERY_MODE = ['recipient-provides', 'sender-provides', 'social-media'];
+const COUNTRY = ['US', 'CA'];
+const CURRENCY = ['USD', 'CAD'];
 
 const parseBooleanLike = (value) => {
   if (typeof value === 'boolean') {
@@ -101,6 +103,16 @@ const validateOrder = [
     .isISO8601()
     .withMessage('Delivery date must be a valid ISO date')
     .customSanitizer((value) => (value ? String(value).slice(0, 10) : value)),
+  body('country')
+    .optional({ nullable: true })
+    .customSanitizer((value) => (value ? String(value).trim().toUpperCase() : value))
+    .isIn(COUNTRY)
+    .withMessage(`country must be one of: ${COUNTRY.join(', ')}`),
+  body('currency')
+    .optional({ nullable: true })
+    .customSanitizer((value) => (value ? String(value).trim().toUpperCase() : value))
+    .isIn(CURRENCY)
+    .withMessage(`currency must be one of: ${CURRENCY.join(', ')}`),
   body('message')
     .optional({ nullable: true })
     .isString()
@@ -152,6 +164,24 @@ const validateOrder = [
 
     if (!isSubscription && value) {
       throw new Error('Subscription frequency should only be provided when isSubscription is true');
+    }
+
+    return true;
+  }),
+  body().custom((_, { req }) => {
+    const country = req.body.country ? String(req.body.country).trim().toUpperCase() : null;
+    const currency = req.body.currency ? String(req.body.currency).trim().toUpperCase() : null;
+
+    if (!country || !currency) {
+      return true;
+    }
+
+    if (country === 'US' && currency !== 'USD') {
+      throw new Error('currency must be USD when country is US');
+    }
+
+    if (country === 'CA' && currency !== 'CAD') {
+      throw new Error('currency must be CAD when country is CA');
     }
 
     return true;
@@ -217,6 +247,16 @@ const validateUpdateOrder = [
     .isISO8601()
     .withMessage('Delivery date must be a valid ISO date')
     .customSanitizer((value) => (value ? String(value).slice(0, 10) : value)),
+  body('country')
+    .optional({ nullable: true })
+    .customSanitizer((value) => (value ? String(value).trim().toUpperCase() : value))
+    .isIn(COUNTRY)
+    .withMessage(`country must be one of: ${COUNTRY.join(', ')}`),
+  body('currency')
+    .optional({ nullable: true })
+    .customSanitizer((value) => (value ? String(value).trim().toUpperCase() : value))
+    .isIn(CURRENCY)
+    .withMessage(`currency must be one of: ${CURRENCY.join(', ')}`),
   body('message')
     .optional({ nullable: true })
     .isString()
@@ -265,6 +305,24 @@ const validateUpdateOrder = [
 
     if (subscriptionFlag === false && value) {
       throw new Error('Subscription frequency should only be provided when isSubscription is true');
+    }
+
+    return true;
+  }),
+  body().custom((_, { req }) => {
+    const country = req.body.country ? String(req.body.country).trim().toUpperCase() : null;
+    const currency = req.body.currency ? String(req.body.currency).trim().toUpperCase() : null;
+
+    if (!country || !currency) {
+      return true;
+    }
+
+    if (country === 'US' && currency !== 'USD') {
+      throw new Error('currency must be USD when country is US');
+    }
+
+    if (country === 'CA' && currency !== 'CAD') {
+      throw new Error('currency must be CAD when country is CA');
     }
 
     return true;

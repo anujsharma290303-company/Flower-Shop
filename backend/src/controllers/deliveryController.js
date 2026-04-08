@@ -13,6 +13,41 @@ const toDateOnly = (date) => date.toISOString().slice(0, 10);
 
 const isSunday = (date) => date.getUTCDay() === 0;
 
+const isUSZip = (zipCode) => /^\d{5}(?:-\d{4})?$/.test(zipCode);
+const isCanadaPostal = (zipCode) => /^[A-Za-z]\d[A-Za-z][ -]?\d[A-Za-z]\d$/.test(zipCode);
+
+const checkAvailability = async (req, res) => {
+  try {
+    const { zipCode, country } = req.query || {};
+
+    if (!zipCode || !country) {
+      return res.status(400).json({ success: false, message: 'zipCode and country are required query params' });
+    }
+
+    const normalizedCountry = String(country).trim().toUpperCase();
+    const normalizedZip = String(zipCode).trim();
+
+    let available = false;
+    if (normalizedCountry === 'US' || normalizedCountry === 'USA' || normalizedCountry === 'UNITED STATES') {
+      available = isUSZip(normalizedZip);
+    } else if (normalizedCountry === 'CA' || normalizedCountry === 'CAN' || normalizedCountry === 'CANADA') {
+      available = isCanadaPostal(normalizedZip);
+    }
+
+    return res.json({
+      success: true,
+      data: {
+        zipCode: normalizedZip,
+        country: normalizedCountry,
+        available,
+      },
+    });
+  } catch (error) {
+    console.error('[DeliveryController] checkAvailability error:', error.message);
+    return res.status(500).json({ success: false, message: 'Internal server error' });
+  }
+};
+
 const getAvailableDates = async (req, res) => {
   try {
     const { zipCode, state } = req.query || {};
@@ -58,4 +93,5 @@ const getAvailableDates = async (req, res) => {
 
 module.exports = {
   getAvailableDates,
+  checkAvailability,
 };

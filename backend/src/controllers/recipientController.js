@@ -1,4 +1,5 @@
 const { RecipentAccessToken, Order, OrderItem, OrderStatusLog, Product, Category, NotificationLog, sequelize } = require('../models');
+const { captureAuthorizedPaymentForOrder, voidAuthorizedPaymentForOrder } = require('./paymentController');
 
 const handleControllerError = (res, error, defaultCode = 500) => {
   console.error('[RecipientController Error]', error);
@@ -202,6 +203,7 @@ const accept = async (req, res) => {
       {
         deliveryAddress,
         deliveryDate: resolvedDeliveryDate,
+        paymentStatus: (await captureAuthorizedPaymentForOrder(order.id, transaction)).captured ? 'paid' : order.paymentStatus,
         status: 'recipient_accepted',
       },
       { transaction },
@@ -301,6 +303,10 @@ const reject = async (req, res) => {
     }
 
     await order.update({ status: 'cancelled' }, { transaction });
+    const voidResult = await voidAuthorizedPaymentForOrder(order.id, transaction);
+    if (voidResult.voided) {
+      await order.update({ paymentStatus: 'unpaid' }, { transaction });
+    }
 
     await transaction.commit();
 

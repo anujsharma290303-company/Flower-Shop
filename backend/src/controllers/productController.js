@@ -378,7 +378,7 @@ const remove = async (req, res) => {
 const toggle = async (req, res) => {
 	try {
 		const { id } = req.params;
-		const { field } = req.body;
+		const { field } = req.body || {};
 		const productId = Number(id);
 		const allowedFields = ['isBestSeller', 'inStock', 'subscriptionAvailable'];
 

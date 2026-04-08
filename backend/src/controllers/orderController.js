@@ -109,6 +109,8 @@ const create = async (req, res) => {
       recipientPhone,
       deliveryAddress,
       deliveryDate,
+      country,
+      currency,
       deliveryMode,
       message,
       isSubscription,
@@ -201,6 +203,16 @@ const create = async (req, res) => {
     }
 
     const totalPrice = Math.max(0, subtotal - creditsApplied);
+    const normalizedCountry = String(country || 'US').trim().toUpperCase() === 'CA' ? 'CA' : 'US';
+    const normalizedCurrency = currency
+      ? String(currency).trim().toUpperCase()
+      : (normalizedCountry === 'CA' ? 'CAD' : 'USD');
+
+    if ((normalizedCountry === 'US' && normalizedCurrency !== 'USD') || (normalizedCountry === 'CA' && normalizedCurrency !== 'CAD')) {
+      await transaction.rollback();
+      return res.status(400).json({ success: false, message: 'currency must match country (US->USD, CA->CAD)' });
+    }
+
     const normalizedDeliveryMode = ['recipient-provides', 'sender-provides', 'social-media'].includes(deliveryMode)
       ? deliveryMode
       : 'recipient-provides';
@@ -221,6 +233,8 @@ const create = async (req, res) => {
         recipientPhone,
         deliveryAddress,
         deliveryDate: deliveryDate || null,
+        country: normalizedCountry,
+        currency: normalizedCurrency,
         deliveryMode: normalizedDeliveryMode,
         message: message || null,
         totalPrice: Number(totalPrice.toFixed(2)),

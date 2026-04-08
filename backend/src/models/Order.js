@@ -51,6 +51,16 @@ const Order = sequelize.define(
       type: DataTypes.DATEONLY,
       allowNull: true,
     },
+    country: {
+      type: DataTypes.ENUM('US', 'CA'),
+      allowNull: false,
+      defaultValue: 'US',
+    },
+    currency: {
+      type: DataTypes.ENUM('USD', 'CAD'),
+      allowNull: false,
+      defaultValue: 'USD',
+    },
     message: {
       type: DataTypes.TEXT,
       allowNull: true,

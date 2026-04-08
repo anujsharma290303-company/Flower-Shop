@@ -1,8 +1,9 @@
 const express = require('express');
-const { getAvailableDates } = require('../controllers/deliveryController');
+const { getAvailableDates, checkAvailability } = require('../controllers/deliveryController');
 
 const router = express.Router();
 
 router.get('/available-dates', getAvailableDates);
+router.get('/check', checkAvailability);
 
 module.exports = router;
