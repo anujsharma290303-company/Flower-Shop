@@ -59,6 +59,7 @@ const recipientRoutes = require("./routes/recipientRoutes");
 const notificationRoutes = require("./routes/notificationRoutes");
 const mediaRoutes = require("./routes/mediaRoutes");
 const wishlistRoutes = require("./routes/wishlistRoutes");
+const flowerMeRoutes = require('./routes/flowerMeRoutes');
 const { expirePendingRecipientTokens } = require("./controllers/recipientController");
 
 const app = express();
@@ -111,6 +112,7 @@ app.use("/api/subscriptions", subscriptionPublic);
 app.use("/api/credits", creditsRoutes);
 app.use("/api/delivery", deliveryPublic);
 app.use("/api/wishlist", wishlistRoutes);
+app.use('/api/flowerme', flowerMeRoutes);
 app.use("/api/contact", contactRoutes);
 app.use("/api/recipient", recipientRoutes);
 

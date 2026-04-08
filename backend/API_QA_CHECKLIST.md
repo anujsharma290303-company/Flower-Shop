@@ -154,7 +154,14 @@ Admin:
 ## Wishlist
 
 - `POST /api/wishlist` (Bearer `CUSTOMER_TOKEN`) -> `201|401`
+- `GET /api/wishlist/me` (Bearer `CUSTOMER_TOKEN`) -> `200|401`
 - `GET /api/wishlist/:token` -> `200|404`
+
+## FlowerMe
+
+- `PUT /api/flowerme/profile` (Bearer `CUSTOMER_TOKEN`) -> `200|401|409`
+- `GET /api/flowerme/profile` (Bearer `CUSTOMER_TOKEN`) -> `200|401|404`
+- `GET /api/flowerme/profile/:slug` -> `200|404`
 
 ## Order Media
 

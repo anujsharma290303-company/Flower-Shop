@@ -18,6 +18,8 @@ const Payment = require("./Payment");
 const NotificationLog = require("./NotificationLog");
 const Subscription = require("./Subscription");
 const DeliveryBlackoutDate = require("./DeliveryBlackoutDate");
+const Wishlist = require('./wishlist');
+const FlowerMeProfile = require('./FlowerMeProfile');
 
 // Associations
 
@@ -89,6 +91,14 @@ Subscription.belongsTo(User, { foreignKey: 'userId', as: 'user' });
 Order.hasMany(Subscription, { foreignKey: 'orderId', as: 'subscriptions' });
 Subscription.belongsTo(Order, { foreignKey: 'orderId', as: 'order' });
 
+// User->Wishlist
+User.hasMany(Wishlist, { foreignKey: 'userId', as: 'wishlists' });
+Wishlist.belongsTo(User, { foreignKey: 'userId', as: 'user' });
+
+// User->FlowerMeProfile
+User.hasOne(FlowerMeProfile, { foreignKey: 'userId', as: 'flowerMeProfile' });
+FlowerMeProfile.belongsTo(User, { foreignKey: 'userId', as: 'user' });
+
 
 // Export all models
 module.exports = {
@@ -112,4 +122,6 @@ module.exports = {
   NotificationLog,
   Subscription,
   DeliveryBlackoutDate,
+  Wishlist,
+  FlowerMeProfile,
 };

@@ -1,16 +1,11 @@
 const express = require('express');
+const verifyCustomerToken = require('../middleware/customerAuth');
+const { create, getMine, getByToken } = require('../controllers/wishlistController');
 
 const router = express.Router();
 
-router.get('/', (req, res) => {
-	return res.json({
-		success: true,
-		data: {
-			enabled: false,
-			informationalOnly: true,
-			message: 'Wishlist is informational-only in this backend. No native wishlist persistence or token lookup is provided.',
-		},
-	});
-});
+router.post('/', verifyCustomerToken, create);
+router.get('/me', verifyCustomerToken, getMine);
+router.get('/:token', getByToken);
 
 module.exports = router;
