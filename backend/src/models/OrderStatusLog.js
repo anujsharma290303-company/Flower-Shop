@@ -3,6 +3,7 @@ const sequelize = require('../config/database');
 
 const ORDER_STATUSES = [
   'pending',
+  'authorized',
   'paid',
   'awaiting_recipient',
   'recipient_accepted',
@@ -10,6 +11,7 @@ const ORDER_STATUSES = [
   'out_for_delivery',
   'delivered',
   'cancelled',
+  'expired',
 ];
 
 const OrderStatusLog = sequelize.define(

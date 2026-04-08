@@ -26,6 +26,10 @@ const Order = sequelize.define(
       type: DataTypes.STRING,
       allowNull: false,
     },
+    senderDisplayName: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
     recipientName: {
       type: DataTypes.STRING,
       allowNull: false,
@@ -42,6 +46,35 @@ const Order = sequelize.define(
 
 
 
+    deliveryAddressType: {
+      type: DataTypes.ENUM('residence', 'business'),
+      allowNull: true,
+      defaultValue: 'residence',
+    },
+    businessName: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    addressLine1: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    addressLine2: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    city: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    state: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    zipCode: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
     deliveryAddress: {
       type: DataTypes.TEXT,
       allowNull: true,
@@ -66,6 +99,16 @@ const Order = sequelize.define(
       allowNull: true,
       defaultValue: '',
     },
+    messageToRecipient: {
+      type: DataTypes.TEXT,
+      allowNull: true,
+      defaultValue: '',
+    },
+    cardMessage: {
+      type: DataTypes.TEXT,
+      allowNull: true,
+      defaultValue: '',
+    },
     totalPrice: {
       type: DataTypes.DECIMAL(10, 2),
       allowNull: false,
@@ -73,6 +116,7 @@ const Order = sequelize.define(
     status: {
       type: DataTypes.ENUM(
         "pending",
+        "authorized",
         "paid",
         "awaiting_recipient",
         "recipient_accepted",
@@ -80,12 +124,13 @@ const Order = sequelize.define(
         "out_for_delivery",
         "delivered",
         "cancelled",
+        "expired",
       ),
       allowNull: false,
       defaultValue: "pending",
     },
     paymentStatus: {
-      type: DataTypes.ENUM("unpaid", "paid", "refunded"),
+      type: DataTypes.ENUM("unpaid", "authorized", "paid", "refunded", "voided"),
       defaultValue: "unpaid",
     },
     deliveryMode: {

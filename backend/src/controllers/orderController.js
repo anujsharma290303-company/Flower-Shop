@@ -1,8 +1,8 @@
 const { Order, OrderItem, Product, RecipentAccessToken, OrderStatusLog, NotificationLog, CreditTransaction, User, sequelize } = require('../models');
 const { v4: uuidv4 } = require('uuid');
 
-const ORDER_STATUS = ['pending', 'paid', 'awaiting_recipient', 'recipient_accepted', 'processing', 'out_for_delivery', 'delivered', 'cancelled'];
-const PAYMENT_STATUS = ['unpaid', 'paid', 'refunded'];
+const ORDER_STATUS = ['pending', 'authorized', 'paid', 'awaiting_recipient', 'recipient_accepted', 'processing', 'out_for_delivery', 'delivered', 'cancelled', 'expired'];
+const PAYMENT_STATUS = ['unpaid', 'authorized', 'paid', 'refunded', 'voided'];
 
 const handleControllerError = (res, error, defaultCode = 500) => {
   console.error('[OrderController Error]', error);
@@ -39,6 +39,21 @@ const buildRecipientLink = (token) => {
   if (!token) return null;
   const baseUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
   return `${baseUrl.replace(/\/$/, '')}/recipient/${token}`;
+};
+
+const buildDeliveryAddressFromParts = ({
+  addressLine1,
+  addressLine2,
+  city,
+  state,
+  zipCode,
+  country,
+}) => {
+  const parts = [addressLine1, addressLine2, city, state, zipCode, country]
+    .filter((value) => value !== undefined && value !== null && String(value).trim() !== '')
+    .map((value) => String(value).trim());
+
+  return parts.length > 0 ? parts.join(', ') : null;
 };
 
 const logStatusTransition = async ({ orderId, fromStatus, toStatus, source, note, transaction }) => {
@@ -104,15 +119,25 @@ const create = async (req, res) => {
       customerName,
       customerEmail,
       customerPhone,
+      senderDisplayName,
       recipientName,
       recipientEmail,
       recipientPhone,
       deliveryAddress,
+      deliveryAddressType,
+      businessName,
+      addressLine1,
+      addressLine2,
+      city,
+      state,
+      zipCode,
       deliveryDate,
       country,
       currency,
       deliveryMode,
       message,
+      messageToRecipient,
+      cardMessage,
       isSubscription,
       subscriptionFrequency,
       isRecipientChoice,
@@ -217,7 +242,16 @@ const create = async (req, res) => {
       ? deliveryMode
       : 'recipient-provides';
 
-    if (normalizedDeliveryMode === 'sender-provides' && (!deliveryAddress || !String(deliveryAddress).trim())) {
+    const computedDeliveryAddress = String(deliveryAddress || '').trim() || buildDeliveryAddressFromParts({
+      addressLine1,
+      addressLine2,
+      city,
+      state,
+      zipCode,
+      country: normalizedCountry,
+    });
+
+    if (normalizedDeliveryMode === 'sender-provides' && !computedDeliveryAddress) {
       await transaction.rollback();
       return res.status(400).json({ success: false, message: 'deliveryAddress is required when deliveryMode is sender-provides' });
     }
@@ -227,16 +261,26 @@ const create = async (req, res) => {
         customerName,
         customerEmail,
         customerPhone,
+        senderDisplayName: senderDisplayName || null,
         userId,
         recipientName,
         recipientEmail: recipientEmail || null,
         recipientPhone,
-        deliveryAddress,
+        deliveryAddressType: ['residence', 'business'].includes(deliveryAddressType) ? deliveryAddressType : 'residence',
+        businessName: businessName || null,
+        addressLine1: addressLine1 || null,
+        addressLine2: addressLine2 || null,
+        city: city || null,
+        state: state || null,
+        zipCode: zipCode || null,
+        deliveryAddress: computedDeliveryAddress || '',
         deliveryDate: deliveryDate || null,
         country: normalizedCountry,
         currency: normalizedCurrency,
         deliveryMode: normalizedDeliveryMode,
         message: message || null,
+        messageToRecipient: messageToRecipient || null,
+        cardMessage: cardMessage || null,
         totalPrice: Number(totalPrice.toFixed(2)),
         creditsUsed: creditsApplied,
         isSubscription: Boolean(isSubscription),
@@ -273,7 +317,7 @@ const create = async (req, res) => {
     const shouldGenerateRecipientToken = Boolean(isRecipientChoice) && normalizedDeliveryMode !== 'sender-provides';
     if (shouldGenerateRecipientToken) {
       const expiresAt = new Date();
-      expiresAt.setHours(expiresAt.getHours() + 48);
+      expiresAt.setDate(expiresAt.getDate() + 7);
 
       const tokenRecord = await RecipentAccessToken.create(
         {
@@ -371,6 +415,98 @@ const getAllAdmin = async (req, res) => {
   }
 };
 
+const getTrack = async (req, res) => {
+  try {
+    const orderId = parsePositiveInt(req.query.orderId);
+    const email = String(req.query.email || '').trim().toLowerCase();
+
+    if (!orderId || !email) {
+      return res.status(400).json({ success: false, message: 'orderId and email query params are required' });
+    }
+
+    const order = await Order.findOne({
+      where: {
+        id: orderId,
+        customerEmail: email,
+      },
+      include: [{ model: OrderStatusLog, as: 'statusLogs' }],
+    });
+
+    if (!order) {
+      return res.status(404).json({ success: false, message: 'Order not found for provided email' });
+    }
+
+    return res.json({
+      success: true,
+      data: {
+        orderId: order.id,
+        status: order.status,
+        paymentStatus: order.paymentStatus,
+        timeline: order.statusLogs,
+      },
+    });
+  } catch (error) {
+    return handleControllerError(res, error, 500);
+  }
+};
+
+const getMyOrders = async (req, res) => {
+  try {
+    const userId = req.user?.id;
+    const page = parsePositiveInt(req.query.page) || 1;
+    const limit = parsePositiveInt(req.query.limit) || 20;
+    const offset = (page - 1) * limit;
+
+    const { count, rows } = await Order.findAndCountAll({
+      where: { userId },
+      include: [{ model: OrderItem, as: 'items' }],
+      order: [['createdAt', 'DESC']],
+      limit,
+      offset,
+    });
+
+    return res.json({
+      success: true,
+      data: {
+        totalItems: count,
+        page,
+        limit,
+        totalPages: Math.ceil(count / limit),
+        orders: rows,
+      },
+    });
+  } catch (error) {
+    return handleControllerError(res, error, 500);
+  }
+};
+
+const getMyOrderById = async (req, res) => {
+  try {
+    const userId = req.user?.id;
+    const orderId = parsePositiveInt(req.params.id);
+
+    if (!orderId) {
+      return res.status(400).json({ success: false, message: 'Order id must be a positive integer' });
+    }
+
+    const order = await Order.findOne({
+      where: { id: orderId, userId },
+      include: [
+        { model: OrderItem, as: 'items' },
+        { model: OrderStatusLog, as: 'statusLogs' },
+      ],
+    });
+
+    if (!order) {
+      return res.status(404).json({ success: false, message: 'Order not found' });
+    }
+
+    return res.json({ success: true, data: order });
+  } catch (error) {
+    return handleControllerError(res, error, 500);
+  }
+};
+
 const getOne = async (req, res) => {
   try {
     const orderId = parsePositiveInt(req.params.id);
@@ -391,6 +527,115 @@ const getOne = async (req, res) => {
     }
 
     return res.json({ success: true, data: order });
+  } catch (error) {
+    return handleControllerError(res, error, 500);
+  }
+};
+
+const updateOrder = async (req, res) => {
+  try {
+    const orderId = parsePositiveInt(req.params.id);
+    if (!orderId) {
+      return res.status(400).json({ success: false, message: 'Order id must be a positive integer' });
+    }
+
+    const order = await Order.findByPk(orderId);
+    if (!order) {
+      return res.status(404).json({ success: false, message: 'Order not found' });
+    }
+
+    const editableFields = [
+      'customerName',
+      'customerEmail',
+      'customerPhone',
+      'senderDisplayName',
+      'recipientName',
+      'recipientEmail',
+      'recipientPhone',
+      'deliveryAddressType',
+      'businessName',
+      'addressLine1',
+      'addressLine2',
+      'city',
+      'state',
+      'zipCode',
+      'deliveryAddress',
+      'deliveryDate',
+      'country',
+      'currency',
+      'deliveryMode',
+      'message',
+      'messageToRecipient',
+      'cardMessage',
+      'status',
+      'paymentStatus',
+      'isSubscription',
+      'subscriptionFrequency',
+      'isRecipientChoice',
+      'creditsUsed',
+    ];
+
+    const updates = {};
+    for (const field of editableFields) {
+      if (req.body[field] !== undefined) {
+        updates[field] = req.body[field];
+      }
+    }
+
+    if (updates.status !== undefined && !ORDER_STATUS.includes(updates.status)) {
+      return res.status(400).json({ success: false, message: 'Invalid status value' });
+    }
+
+    if (updates.paymentStatus !== undefined && !PAYMENT_STATUS.includes(updates.paymentStatus)) {
+      return res.status(400).json({ success: false, message: 'Invalid paymentStatus value' });
+    }
+
+    if (updates.country !== undefined || updates.currency !== undefined) {
+      const nextCountry = String(updates.country || order.country).trim().toUpperCase();
+      const nextCurrency = String(updates.currency || order.currency).trim().toUpperCase();
+
+      if ((nextCountry === 'US' && nextCurrency !== 'USD') || (nextCountry === 'CA' && nextCurrency !== 'CAD')) {
+        return res.status(400).json({ success: false, message: 'currency must match country (US->USD, CA->CAD)' });
+      }
+    }
+
+    if (updates.deliveryAddress === undefined) {
+      const rebuiltAddress = buildDeliveryAddressFromParts({
+        addressLine1: updates.addressLine1 !== undefined ? updates.addressLine1 : order.addressLine1,
+        addressLine2: updates.addressLine2 !== undefined ? updates.addressLine2 : order.addressLine2,
+        city: updates.city !== undefined ? updates.city : order.city,
+        state: updates.state !== undefined ? updates.state : order.state,
+        zipCode: updates.zipCode !== undefined ? updates.zipCode : order.zipCode,
+        country: updates.country !== undefined ? updates.country : order.country,
+      });
+
+      if (rebuiltAddress) {
+        updates.deliveryAddress = rebuiltAddress;
+      }
+    }
+
+    const previousStatus = order.status;
+    await order.update(updates);
+
+    if (updates.status !== undefined && updates.status !== previousStatus) {
+      await logStatusTransition({
+        orderId: order.id,
+        fromStatus: previousStatus,
+        toStatus: updates.status,
+        source: 'admin',
+        note: 'Admin full order update',
+      });
+    }
+
+    const updatedOrder = await Order.findByPk(order.id, {
+      include: [{ model: OrderItem, as: 'items' }],
+    });
+
+    return res.json({
+      success: true,
+      message: 'Order updated successfully',
+      data: updatedOrder,
+    });
   } catch (error) {
     return handleControllerError(res, error, 500);
   }
@@ -581,8 +826,12 @@ const getStatusTimeline = async (req, res) => {
 
 module.exports = {
   create,
+  getTrack,
+  getMyOrders,
+  getMyOrderById,
   getAllAdmin,
   getOne,
+  updateOrder,
   getRecipientLink,
   getStatusTimeline,
   updateStatus,

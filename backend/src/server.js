@@ -88,6 +88,7 @@ app.get("/api/health", (req, res) => {
 // Public routes
 app.use("/api/auth", authRoutes);
 app.use("/api/admin/auth", adminAuthRoutes);
+app.use("/api/auth/admin", adminAuthRoutes);
 app.use("/api/products", productPublic);
 app.use("/api/categories", categoryPublic);
 app.use("/api/orders", orderPublic);

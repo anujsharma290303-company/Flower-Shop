@@ -1,7 +1,7 @@
 const { body, validationResult } = require('express-validator');
 
-const ORDER_STATUS = ['pending', 'paid', 'awaiting_recipient', 'recipient_accepted', 'processing', 'out_for_delivery', 'delivered', 'cancelled'];
-const PAYMENT_STATUS = ['unpaid', 'paid', 'refunded'];
+const ORDER_STATUS = ['pending', 'authorized', 'paid', 'awaiting_recipient', 'recipient_accepted', 'processing', 'out_for_delivery', 'delivered', 'cancelled', 'expired'];
+const PAYMENT_STATUS = ['unpaid', 'authorized', 'paid', 'refunded', 'voided'];
 const SUBSCRIPTION_FREQUENCY = ['weekly', 'biweekly', 'monthly'];
 const DELIVERY_MODE = ['recipient-provides', 'sender-provides', 'social-media'];
 const COUNTRY = ['US', 'CA'];
