@@ -59,12 +59,13 @@ const recipientRoutes = require("./routes/recipientRoutes");
 const notificationRoutes = require("./routes/notificationRoutes");
 const mediaRoutes = require("./routes/mediaRoutes");
 const wishlistRoutes = require("./routes/wishlistRoutes");
-const verifyCustomerToken = require("./middleware/customerAuth");
+const { expirePendingRecipientTokens } = require("./controllers/recipientController");
 
 const app = express();
 const PORT = process.env.PORT || 5000;
 const DB_SYNC_ALTER = process.env.DB_SYNC_ALTER === "true";
 const DB_SYNC_FORCE = process.env.DB_SYNC_FORCE === "true";
+const ORDER_EXPIRY_SWEEP_INTERVAL_MS = Number(process.env.ORDER_EXPIRY_SWEEP_INTERVAL_MS || 15 * 60 * 1000);
 
 // Security
 app.use(helmet());
@@ -148,6 +149,26 @@ const startServer = async () => {
     console.log("✅ Database connected");
     await sequelize.sync({ alter: DB_SYNC_ALTER, force: DB_SYNC_FORCE });
     console.log("✅ Database synchronized");
+
+    try {
+      const initialExpirySweep = await expirePendingRecipientTokens();
+      console.log(`✅ Recipient token expiry sweep complete: expired=${initialExpirySweep.expiredCount}, voided=${initialExpirySweep.voidedCount}`);
+    } catch (error) {
+      console.error("⚠️ Recipient token expiry sweep failed on startup:", error.message);
+    }
+
+    if (ORDER_EXPIRY_SWEEP_INTERVAL_MS > 0) {
+      setInterval(() => {
+        expirePendingRecipientTokens()
+          .then((result) => {
+            console.log(`✅ Recipient token expiry sweep complete: expired=${result.expiredCount}, voided=${result.voidedCount}`);
+          })
+          .catch((error) => {
+            console.error("⚠️ Recipient token expiry sweep failed:", error.message);
+          });
+      }, ORDER_EXPIRY_SWEEP_INTERVAL_MS);
+    }
+
     app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
   } catch (err) {
     console.error("❌ Startup failed:", err.message);

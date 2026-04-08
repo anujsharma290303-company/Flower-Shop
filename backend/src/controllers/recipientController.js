@@ -1,3 +1,4 @@
+const { Op } = require('sequelize');
 const { RecipentAccessToken, Order, OrderItem, OrderStatusLog, Product, Category, NotificationLog, sequelize } = require('../models');
 const { captureAuthorizedPaymentForOrder, voidAuthorizedPaymentForOrder } = require('./paymentController');
 
@@ -15,6 +16,7 @@ const markTokenExpired = async (record, transaction) => {
     return;
   }
 
+  const previousStatus = record.status;
   await record.update({ status: 'expired' }, { transaction });
 
   const order = await Order.findByPk(record.orderId, {
@@ -27,7 +29,9 @@ const markTokenExpired = async (record, transaction) => {
   }
 
   const voidResult = await voidAuthorizedPaymentForOrder(order.id, transaction);
-  const nextPaymentStatus = voidResult.voided ? 'voided' : order.paymentStatus;
+  const nextPaymentStatus = voidResult.voided
+    ? 'voided'
+    : (order.paymentStatus === 'authorized' ? 'voided' : order.paymentStatus);
 
   await order.update(
     {
@@ -40,13 +44,81 @@ const markTokenExpired = async (record, transaction) => {
   await OrderStatusLog.create(
     {
       orderId: order.id,
-      fromStatus: order.status,
+        fromStatus: previousStatus,
       toStatus: 'expired',
       source: 'system',
       note: 'Recipient token expired',
     },
     { transaction },
   );
+};
+
+const expirePendingRecipientTokens = async ({ limit = null } = {}) => {
+  const transaction = await sequelize.transaction();
+
+  try {
+    const where = {
+      status: 'pending',
+      expiresAt: { [Op.lte]: new Date() },
+    };
+
+    const records = await RecipentAccessToken.findAll({
+      where,
+      order: [['expiresAt', 'ASC']],
+      transaction,
+      lock: transaction.LOCK.UPDATE,
+      ...(Number.isInteger(limit) && limit > 0 ? { limit } : {}),
+    });
+
+    let expiredCount = 0;
+    let voidedCount = 0;
+
+    for (const record of records) {
+      const order = await Order.findByPk(record.orderId, {
+        transaction,
+        lock: transaction.LOCK.UPDATE,
+      });
+
+      if (!order) {
+        continue;
+      }
+
+      const beforePaymentStatus = order.paymentStatus;
+      await markTokenExpired(record, transaction);
+
+      expiredCount += 1;
+      if (beforePaymentStatus === 'authorized') {
+        voidedCount += 1;
+      }
+    }
+
+    await transaction.commit();
+
+    return {
+      success: true,
+      expiredCount,
+      voidedCount,
+      inspectedCount: records.length,
+    };
+  } catch (error) {
+    await transaction.rollback();
+    throw error;
+  }
+};
+
+const expireRecipientTokensAdmin = async (req, res) => {
+  try {
+    const limit = req.query.limit ? Number(req.query.limit) : null;
+    const result = await expirePendingRecipientTokens({ limit });
+
+    return res.json({
+      success: true,
+      message: 'Recipient token expiry sweep completed',
+      data: result,
+    });
+  } catch (error) {
+    return handleControllerError(res, error, 500);
+  }
 };
 
 const isValidDeliveryDate = (dateString) => {
@@ -487,4 +559,6 @@ module.exports = {
   accept,
   reject,
   updatePrivacy,
+  expirePendingRecipientTokens,
+  expireRecipientTokensAdmin,
 };
