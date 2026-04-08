@@ -17,6 +17,7 @@ const FAQ = require("./FAQ");
 const SiteConfig = require("./SiteConfig");
 const Payment = require("./Payment");
 const NotificationLog = require("./NotificationLog");
+const Subscription = require("./Subscription");
 
 // Associations
 
@@ -84,6 +85,14 @@ OrderMedia.belongsTo(Order, { foreignKey: 'orderId', as: 'order' });
 Order.hasMany(CreditTransaction, { foreignKey: 'orderId', as: 'creditTransactions' });
 CreditTransaction.belongsTo(Order, { foreignKey: 'orderId', as: 'order' });
 
+// User->Subscription
+User.hasMany(Subscription, { foreignKey: 'userId', as: 'subscriptions' });
+Subscription.belongsTo(User, { foreignKey: 'userId', as: 'user' });
+
+// Order->Subscription
+Order.hasMany(Subscription, { foreignKey: 'orderId', as: 'subscriptions' });
+Subscription.belongsTo(Order, { foreignKey: 'orderId', as: 'order' });
+
 
 // Export all models
 module.exports = {
@@ -106,4 +115,5 @@ module.exports = {
   SiteConfig,
   Payment,
   NotificationLog,
+  Subscription,
 };

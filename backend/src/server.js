@@ -45,6 +45,10 @@ const {
 } = require("./routes/customBouquetRoutes");
 const paymentRoutes = require("./routes/paymentRoutes");
 const adminPaymentRoutes = require("./routes/adminPaymentRoutes");
+const {
+  publicRouter: subscriptionPublic,
+  adminRouter: subscriptionAdmin,
+} = require("./routes/subscriptionRoutes");
 const creditsRoutes = require("./routes/creditsRoutes");
 const deliveryRoutes = require("./routes/deliveryRoutes");
 const contactRoutes = require("./routes/contactRoutes");
@@ -99,6 +103,7 @@ app.use("/api/reviews", reviewPublic);
 app.use("/api/blogs", blogPublic);
 app.use("/api/bouquets", bouquetPublic);
 app.use("/api/payments", paymentRoutes);
+app.use("/api/subscriptions", subscriptionPublic);
 app.use("/api/credits", creditsRoutes);
 app.use("/api/delivery", deliveryRoutes);
 app.post("/api/wishlist", verifyCustomerToken, createWishlist);
@@ -119,6 +124,7 @@ app.use("/api/admin/reviews", reviewAdmin);
 app.use("/api/admin/blogs", blogAdmin);
 app.use("/api/admin/bouquets", bouquetAdmin);
 app.use("/api/admin/payments", adminPaymentRoutes);
+app.use("/api/admin/subscriptions", subscriptionAdmin);
 app.use("/api/admin/notifications", notificationRoutes);
 app.use("/api/admin/media", mediaRoutes);
 
