@@ -51,6 +51,20 @@ const validateCustomBouquet = [
     .isString()
     .withMessage('Each flower type must be a string')
     .trim(),
+  body('containerStyle')
+    .optional({ nullable: true })
+    .isString()
+    .withMessage('containerStyle must be a string')
+    .trim()
+    .isLength({ max: 120 })
+    .withMessage('containerStyle must be at most 120 characters long'),
+  body('occasion')
+    .optional({ nullable: true })
+    .isString()
+    .withMessage('occasion must be a string')
+    .trim()
+    .isLength({ max: 120 })
+    .withMessage('occasion must be at most 120 characters long'),
   body('extras')
     .optional({ nullable: true })
     .isArray()

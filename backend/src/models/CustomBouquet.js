@@ -27,6 +27,14 @@ const CustomBouquet = sequelize.define(
       allowNull: true,
       defaultValue: [],
     },
+    containerStyle: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    occasion: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
     extras: {
       type: DataTypes.ARRAY(DataTypes.STRING),
       allowNull: true,
