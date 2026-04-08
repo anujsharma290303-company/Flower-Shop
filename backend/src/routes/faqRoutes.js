@@ -16,6 +16,7 @@ const {
 const publicRouter = express.Router();
 const adminRouter = express.Router();
 
+adminRouter.get('/', verifyToken, getAll);
 adminRouter.post('/', verifyToken, validateFaq, create);
 adminRouter.put('/:id', verifyToken, validateUpdateFaq, update);
 adminRouter.delete('/:id', verifyToken, remove);

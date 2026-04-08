@@ -11,6 +11,7 @@ const adminRouter = express.Router();
 publicRouter.get('/', get);
 
 // Admin protected routes
+adminRouter.get('/', verifyToken, get);
 adminRouter.put('/', verifyToken, upload.single('heroImage'), validateUpdateSiteConfig, update);
 
 module.exports = {

@@ -23,6 +23,7 @@ publicRouter.get('/item/:itemCode', getProductByItemCode);
 publicRouter.get('/:id', getOne);
 
 // Protected admin routes (authentication required)
+adminRouter.get('/', verifyToken, getAll);
 adminRouter.post('/', verifyToken, upload.array('images', 5), validateProduct, create);
 adminRouter.put('/:id', verifyToken, upload.array('images', 5), validateUpdateProduct, update);
 adminRouter.delete('/:id', verifyToken, remove);

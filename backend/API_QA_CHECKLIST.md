@@ -193,28 +193,28 @@ Orders:
 - `PATCH /api/admin/orders/:id/payment` -> `200|400|404`
 
 Products:
-- `GET /api/admin/products` is not defined (expect `404`)
+- `GET /api/admin/products` -> `200`
 - `POST /api/admin/products` -> `201|422`
 - `PUT /api/admin/products/:id` -> `200|404|422`
 - `DELETE /api/admin/products/:id` -> `200|404`
 - `PATCH /api/admin/products/:id/toggle` -> `200|400|404`
 
 Categories:
-- `GET /api/admin/categories` is not defined (expect `404`)
+- `GET /api/admin/categories` -> `200`
 - `POST /api/admin/categories` -> `201|422`
 - `PUT /api/admin/categories/:id` -> `200|404|422`
 - `DELETE /api/admin/categories/:id` -> `200|404`
 - `PATCH /api/admin/categories/:id/toggle` -> `200|404`
 
 FAQs:
-- `GET /api/admin/faqs` is not defined (expect `404`)
+- `GET /api/admin/faqs` -> `200`
 - `POST /api/admin/faqs` -> `201|422`
 - `PUT /api/admin/faqs/:id` -> `200|404|422`
 - `DELETE /api/admin/faqs/:id` -> `200|404`
 - `PATCH /api/admin/faqs/:id/toggle` -> `200|404`
 
 Site config:
-- `GET /api/admin/siteconfig` is not defined (expect `404`)
+- `GET /api/admin/siteconfig` -> `200`
 - `PUT /api/admin/siteconfig` -> `200|422`
 
 Reviews:
@@ -238,4 +238,4 @@ Custom bouquets:
 ## Notes
 
 - Global rate limiter is active on `/api/*`. For large batch tests, run in smaller chunks or restart server between batches to avoid `429`.
-- Some admin GET list endpoints are intentionally not implemented for certain modules (products/categories/faqs/siteconfig), so `404` there is expected with current code.
+- Admin GET list endpoints for products, categories, FAQs, and site config are implemented.

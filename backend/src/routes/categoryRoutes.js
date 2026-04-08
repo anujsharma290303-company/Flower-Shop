@@ -23,6 +23,7 @@ publicRouter.get('/slug/:slug', getBySlug);
 publicRouter.get('/:id', getOne);
 
 // Admin routes (protected with JWT token)
+adminRouter.get('/', verifyToken, getAll);
 adminRouter.post('/', verifyToken, upload.single('image'), validateCategory, create);
 adminRouter.put('/:id', verifyToken, upload.single('image'), validateUpdateCategory, update);
 adminRouter.delete('/:id', verifyToken, remove);
