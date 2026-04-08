@@ -44,6 +44,7 @@ const {
   adminRouter: bouquetAdmin,
 } = require("./routes/customBouquetRoutes");
 const paymentRoutes = require("./routes/paymentRoutes");
+const adminPaymentRoutes = require("./routes/adminPaymentRoutes");
 const creditsRoutes = require("./routes/creditsRoutes");
 const deliveryRoutes = require("./routes/deliveryRoutes");
 const contactRoutes = require("./routes/contactRoutes");
@@ -117,6 +118,7 @@ app.use("/api/admin/siteconfig", siteConfigAdmin);
 app.use("/api/admin/reviews", reviewAdmin);
 app.use("/api/admin/blogs", blogAdmin);
 app.use("/api/admin/bouquets", bouquetAdmin);
+app.use("/api/admin/payments", adminPaymentRoutes);
 app.use("/api/admin/notifications", notificationRoutes);
 app.use("/api/admin/media", mediaRoutes);
 

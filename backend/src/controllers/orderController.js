@@ -1,5 +1,6 @@
 const { Order, OrderItem, Product, RecipentAccessToken, OrderStatusLog, NotificationLog, CreditTransaction, User, sequelize } = require('../models');
 const { v4: uuidv4 } = require('uuid');
+const { CREDIT_REASONS } = require('../constants/credits');
 
 const ORDER_STATUS = ['pending', 'authorized', 'paid', 'awaiting_recipient', 'recipient_accepted', 'processing', 'out_for_delivery', 'delivered', 'cancelled', 'expired'];
 const PAYMENT_STATUS = ['unpaid', 'authorized', 'paid', 'refunded', 'voided'];
@@ -341,7 +342,7 @@ const create = async (req, res) => {
           orderId: order.id,
           amount: creditsApplied,
           type: 'redeem',
-          reason: 'checkout_credit_applied',
+          reason: CREDIT_REASONS.CHECKOUT_CREDIT_APPLIED,
         },
         { transaction }
       );

@@ -4,6 +4,7 @@ const {
 	authorize,
 	capture,
 	voidPayment,
+	refund,
 } = require('../controllers/paymentController');
 const { validateMockPayment, validateAuthorizePayment } = require('../validators/paymentValidator');
 
@@ -13,5 +14,6 @@ router.post('/pay', validateMockPayment, pay);
 router.post('/authorize', validateAuthorizePayment, authorize);
 router.post('/:id/capture', capture);
 router.post('/:id/void', voidPayment);
+router.post('/:id/refund', refund);
 
 module.exports = router;

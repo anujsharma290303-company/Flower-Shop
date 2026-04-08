@@ -22,20 +22,6 @@ const Payment = sequelize.define(
       allowNull: false,
       defaultValue: 'USD',
     },
-    status: {
-      type: DataTypes.ENUM('pending', 'authorized', 'captured', 'voided', 'success', 'failed', 'refunded'),
-      allowNull: false,
-      defaultValue: 'pending',
-    },
-    method: {
-      type: DataTypes.ENUM('mock-card', 'mock-upi', 'crypto'),
-      allowNull: false,
-    },
-    transactionId: {
-      type: DataTypes.STRING,
-      allowNull: false,
-      unique: true,
-    },
     authorizedAt: {
       type: DataTypes.DATE,
       allowNull: true,
@@ -51,6 +37,20 @@ const Payment = sequelize.define(
     refundedAt: {
       type: DataTypes.DATE,
       allowNull: true,
+    },
+    status: {
+      type: DataTypes.ENUM('pending', 'authorized', 'captured', 'voided', 'success', 'failed', 'refunded'),
+      allowNull: false,
+      defaultValue: 'pending',
+    },
+    method: {
+      type: DataTypes.ENUM('mock-card', 'mock-upi', 'crypto'),
+      allowNull: false,
+    },
+    transactionId: {
+      type: DataTypes.STRING,
+      allowNull: false,
+      unique: true,
     },
   },
   {

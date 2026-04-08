@@ -1,11 +1,8 @@
 const { Order, OrderMedia, User, CreditTransaction, sequelize } = require('../models');
+const { CREDIT_EARN_REWARD_TABLE, CREDIT_REASONS } = require('../constants/credits');
 
 const ALLOWED_MEDIA_TYPES = ['photo', 'video'];
 const ALLOWED_SHARED_WITH = ['sender', 'public'];
-const CREDIT_REWARDS = {
-  photo: 5,
-  video: 10,
-};
 
 const handleControllerError = (res, error, context) => {
   console.error(`[OrderMediaController] ${context}:`, error.message);
@@ -230,7 +227,9 @@ const approve = async (req, res) => {
       });
     }
 
-    const rewardAmount = CREDIT_REWARDS[media.mediaType] || 0;
+    const rewardAmount = media.mediaType === 'video'
+      ? CREDIT_EARN_REWARD_TABLE[CREDIT_REASONS.VIDEO_SHARED]
+      : CREDIT_EARN_REWARD_TABLE[CREDIT_REASONS.PHOTO_SHARED];
     const linkedOrder = await Order.findByPk(media.orderId, {
       transaction,
       attributes: ['id', 'userId'],
@@ -265,7 +264,7 @@ const approve = async (req, res) => {
           orderId: media.orderId,
           amount: rewardAmount,
           type: 'earn',
-          reason: media.mediaType === 'video' ? 'video_shared' : 'photo_shared',
+          reason: media.mediaType === 'video' ? CREDIT_REASONS.VIDEO_SHARED : CREDIT_REASONS.PHOTO_SHARED,
         },
         { transaction }
       );

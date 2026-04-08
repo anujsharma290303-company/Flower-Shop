@@ -1,6 +1,5 @@
 const { CreditTransaction, User, Order, sequelize } = require('../models');
-
-const ALLOWED_EARN_REASONS = ['photo_shared', 'video_shared', 'social_share', 'ugc_post'];
+const { CREDIT_EARN_REWARD_TABLE, CREDIT_EARN_REASONS } = require('../constants/credits');
 
 const handleControllerError = (res, error, context) => {
   console.error(`[CreditsController] ${context}:`, error.message);
@@ -22,18 +21,30 @@ const earn = async (req, res) => {
     const userId = req.user.id;
     const { amount, reason } = req.body || {};
 
-    const parsedAmount = parsePositiveInt(amount);
-    if (!parsedAmount) {
-      await transaction.rollback();
-      return res.status(400).json({ success: false, message: 'amount must be a positive integer' });
-    }
-
-    if (!reason || !ALLOWED_EARN_REASONS.includes(reason)) {
+    if (!reason || !CREDIT_EARN_REASONS.includes(reason)) {
       await transaction.rollback();
       return res.status(400).json({
         success: false,
-        message: `reason must be one of: ${ALLOWED_EARN_REASONS.join(', ')}`,
+        message: `reason must be one of: ${CREDIT_EARN_REASONS.join(', ')}`,
       });
+    }
+
+    const rewardAmount = CREDIT_EARN_REWARD_TABLE[reason];
+
+    if (amount !== undefined) {
+      const parsedAmount = parsePositiveInt(amount);
+      if (!parsedAmount) {
+        await transaction.rollback();
+        return res.status(400).json({ success: false, message: 'amount must be a positive integer when provided' });
+      }
+
+      if (parsedAmount !== rewardAmount) {
+        await transaction.rollback();
+        return res.status(400).json({
+          success: false,
+          message: `amount must match reward table for ${reason}: ${rewardAmount}`,
+        });
+      }
     }
 
     const user = await User.findByPk(userId, {
@@ -46,13 +57,13 @@ const earn = async (req, res) => {
       return res.status(404).json({ success: false, message: 'User not found' });
     }
 
-    const newBalance = Number(user.credits) + parsedAmount;
+    const newBalance = Number(user.credits) + rewardAmount;
     await user.update({ credits: newBalance }, { transaction });
 
     const creditTx = await CreditTransaction.create(
       {
         userId,
-        amount: parsedAmount,
+        amount: rewardAmount,
         type: 'earn',
         reason,
       },
@@ -75,6 +86,30 @@ const earn = async (req, res) => {
   }
 };
 
+const getBalance = async (req, res) => {
+  try {
+    const userId = req.user.id;
+
+    const user = await User.findByPk(userId, {
+      attributes: ['id', 'credits'],
+    });
+
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+
+    return res.json({
+      success: true,
+      data: {
+        userId: user.id,
+        balance: Number(user.credits),
+      },
+    });
+  } catch (error) {
+    return handleControllerError(res, error, 'Get credit balance error');
+  }
+};
+
 const getHistory = async (req, res) => {
   try {
     const userId = req.user.id;
@@ -93,5 +128,6 @@ const getHistory = async (req, res) => {
 
 module.exports = {
   earn,
+  getBalance,
   getHistory,
 };

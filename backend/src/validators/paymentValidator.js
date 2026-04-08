@@ -1,6 +1,6 @@
 const { body, validationResult } = require('express-validator');
 
-const PAYMENT_METHODS = ['mock-card', 'mock-upi'];
+const PAYMENT_METHODS = ['mock-card', 'mock-upi', 'crypto'];
 
 const parseBooleanLike = (value) => {
   if (typeof value === 'boolean') {

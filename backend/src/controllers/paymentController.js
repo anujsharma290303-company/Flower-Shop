@@ -20,6 +20,20 @@ const parsePositiveInt = (value) => {
   return parsed;
 };
 
+const parseBooleanLike = (value) => {
+  if (typeof value === 'boolean') return value;
+  if (typeof value === 'number') {
+    if (value === 1) return true;
+    if (value === 0) return false;
+  }
+  if (typeof value === 'string') {
+    const normalized = value.trim().toLowerCase();
+    if (normalized === 'true' || normalized === '1') return true;
+    if (normalized === 'false' || normalized === '0') return false;
+  }
+  return undefined;
+};
+
 const captureAuthorizedPaymentForOrder = async (orderId, transaction) => {
   const payment = await Payment.findOne({
     where: { orderId, status: 'authorized' },
@@ -32,7 +46,7 @@ const captureAuthorizedPaymentForOrder = async (orderId, transaction) => {
     return { captured: false, payment: null };
   }
 
-  await payment.update({ status: 'captured' }, { transaction });
+  await payment.update({ status: 'captured', capturedAt: new Date() }, { transaction });
   return { captured: true, payment };
 };
 
@@ -48,7 +62,7 @@ const voidAuthorizedPaymentForOrder = async (orderId, transaction) => {
     return { voided: false, payment: null };
   }
 
-  await payment.update({ status: 'voided' }, { transaction });
+  await payment.update({ status: 'voided', voidedAt: new Date() }, { transaction });
   return { voided: true, payment };
 };
 
@@ -77,6 +91,7 @@ const pay = async (req, res) => {
       {
         orderId: order.id,
         amount: Number(order.totalPrice),
+        currency: order.currency,
         status: 'pending',
         method,
         transactionId: `TXN-${uuidv4()}`,
@@ -93,7 +108,7 @@ const pay = async (req, res) => {
     const isSuccess = simulateSuccess === undefined ? true : Boolean(simulateSuccess);
 
     if (isSuccess) {
-      await payment.update({ status: 'success' }, { transaction });
+      await payment.update({ status: 'captured', capturedAt: new Date() }, { transaction });
       const nextOrderStatus = order.isRecipientChoice ? 'awaiting_recipient' : 'paid';
       const previousStatus = order.status;
       await order.update(
@@ -170,6 +185,7 @@ const authorize = async (req, res) => {
       {
         orderId: order.id,
         amount: Number(order.totalPrice),
+        currency: order.currency,
         status: 'pending',
         method,
         transactionId: `AUTH-${uuidv4()}`,
@@ -186,7 +202,11 @@ const authorize = async (req, res) => {
     const isSuccess = simulateSuccess === undefined ? true : Boolean(simulateSuccess);
 
     if (isSuccess) {
-      await payment.update({ status: 'authorized' }, { transaction });
+      await payment.update({ status: 'authorized', authorizedAt: new Date() }, { transaction });
+
+      if (order.paymentStatus !== 'paid') {
+        await order.update({ paymentStatus: 'authorized' }, { transaction });
+      }
 
       if (order.isRecipientChoice && order.status === 'pending') {
         await order.update({ status: 'awaiting_recipient' }, { transaction });
@@ -255,7 +275,7 @@ const capture = async (req, res) => {
       return res.status(404).json({ success: false, message: 'Order not found for payment' });
     }
 
-    await payment.update({ status: 'captured' }, { transaction });
+    await payment.update({ status: 'captured', capturedAt: new Date() }, { transaction });
     await order.update({ paymentStatus: 'paid' }, { transaction });
 
     await transaction.commit();
@@ -306,8 +326,8 @@ const voidPayment = async (req, res) => {
       return res.status(404).json({ success: false, message: 'Order not found for payment' });
     }
 
-    await payment.update({ status: 'voided' }, { transaction });
-    await order.update({ paymentStatus: 'unpaid' }, { transaction });
+    await payment.update({ status: 'voided', voidedAt: new Date() }, { transaction });
+    await order.update({ paymentStatus: 'voided' }, { transaction });
 
     await transaction.commit();
 
@@ -322,11 +342,141 @@ const voidPayment = async (req, res) => {
   }
 };
 
+const refund = async (req, res) => {
+  const transaction = await sequelize.transaction();
+
+  try {
+    const paymentId = parsePositiveInt(req.params.id);
+    if (!paymentId) {
+      await transaction.rollback();
+      return res.status(400).json({ success: false, message: 'Payment id must be a positive integer' });
+    }
+
+    const payment = await Payment.findByPk(paymentId, {
+      transaction,
+      lock: transaction.LOCK.UPDATE,
+    });
+
+    if (!payment) {
+      await transaction.rollback();
+      return res.status(404).json({ success: false, message: 'Payment not found' });
+    }
+
+    if (!['captured', 'success'].includes(payment.status)) {
+      await transaction.rollback();
+      return res.status(400).json({ success: false, message: 'Only captured payments can be refunded' });
+    }
+
+    const order = await Order.findByPk(payment.orderId, {
+      transaction,
+      lock: transaction.LOCK.UPDATE,
+    });
+
+    if (!order) {
+      await transaction.rollback();
+      return res.status(404).json({ success: false, message: 'Order not found for payment' });
+    }
+
+    await payment.update({ status: 'refunded', refundedAt: new Date() }, { transaction });
+    await order.update({ paymentStatus: 'refunded' }, { transaction });
+
+    await transaction.commit();
+
+    return res.json({
+      success: true,
+      message: 'Payment refunded successfully',
+      data: { payment, order },
+    });
+  } catch (error) {
+    await transaction.rollback();
+    return handleControllerError(res, error, 500);
+  }
+};
+
+const getAllAdmin = async (req, res) => {
+  try {
+    const page = parsePositiveInt(req.query.page) || 1;
+    const limit = parsePositiveInt(req.query.limit) || 20;
+    const offset = (page - 1) * limit;
+
+    const where = {};
+
+    if (req.query.status !== undefined) {
+      where.status = String(req.query.status).trim();
+    }
+
+    if (req.query.method !== undefined) {
+      where.method = String(req.query.method).trim();
+    }
+
+    if (req.query.orderId !== undefined) {
+      const orderId = parsePositiveInt(req.query.orderId);
+      if (!orderId) {
+        return res.status(400).json({ success: false, message: 'orderId must be a positive integer' });
+      }
+      where.orderId = orderId;
+    }
+
+    if (req.query.isRefunded !== undefined) {
+      const parsed = parseBooleanLike(req.query.isRefunded);
+      if (parsed === undefined) {
+        return res.status(400).json({ success: false, message: 'isRefunded must be boolean-like' });
+      }
+      where.status = parsed ? 'refunded' : where.status;
+    }
+
+    const { count, rows } = await Payment.findAndCountAll({
+      where,
+      include: [{ model: Order, as: 'order' }],
+      order: [['createdAt', 'DESC']],
+      limit,
+      offset,
+    });
+
+    return res.json({
+      success: true,
+      data: {
+        totalItems: count,
+        page,
+        limit,
+        totalPages: Math.ceil(count / limit),
+        payments: rows,
+      },
+    });
+  } catch (error) {
+    return handleControllerError(res, error, 500);
+  }
+};
+
+const getOneAdmin = async (req, res) => {
+  try {
+    const paymentId = parsePositiveInt(req.params.id);
+    if (!paymentId) {
+      return res.status(400).json({ success: false, message: 'Payment id must be a positive integer' });
+    }
+
+    const payment = await Payment.findByPk(paymentId, {
+      include: [{ model: Order, as: 'order' }],
+    });
+
+    if (!payment) {
+      return res.status(404).json({ success: false, message: 'Payment not found' });
+    }
+
+    return res.json({ success: true, data: payment });
+  } catch (error) {
+    return handleControllerError(res, error, 500);
+  }
+};
+
 module.exports = {
   pay,
   authorize,
   capture,
   voidPayment,
+  refund,
+  getAllAdmin,
+  getOneAdmin,
   captureAuthorizedPaymentForOrder,
   voidAuthorizedPaymentForOrder,
 };

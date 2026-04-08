@@ -1,5 +1,6 @@
 const { DataTypes } = require('sequelize');
 const sequelize = require('../config/database');
+const { CREDIT_REASON_ENUM } = require('../constants/credits');
 
 const CreditTransaction = sequelize.define(
   'CreditTransaction',
@@ -29,7 +30,7 @@ const CreditTransaction = sequelize.define(
       allowNull: false,
     },
     reason: {
-      type: DataTypes.STRING,
+      type: DataTypes.ENUM(...CREDIT_REASON_ENUM),
       allowNull: false,
     },
   },
