@@ -2,7 +2,6 @@ const sequelize = require("../config/database");
 const Admin = require("./Admin");
 const User = require("./User");
 const CreditTransaction = require("./CreditTransaction");
-const Wishlist = require("./Wishlist");
 const OrderMedia = require("./OrderMedia");
 const Category = require("./Category");
 const Product = require("./Product");
@@ -18,6 +17,7 @@ const SiteConfig = require("./SiteConfig");
 const Payment = require("./Payment");
 const NotificationLog = require("./NotificationLog");
 const Subscription = require("./Subscription");
+const DeliveryBlackoutDate = require("./DeliveryBlackoutDate");
 
 // Associations
 
@@ -69,10 +69,6 @@ Order.belongsTo(User, { foreignKey: 'userId', as: 'user' });
 User.hasMany(CreditTransaction, { foreignKey: 'userId', as: 'creditTransactions' });
 CreditTransaction.belongsTo(User, { foreignKey: 'userId', as: 'user' });
 
-// User->Wishlist
-User.hasMany(Wishlist, { foreignKey: 'userId', as: 'wishlists' });
-Wishlist.belongsTo(User, { foreignKey: 'userId', as: 'user' });
-
 // User->OrderMedia
 User.hasMany(OrderMedia, { foreignKey: 'userId', as: 'sharedMedia' });
 OrderMedia.belongsTo(User, { foreignKey: 'userId', as: 'user' });
@@ -100,7 +96,6 @@ module.exports = {
   Admin,
   User,
   CreditTransaction,
-  Wishlist,
   OrderMedia,
   Category,
   Product,
@@ -116,4 +111,5 @@ module.exports = {
   Payment,
   NotificationLog,
   Subscription,
+  DeliveryBlackoutDate,
 };

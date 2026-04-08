@@ -1,9 +1,26 @@
 const express = require('express');
-const { getAvailableDates, checkAvailability } = require('../controllers/deliveryController');
+const verifyToken = require('../middleware/auth');
+const {
+	getAvailableDates,
+	checkAvailability,
+	getBlackoutDatesAdmin,
+	createBlackoutDateAdmin,
+	updateBlackoutDateAdmin,
+	deleteBlackoutDateAdmin,
+} = require('../controllers/deliveryController');
 
-const router = express.Router();
+const publicRouter = express.Router();
+const adminRouter = express.Router();
 
-router.get('/available-dates', getAvailableDates);
-router.get('/check', checkAvailability);
+publicRouter.get('/available-dates', getAvailableDates);
+publicRouter.get('/check', checkAvailability);
 
-module.exports = router;
+adminRouter.get('/blackout-dates', verifyToken, getBlackoutDatesAdmin);
+adminRouter.post('/blackout-dates', verifyToken, createBlackoutDateAdmin);
+adminRouter.patch('/blackout-dates/:id', verifyToken, updateBlackoutDateAdmin);
+adminRouter.delete('/blackout-dates/:id', verifyToken, deleteBlackoutDateAdmin);
+
+module.exports = {
+	publicRouter,
+	adminRouter,
+};

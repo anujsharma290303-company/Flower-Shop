@@ -50,13 +50,16 @@ const {
   adminRouter: subscriptionAdmin,
 } = require("./routes/subscriptionRoutes");
 const creditsRoutes = require("./routes/creditsRoutes");
-const deliveryRoutes = require("./routes/deliveryRoutes");
+const {
+  publicRouter: deliveryPublic,
+  adminRouter: deliveryAdmin,
+} = require("./routes/deliveryRoutes");
 const contactRoutes = require("./routes/contactRoutes");
 const recipientRoutes = require("./routes/recipientRoutes");
 const notificationRoutes = require("./routes/notificationRoutes");
 const mediaRoutes = require("./routes/mediaRoutes");
+const wishlistRoutes = require("./routes/wishlistRoutes");
 const verifyCustomerToken = require("./middleware/customerAuth");
-const { create: createWishlist, getByToken: getWishlistByToken } = require("./controllers/wishlistController");
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -105,9 +108,8 @@ app.use("/api/bouquets", bouquetPublic);
 app.use("/api/payments", paymentRoutes);
 app.use("/api/subscriptions", subscriptionPublic);
 app.use("/api/credits", creditsRoutes);
-app.use("/api/delivery", deliveryRoutes);
-app.post("/api/wishlist", verifyCustomerToken, createWishlist);
-app.get("/api/wishlist/:token", getWishlistByToken);
+app.use("/api/delivery", deliveryPublic);
+app.use("/api/wishlist", wishlistRoutes);
 app.use("/api/contact", contactRoutes);
 app.use("/api/recipient", recipientRoutes);
 
@@ -125,6 +127,7 @@ app.use("/api/admin/blogs", blogAdmin);
 app.use("/api/admin/bouquets", bouquetAdmin);
 app.use("/api/admin/payments", adminPaymentRoutes);
 app.use("/api/admin/subscriptions", subscriptionAdmin);
+app.use("/api/admin/delivery", deliveryAdmin);
 app.use("/api/admin/notifications", notificationRoutes);
 app.use("/api/admin/media", mediaRoutes);
 
