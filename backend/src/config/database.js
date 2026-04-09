@@ -1,15 +1,25 @@
 const { Sequelize } = require('sequelize');
 require('dotenv').config();
 
+if (!process.env.DATABASE_URL) {
+  throw new Error('DATABASE_URL is required');
+}
+
+const useSsl = process.env.DB_SSL
+  ? process.env.DB_SSL === 'true'
+  : process.env.NODE_ENV === 'production';
+
 const sequelize = new Sequelize(process.env.DATABASE_URL, {
   dialect: 'postgres',
   protocol: 'postgres',
-  dialectOptions: {
-    ssl: {
-      require: true,
-      rejectUnauthorized: false,
-    },
-  },
+  dialectOptions: useSsl
+    ? {
+        ssl: {
+          require: true,
+          rejectUnauthorized: false,
+        },
+      }
+    : {},
   logging: false, // turn off SQL query logs
   pool: {
     max: 5,
