@@ -70,9 +70,33 @@ const ORDER_EXPIRY_SWEEP_INTERVAL_MS = Number(process.env.ORDER_EXPIRY_SWEEP_INT
 
 // Security
 app.use(helmet());
+
+const configuredOrigins = (process.env.FRONTEND_URL || "http://localhost:5173")
+  .split(',')
+  .map((origin) => origin.trim())
+  .filter(Boolean);
+
+const isAllowedOrigin = (origin) => {
+  if (!origin) {
+    return true;
+  }
+
+  if (configuredOrigins.includes(origin)) {
+    return true;
+  }
+
+  return /^https?:\/\/(localhost|127\.0\.0\.1):(\d+)$/.test(origin);
+};
+
 app.use(
   cors({
-    origin: process.env.FRONTEND_URL || "http://localhost:5173",
+    origin: (origin, callback) => {
+      if (isAllowedOrigin(origin)) {
+        return callback(null, true);
+      }
+
+      return callback(new Error(`CORS blocked origin: ${origin}`));
+    },
     credentials: true,
   }),
 );
@@ -104,6 +128,7 @@ app.use("/api/categories", categoryPublic);
 app.use("/api/orders", orderPublic);
 app.use("/api/faqs", faqPublic);
 app.use("/api/siteconfig", siteConfigPublic);
+app.use("/api/site-config", siteConfigPublic);
 app.use("/api/reviews", reviewPublic);
 app.use("/api/blogs", blogPublic);
 app.use("/api/bouquets", bouquetPublic);
@@ -125,6 +150,7 @@ app.use("/api/admin/categories", categoryAdmin);
 app.use("/api/admin/orders", orderAdmin);
 app.use("/api/admin/faqs", faqAdmin);
 app.use("/api/admin/siteconfig", siteConfigAdmin);
+app.use("/api/admin/site-config", siteConfigAdmin);
 app.use("/api/admin/reviews", reviewAdmin);
 app.use("/api/admin/blogs", blogAdmin);
 app.use("/api/admin/bouquets", bouquetAdmin);

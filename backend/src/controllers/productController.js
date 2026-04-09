@@ -146,13 +146,22 @@ const getAll = async (req, res) => {
 			order: [['createdAt', 'DESC']],
 		});
 
+		const totalPages = Math.ceil(count / parsedLimit);
+
 		return res.status(200).json({
 			success: true,
+			// Frontend compatibility (used by homepage featured products service)
+			items: rows,
+			totalItems: count,
+			page: parsedPage,
+			limit: parsedLimit,
+			totalPages,
+			// Legacy shape preserved for existing admin/API consumers
 			data: {
 				totalItems: count,
 				page: parsedPage,
 				limit: parsedLimit,
-				totalPages: Math.ceil(count / parsedLimit),
+				totalPages,
 				count: rows.length,
 				products: rows,
 			},
