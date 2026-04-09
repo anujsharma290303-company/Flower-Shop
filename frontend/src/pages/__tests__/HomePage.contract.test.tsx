@@ -32,6 +32,18 @@ vi.mock('@/api/products', () => ({
   },
 }))
 
+vi.mock('@/api/site-config', () => ({
+  siteConfigService: {
+    get: vi.fn().mockResolvedValue(null),
+  },
+}))
+
+vi.mock('@/api/categories', () => ({
+  categoryService: {
+    getTopLevel: vi.fn().mockResolvedValue([]),
+  },
+}))
+
 describe('HomePage contract with socialflowers main page', () => {
   const renderHomePage = async () => {
     render(

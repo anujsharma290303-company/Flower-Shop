@@ -5,8 +5,9 @@
 
 import React from 'react'
 import { Link } from 'react-router-dom'
-import { SHOP_CATEGORIES, COMPANY_LINKS, USES_LINKS, SOCIAL_LINKS } from '@/utils/constants'
+import { SHOP_CATEGORIES, COMPANY_LINKS, USES_LINKS } from '@/utils/constants'
 import { FaFacebookF, FaInstagram, FaLinkedinIn, FaTiktok, FaXTwitter } from 'react-icons/fa6'
+import { useSiteConfig } from '@/hooks/useSiteConfig'
 
 const socialIconMap = {
   twitter: FaXTwitter,
@@ -18,6 +19,7 @@ const socialIconMap = {
 
 const Footer: React.FC = () => {
   const currentYear = new Date().getFullYear()
+  const { socialLinks } = useSiteConfig()
 
   return (
     <footer className="relative overflow-hidden bg-[#15171d] text-gray-100">
@@ -29,24 +31,26 @@ const Footer: React.FC = () => {
           <div>
             <h3 className="text-[14px] uppercase font-semibold tracking-wide text-white mb-4">Follow Us:</h3>
             <div className="flex items-center gap-3">
-              {SOCIAL_LINKS.map((social) => (
-                (() => {
-                  const Icon = socialIconMap[social.platform as keyof typeof socialIconMap]
+              {socialLinks.map((social) => {
+                const Icon = socialIconMap[social.platform as keyof typeof socialIconMap]
 
-                  return (
-                <a
-                  key={social.platform}
-                  href={social.href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-[#313540] bg-[#1c1f26] text-gray-300 transition-colors hover:border-red-500 hover:bg-red-600 hover:text-white"
-                  aria-label={`Follow us on ${social.platform}`}
-                >
-                  <Icon className="h-4 w-4" aria-hidden="true" />
-                </a>
-                  )
-                })()
-              ))}
+                if (!Icon) {
+                  return null
+                }
+
+                return (
+                  <a
+                    key={social.platform}
+                    href={social.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-[#313540] bg-[#1c1f26] text-gray-300 transition-colors hover:border-red-500 hover:bg-red-600 hover:text-white"
+                    aria-label={`Follow us on ${social.platform}`}
+                  >
+                    <Icon className="h-4 w-4" aria-hidden="true" />
+                  </a>
+                )
+              })}
             </div>
           </div>
 

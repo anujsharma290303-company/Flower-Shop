@@ -143,9 +143,20 @@ export interface AuthResponse {
 
 export interface SiteConfig {
   id: number
-  key: string
-  value: string
-  dataType: 'string' | 'number' | 'boolean' | 'json'
+  heroTitle: string
+  heroSubTitle: string
+  heroCTA1: string
+  heroCTA2: string
+  heroImage: string | null
+  howItWorks: Array<{
+    step: number
+    title: string
+    description: string
+  }>
+  benefitsData: unknown[]
+  contactEmail: string
+  contactPhone: string
+  socialLinks: Record<string, string>
   createdAt: string
   updatedAt: string
 }

@@ -77,7 +77,7 @@ const BenefitsSection: React.FC = () => {
 
   return (
     <section id="benefits" className="py-12 md:py-16 px-4 md:px-8 bg-[#f8e8e6]">
-      <div className="max-w-285 mx-auto">
+      <div className="max-w-7xl mx-auto">
         <div className="text-center mb-10 md:mb-12">
           <h2 className="text-[26px] md:text-[34px] font-medium font-serif text-gray-900">
             The Benefits of the Social Flowers Solution

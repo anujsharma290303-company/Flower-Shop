@@ -15,6 +15,18 @@ vi.mock('@/api/products', () => ({
   },
 }))
 
+vi.mock('@/api/site-config', () => ({
+  siteConfigService: {
+    get: vi.fn().mockResolvedValue(null),
+  },
+}))
+
+vi.mock('@/api/categories', () => ({
+  categoryService: {
+    getTopLevel: vi.fn().mockResolvedValue([]),
+  },
+}))
+
 describe('App routing', () => {
   it('renders homepage on / route', async () => {
     render(
