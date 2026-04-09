@@ -32,7 +32,7 @@ const HeroSection: React.FC = () => {
 
             {/* CTA Buttons */}
             <div className="flex flex-wrap justify-center gap-3">
-              <Link to="/shop">
+              <Link to="/best-sellers">
                 <Button
                   label={heroCtaPrimary}
                   variant="primary"

@@ -7,6 +7,7 @@ import React, { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { cn } from '@/utils/cn'
 import { SOCIAL_FLOWERS_HOMEPAGE } from '@/utils/socialflowersHomepage'
+import { useCategories } from '@/hooks/useCategories'
 
 export interface NavigationProps {
   cartCount?: number
@@ -17,8 +18,14 @@ export interface NavigationProps {
 
 const Navigation: React.FC<NavigationProps> = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [shopMenuOpen, setShopMenuOpen] = useState(false)
+  const { categories } = useCategories()
 
   const navLinks = SOCIAL_FLOWERS_HOMEPAGE.navigation
+  const shopCategories = categories.slice(0, 12).map((category) => ({
+    label: category.name,
+    href: `/shop/${category.slug}`,
+  }))
 
   return (
     <nav className="sticky top-0 z-40 bg-white border-b border-gray-200">
@@ -36,15 +43,58 @@ const Navigation: React.FC<NavigationProps> = () => {
 
           {/* Desktop Menu */}
           <div className="hidden md:flex items-center gap-7">
-            {navLinks.map((link) => (
-              <Link
-                key={link.label}
-                to={link.href}
-                className="text-[16px] font-semibold text-gray-800 hover:text-red-600 transition-colors"
-              >
-                {link.label}
-              </Link>
-            ))}
+            {navLinks.map((link) => {
+              if (link.label === 'Shop') {
+                return (
+                  <div
+                    key={link.label}
+                    className="relative"
+                    onMouseEnter={() => setShopMenuOpen(true)}
+                    onMouseLeave={() => setShopMenuOpen(false)}
+                  >
+                    <Link
+                      to="/shop"
+                      className="text-[16px] font-semibold text-gray-800 hover:text-red-600 transition-colors"
+                      onFocus={() => setShopMenuOpen(true)}
+                    >
+                      Shop
+                    </Link>
+
+                    {shopMenuOpen && (
+                      <div className="absolute left-0 top-full pt-1 w-66 z-50">
+                        <div className="border border-gray-200 bg-[#efefef] shadow-sm py-2">
+                          <Link
+                            to="/best-sellers"
+                            className="block px-3 py-1.5 text-[16px] text-gray-700 hover:text-red-600"
+                          >
+                            Best Sellers
+                          </Link>
+                          {shopCategories.map((category) => (
+                            <Link
+                              key={category.href}
+                              to={category.href}
+                              className="block px-3 py-1.5 text-[16px] text-gray-700 hover:text-red-600"
+                            >
+                              {category.label}
+                            </Link>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )
+              }
+
+              return (
+                <Link
+                  key={link.label}
+                  to={link.href}
+                  className="text-[16px] font-semibold text-gray-800 hover:text-red-600 transition-colors"
+                >
+                  {link.label}
+                </Link>
+              )
+            })}
           </div>
 
           {/* Right Icon */}
@@ -107,10 +157,18 @@ const Navigation: React.FC<NavigationProps> = () => {
               {navLinks.map((link) => (
                 <Link
                   key={link.label}
-                  to={link.href}
+                  to={link.label === 'Shop' ? '/shop' : link.href}
                   className="text-gray-800 hover:text-red-600 font-medium py-1"
                 >
                   {link.label}
+                </Link>
+              ))}
+              <Link to="/best-sellers" className="text-gray-700 hover:text-red-600 text-sm pl-3">
+                Best Sellers
+              </Link>
+              {shopCategories.map((category) => (
+                <Link key={category.href} to={category.href} className="text-gray-700 hover:text-red-600 text-sm pl-3">
+                  {category.label}
                 </Link>
               ))}
               <Link to="/sign-in" className="text-gray-800 hover:text-red-600 font-medium py-1">

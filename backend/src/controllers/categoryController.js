@@ -33,13 +33,27 @@ const buildUniqueSlug = async (name, excludeId = null) => {
   return slug;
 };
 
+const buildPublicCategoryWhere = (baseWhere = {}) => ({
+  ...baseWhere,
+  isActive: true,
+  [Op.and]: [
+    { name: { [Op.notILike]: 'audit%' } },
+    { slug: { [Op.notILike]: 'audit%' } },
+  ],
+});
+
 const getAll = async (req, res) => {
   try {
     const { isActive } = req.query;
-    const where = { parentId: null }; // Only parent categories
+    const isAdminRequest = req.originalUrl.includes('/api/admin/');
+    let where = { parentId: null }; // Only parent categories
 
     if (isActive !== undefined) {
       where.isActive = isActive === 'true' || isActive === '1';
+    }
+
+    if (!isAdminRequest && isActive === undefined) {
+      where = buildPublicCategoryWhere(where);
     }
 
     const categories = await Category.findAll({
@@ -48,6 +62,9 @@ const getAll = async (req, res) => {
         {
           model: Category,
           as: 'subcategories',
+          ...(isAdminRequest || isActive !== undefined
+            ? {}
+            : { where: buildPublicCategoryWhere({}), required: false }),
           attributes: ['id', 'name', 'slug', 'description', 'icon', 'displayOrder', 'isActive', 'parentId'],
         },
       ],
@@ -111,12 +128,12 @@ const getBySlug = async (req, res) => {
 const getCategoriesWithSubs = async (req, res) => {
   try {
     const categories = await Category.findAll({
-      where: { parentId: null, isActive: true },
+      where: buildPublicCategoryWhere({ parentId: null }),
       include: [
         {
           model: Category,
           as: 'subcategories',
-          where: { isActive: true },
+          where: buildPublicCategoryWhere({}),
           required: false,
         },
       ],

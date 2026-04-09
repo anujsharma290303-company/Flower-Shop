@@ -15,12 +15,13 @@ export const API_ENDPOINTS = {
   // Products
   PRODUCTS: '/products',
   PRODUCT_BY_ID: (id: number) => `/products/${id}`,
+  PRODUCT_BY_ITEM_CODE: (itemCode: string) => `/products/item/${itemCode}`,
   BEST_SELLERS: '/products?isBestSeller=true',
   
   // Categories
   CATEGORIES: '/categories',
   CATEGORY_BY_ID: (id: number) => `/categories/${id}`,
-  CATEGORY_BY_SLUG: (slug: string) => `/categories/${slug}`,
+  CATEGORY_BY_SLUG: (slug: string) => `/categories/slug/${slug}`,
   
   // Orders
   ORDERS: '/orders',

@@ -75,6 +75,37 @@ const parseBooleanFields = (source, fields) => {
 	return { values: result };
 };
 
+const buildFallbackImageFromItemCode = (itemCode) => {
+	if (typeof itemCode !== 'string' || itemCode.trim() === '') {
+		return null;
+	}
+
+	return `https://cdn.floristone.com/large/${itemCode.trim()}_d1.jpg`;
+};
+
+const normalizeProductPayload = (product) => {
+	if (!product) {
+		return product;
+	}
+
+	const plainProduct = typeof product.toJSON === 'function' ? product.toJSON() : { ...product };
+	const hasImage = Array.isArray(plainProduct.image)
+		&& plainProduct.image.some((value) => typeof value === 'string' && value.trim() !== '');
+
+	if (hasImage) {
+		return plainProduct;
+	}
+
+	const fallbackImage = buildFallbackImageFromItemCode(plainProduct.itemCode);
+
+	return {
+		...plainProduct,
+		image: fallbackImage ? [fallbackImage] : [],
+	};
+};
+
+const normalizeProductsPayload = (products) => products.map((product) => normalizeProductPayload(product));
+
 const getAll = async (req, res) => {
 	try {
 		const { categoryId, category, isBestSeller, inStock, search, page, limit } = req.query;
@@ -147,11 +178,12 @@ const getAll = async (req, res) => {
 		});
 
 		const totalPages = Math.ceil(count / parsedLimit);
+		const normalizedRows = normalizeProductsPayload(rows);
 
 		return res.status(200).json({
 			success: true,
 			// Frontend compatibility (used by homepage featured products service)
-			items: rows,
+			items: normalizedRows,
 			totalItems: count,
 			page: parsedPage,
 			limit: parsedLimit,
@@ -162,8 +194,8 @@ const getAll = async (req, res) => {
 				page: parsedPage,
 				limit: parsedLimit,
 				totalPages,
-				count: rows.length,
-				products: rows,
+				count: normalizedRows.length,
+				products: normalizedRows,
 			},
 		});
 	} catch (error) {
@@ -195,7 +227,7 @@ const getOne = async (req, res) => {
 			return res.status(404).json({ success: false, message: 'Product not found' });
 		}
 
-		return res.status(200).json({ success: true, data: product });
+		return res.status(200).json({ success: true, data: normalizeProductPayload(product) });
 	} catch (error) {
 		console.error('Get product error:', error.message);
 		return res.status(500).json({ success: false, message: 'Internal server error' });
@@ -225,7 +257,7 @@ const getBySlug = async (req, res) => {
 			return res.status(404).json({ success: false, message: 'Product not found' });
 		}
 
-		return res.status(200).json({ success: true, data: product });
+		return res.status(200).json({ success: true, data: normalizeProductPayload(product) });
 	} catch (error) {
 		return handleControllerError(res, error, 'Get product by slug error');
 	}
@@ -242,7 +274,7 @@ const getProductByItemCode = async (req, res) => {
 			return res.status(404).json({ success: false, message: 'Product not found' });
 		}
 
-		return res.json({ success: true, data: product });
+		return res.json({ success: true, data: normalizeProductPayload(product) });
 	} catch (error) {
 		return handleControllerError(res, error, 'Get product by itemCode error');
 	}
@@ -289,7 +321,7 @@ const create = async (req, res) => {
 			],
 		});
 
-		return res.status(201).json({ success: true, message: 'Product created', data: product });
+		return res.status(201).json({ success: true, message: 'Product created', data: normalizeProductPayload(product) });
 	} catch (error) {
 		return handleControllerError(res, error, 'Create product error');
 	}
@@ -356,7 +388,7 @@ const update = async (req, res) => {
 			],
 		});
 
-		return res.status(200).json({ success: true, message: 'Product updated', data: updatedProduct });
+		return res.status(200).json({ success: true, message: 'Product updated', data: normalizeProductPayload(updatedProduct) });
 	} catch (error) {
 		return handleControllerError(res, error, 'Update product error');
 	}

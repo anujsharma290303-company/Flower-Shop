@@ -43,6 +43,19 @@ export const productService = {
   },
 
   /**
+   * Get single product by item code
+   */
+  async getByItemCode(itemCode: string): Promise<Product> {
+    try {
+      const response = await api.get<ApiResponse<Product>>(API_ENDPOINTS.PRODUCT_BY_ITEM_CODE(itemCode))
+      return response.data.data
+    } catch (error) {
+      console.error(`Failed to fetch product itemCode ${itemCode}:`, error)
+      throw error
+    }
+  },
+
+  /**
    * Get best seller products
    */
   async getBestSellers(limit: number = 12): Promise<PaginatedResponse<Product>> {
