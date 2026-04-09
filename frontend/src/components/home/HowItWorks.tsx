@@ -8,16 +8,16 @@ import React from 'react'
 const HowItWorks: React.FC = () => {
   return (
     <section id="how-it-works" className="py-14 md:py-16 px-4 md:px-8 bg-[#efefef]">
-      <div className="max-w-[980px] mx-auto">
+      <div className="max-w-245 mx-auto">
         <div className="text-center mb-7 md:mb-8">
           <h2 className="text-[22px] md:text-[26px] font-medium font-serif text-gray-900 mb-3">
             How Social Flowers Works
           </h2>
         </div>
 
-        <div className="relative overflow-hidden bg-black border border-[#d5d5d5] shadow-none max-w-[940px] mx-auto">
+        <div className="relative overflow-hidden bg-black border border-[#d5d5d5] shadow-none max-w-235 mx-auto">
           <video
-            className="w-full h-[300px] md:h-[500px] object-cover bg-black"
+            className="w-full h-75 md:h-125 object-cover bg-black"
             preload="metadata"
             playsInline
             muted

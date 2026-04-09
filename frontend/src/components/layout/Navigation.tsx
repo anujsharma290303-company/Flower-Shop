@@ -22,8 +22,8 @@ const Navigation: React.FC<NavigationProps> = () => {
 
   return (
     <nav className="sticky top-0 z-40 bg-white border-b border-gray-200">
-      <div className="max-w-[1080px] mx-auto px-4 md:px-6">
-        <div className="flex items-center justify-between h-[68px]">
+      <div className="max-w-270 mx-auto px-4 md:px-6">
+        <div className="flex items-center justify-between h-17">
           {/* Logo */}
           <Link to="/" className="shrink-0">
             <img

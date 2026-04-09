@@ -114,7 +114,7 @@ const FeaturedCarousel: React.FC = () => {
 
         {/* Carousel */}
         {!loading && !error && (
-          <div className="max-w-[980px] mx-auto">
+          <div className="max-w-245 mx-auto">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-9">
               {displayProducts.map((product) => (
                 <a
@@ -122,15 +122,15 @@ const FeaturedCarousel: React.FC = () => {
                   href={product.href}
                   className="text-center group"
                 >
-                  <div className="h-[230px] mb-4 flex items-end justify-center">
+                  <div className="h-57.5 mb-4 flex items-end justify-center">
                     <img
                       src={product.image}
                       alt={product.name}
-                      className="max-h-[220px] w-auto object-contain group-hover:scale-[1.02] transition-transform duration-200"
+                      className="max-h-55 w-auto object-contain group-hover:scale-[1.02] transition-transform duration-200"
                       loading="lazy"
                     />
                   </div>
-                  <p className="text-[18px] md:text-[20px] font-semibold text-[#1f2328] leading-tight min-h-[52px]">{product.name}</p>
+                  <p className="text-[18px] md:text-[20px] font-semibold text-[#1f2328] leading-tight min-h-13">{product.name}</p>
                   <p className="text-[18px] text-gray-600 mt-1">${Number(product.price).toFixed(2)}</p>
                 </a>
               ))}

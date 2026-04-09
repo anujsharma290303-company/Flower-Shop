@@ -77,7 +77,7 @@ const BenefitsSection: React.FC = () => {
 
   return (
     <section id="benefits" className="py-12 md:py-16 px-4 md:px-8 bg-[#f8e8e6]">
-      <div className="max-w-[1140px] mx-auto">
+      <div className="max-w-285 mx-auto">
         <div className="text-center mb-10 md:mb-12">
           <h2 className="text-[26px] md:text-[34px] font-medium font-serif text-gray-900">
             The Benefits of the Social Flowers Solution
@@ -88,7 +88,7 @@ const BenefitsSection: React.FC = () => {
           {benefitsArray.map((benefit) => (
             <div
               key={benefit.title}
-              className="max-w-[330px] mx-auto text-center"
+              className="max-w-82.5 mx-auto text-center"
             >
               <h3 className="text-[20px] md:text-[22px] font-normal text-gray-900 mb-5 md:mb-6">
                 {benefit.title}
@@ -97,7 +97,7 @@ const BenefitsSection: React.FC = () => {
                 <img
                   src={benefitIcons[benefit.icon as keyof typeof benefitIcons]}
                   alt={benefit.title}
-                  className="w-[120px] h-[120px] md:w-[132px] md:h-[132px] shrink-0"
+                  className="w-30 h-30 md:w-33 md:h-33 shrink-0"
                   loading="lazy"
                 />
               </div>
@@ -105,8 +105,8 @@ const BenefitsSection: React.FC = () => {
               <ul className="space-y-4 text-left">
                 {benefit.points.map((point, pointIndex) => (
                   <li key={pointIndex} className="flex gap-2 text-[15px] md:text-[16px] leading-[1.55] text-gray-800">
-                    <span className="text-red-600 leading-none mt-[2px]">•</span>
-                    <p className="max-w-[275px]">
+                    <span className="text-red-600 leading-none mt-0.5">•</span>
+                    <p className="max-w-68.75">
                       {renderPoint(benefit.title, pointIndex, point)}
                     </p>
                   </li>

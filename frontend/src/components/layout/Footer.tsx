@@ -21,10 +21,10 @@ const Footer: React.FC = () => {
 
   return (
     <footer className="relative overflow-hidden bg-[#15171d] text-gray-100">
-      <div className="pointer-events-none absolute -left-36 -top-24 w-[380px] h-[220px] rounded-full bg-[#20232b]" />
-      <div className="pointer-events-none absolute -right-36 -bottom-28 w-[420px] h-[260px] rounded-full bg-[#20232b]" />
+      <div className="pointer-events-none absolute -left-36 -top-24 w-95 h-55 rounded-full bg-[#20232b]" />
+      <div className="pointer-events-none absolute -right-36 -bottom-28 w-105 h-65 rounded-full bg-[#20232b]" />
 
-      <div className="relative max-w-[980px] mx-auto px-4 md:px-8 py-10 md:py-12">
+      <div className="relative max-w-245 mx-auto px-4 md:px-8 py-10 md:py-12">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10">
           <div>
             <h3 className="text-[14px] uppercase font-semibold tracking-wide text-white mb-4">Follow Us:</h3>

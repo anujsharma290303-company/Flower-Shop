@@ -12,7 +12,7 @@ import Button from '@/components/ui/Button'
 const CustomBouquetSection: React.FC = () => {
   return (
     <section id="custom-bouquets" className="py-14 md:py-16 px-4 md:px-8 bg-white">
-      <div className="max-w-[980px] mx-auto">
+      <div className="max-w-245 mx-auto">
         {/* Section Header */}
         <div className="text-center mb-10 md:mb-12">
           <h2 className="text-[22px] md:text-[26px] font-medium font-serif text-gray-900 mb-4">
@@ -28,7 +28,7 @@ const CustomBouquetSection: React.FC = () => {
               className="text-center"
             >
               {/* Card Image */}
-              <div className="h-[220px] overflow-hidden flex items-center justify-center">
+              <div className="h-55 overflow-hidden flex items-center justify-center">
                 <img
                   src={card.imageSrc}
                   alt={card.title}
@@ -59,7 +59,7 @@ const CustomBouquetSection: React.FC = () => {
                     label={card.ctaLabel}
                     variant="primary"
                     size="md"
-                    className="min-w-[120px] !rounded-none"
+                    className="min-w-30 rounded-none!"
                   />
                 </Link>
               </div>

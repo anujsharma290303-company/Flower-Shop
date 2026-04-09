@@ -36,7 +36,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
         onMouseLeave={() => setIsHovered(false)}
       >
         {/* Image Container */}
-        <div className="relative w-full bg-gray-100 overflow-hidden flex-shrink-0" style={{ aspectRatio: '280/340' }}>
+        <div className="relative w-full bg-gray-100 overflow-hidden shrink-0" style={{ aspectRatio: '280/340' }}>
           <img
             src={mainImage}
             alt={product.name}

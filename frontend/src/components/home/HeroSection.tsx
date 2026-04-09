@@ -12,15 +12,15 @@ import Button from '@/components/ui/Button'
 const HeroSection: React.FC = () => {
   return (
     <section id="hero" className="px-0 bg-[#e8beb9]">
-      <div className="max-w-[1360px] mx-auto">
-        <div className="grid grid-cols-1 lg:grid-cols-[1fr_540px] items-center min-h-[340px]">
+      <div className="max-w-340 mx-auto">
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_540px] items-center min-h-85">
           {/* Left Column: Text & CTAs */}
           <div className="text-center px-6 py-10 md:py-12">
             <h1 className="text-[40px] md:text-[50px] font-semibold font-serif text-[#1f2328] leading-tight mb-4">
               {SOCIAL_FLOWERS_HOMEPAGE.headings.hero}
             </h1>
 
-            <p className="text-[20px] md:text-[24px] text-[#1f2328] leading-relaxed mb-7 max-w-[520px] mx-auto">
+            <p className="text-[20px] md:text-[24px] text-[#1f2328] leading-relaxed mb-7 max-w-130 mx-auto">
               {SOCIAL_FLOWERS_HOMEPAGE.heroSubheadline}
             </p>
 
@@ -31,7 +31,7 @@ const HeroSection: React.FC = () => {
                   label={HERO_SECTION.ctaPrimary}
                   variant="primary"
                   size="md"
-                  className="!rounded-none min-w-[132px]"
+                  className="rounded-none! min-w-33"
                 />
               </Link>
 
@@ -40,7 +40,7 @@ const HeroSection: React.FC = () => {
                   label={HERO_SECTION.ctaSecondary}
                   variant="primary"
                   size="md"
-                  className="!rounded-none min-w-[132px]"
+                  className="rounded-none! min-w-33"
                 />
               </Link>
             </div>
@@ -48,7 +48,7 @@ const HeroSection: React.FC = () => {
           </div>
 
           {/* Right Column: Image */}
-          <div className="relative h-[360px] md:h-[460px] lg:h-[520px] flex items-end justify-center overflow-hidden">
+          <div className="relative h-90 md:h-115 lg:h-130 flex items-end justify-center overflow-hidden">
             <img
               src={HERO_SECTION.imageUrl}
               alt={HERO_SECTION.imageAlt}
