@@ -2,6 +2,7 @@ import { describe, it, expect, vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import App from '../App'
+import { adminService as mockedAdminService } from '@/api/admin'
 
 vi.mock('@/api/products', () => ({
   productService: {
@@ -160,10 +161,28 @@ vi.mock('@/api/admin', () => ({
     login: vi.fn(),
     me: vi.fn(),
     getDashboardStats: vi.fn(),
+    getProducts: vi.fn().mockResolvedValue([]),
+    updateProduct: vi.fn(),
+    getSiteConfig: vi.fn().mockResolvedValue({
+      id: 1,
+      heroTitle: 'Welcome',
+      heroSubTitle: 'Subtitle',
+      heroCTA1: 'Shop Now',
+      heroCTA2: 'Learn More',
+      heroImage: null,
+      howItWorks: [],
+      benefitsData: [],
+      contactEmail: 'contact@example.com',
+      contactPhone: '1234567890',
+      socialLinks: {},
+      createdAt: '2026-01-01T00:00:00.000Z',
+      updatedAt: '2026-01-01T00:00:00.000Z',
+    }),
+    updateSiteConfig: vi.fn(),
     request: vi.fn(),
     saveSession: vi.fn(),
     clearSession: vi.fn(),
-    isLoggedIn: vi.fn().mockReturnValue(false),
+    isLoggedIn: vi.fn(() => Boolean(localStorage.getItem('social_flowers_admin_token'))),
   },
 }))
 
@@ -381,6 +400,7 @@ describe('App routing', () => {
   })
 
   it('renders admin login on /admin/dashboard route when logged out', () => {
+    vi.mocked(mockedAdminService.isLoggedIn).mockReturnValue(false)
     render(
       <MemoryRouter initialEntries={['/admin/dashboard']}>
         <App />

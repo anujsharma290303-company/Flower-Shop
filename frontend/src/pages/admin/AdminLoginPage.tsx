@@ -43,42 +43,42 @@ const AdminLoginPage: React.FC = () => {
   }
 
   return (
-    <main className="min-h-screen bg-[#0f172a] px-4 py-10" data-testid="admin-login">
-      <section className="mx-auto max-w-120 rounded border border-slate-700 bg-[#111827] p-6 text-white md:p-8">
-        <h1 className="mb-2 text-[36px] font-semibold">Admin Login</h1>
-        <p className="mb-6 text-[15px] text-slate-300">Sign in with your admin account to access dashboard controls.</p>
+    <main className="min-h-screen bg-[#f8fafc] px-4 py-10 text-slate-900" data-testid="admin-login">
+      <section className="mx-auto max-w-120 rounded-2xl border border-slate-200 bg-white p-6 shadow-lg md:p-8">
+        <h1 className="mb-2 text-[36px] font-semibold text-slate-900">Admin Login</h1>
+        <p className="mb-6 text-[15px] text-slate-600">Sign in with your admin account to access dashboard controls.</p>
 
         <form onSubmit={onSubmit} className="space-y-4">
           <div>
-            <label htmlFor="admin-email" className="mb-2 block text-sm text-slate-300">Email</label>
+            <label htmlFor="admin-email" className="mb-2 block text-sm text-slate-700">Email</label>
             <input
               id="admin-email"
               type="email"
               value={email}
               onChange={(event) => setEmail(event.target.value)}
               required
-              className="h-11 w-full rounded border border-slate-600 bg-[#1f2937] px-3 text-white outline-none focus:border-cyan-400"
+              className="h-11 w-full rounded-lg border border-slate-300 bg-white px-3 text-slate-900 outline-none focus:border-cyan-500 focus:ring-2 focus:ring-cyan-100"
             />
           </div>
 
           <div>
-            <label htmlFor="admin-password" className="mb-2 block text-sm text-slate-300">Password</label>
+            <label htmlFor="admin-password" className="mb-2 block text-sm text-slate-700">Password</label>
             <input
               id="admin-password"
               type="password"
               value={password}
               onChange={(event) => setPassword(event.target.value)}
               required
-              className="h-11 w-full rounded border border-slate-600 bg-[#1f2937] px-3 text-white outline-none focus:border-cyan-400"
+              className="h-11 w-full rounded-lg border border-slate-300 bg-white px-3 text-slate-900 outline-none focus:border-cyan-500 focus:ring-2 focus:ring-cyan-100"
             />
           </div>
 
-          {errorMessage ? <p className="text-sm text-red-400">{errorMessage}</p> : null}
+          {errorMessage ? <p className="text-sm text-red-600">{errorMessage}</p> : null}
 
           <button
             type="submit"
             disabled={isSubmitting}
-            className="h-11 w-full rounded bg-cyan-400 text-[16px] font-semibold text-slate-900 hover:bg-cyan-300 disabled:bg-slate-500"
+            className="h-11 w-full rounded-lg bg-slate-900 text-[16px] font-semibold text-white hover:bg-slate-800 disabled:bg-slate-400"
           >
             {isSubmitting ? 'Signing In...' : 'Sign In'}
           </button>

@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import Layout from '@/components/layout/Layout'
 import { authService } from '@/api/auth'
+import { adminService } from '@/api/admin'
 import { VALIDATION } from '@/utils/constants'
 
 type SignInLocationState = {
@@ -13,6 +14,7 @@ const SignInPage: React.FC = () => {
   const navigate = useNavigate()
   const location = useLocation()
   const locationState = (location.state || {}) as SignInLocationState
+
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
@@ -23,7 +25,9 @@ const SignInPage: React.FC = () => {
     event.preventDefault()
     setErrorMessage(null)
 
-    if (!VALIDATION.EMAIL_REGEX.test(email.trim())) {
+    const normalizedEmail = email.trim()
+
+    if (!VALIDATION.EMAIL_REGEX.test(normalizedEmail)) {
       setErrorMessage('Please enter a valid email address.')
       return
     }
@@ -35,24 +39,55 @@ const SignInPage: React.FC = () => {
 
     try {
       setIsSubmitting(true)
-      const result = await authService.login({
-        email: email.trim(),
+
+      // First try customer login for normal storefront users.
+      const customerResult = await authService.login({
+        email: normalizedEmail,
         password,
       })
 
-      authService.saveSession(result.token, result.user)
-      navigate('/my-profile')
-    } catch (error: unknown) {
-      const message =
-        typeof error === 'object' &&
-        error !== null &&
-        'response' in error &&
-        typeof (error as { response?: { data?: { message?: string } } }).response?.data?.message === 'string'
-          ? (error as { response: { data: { message: string } } }).response.data.message
-          : 'Unable to sign in. Please try again.'
-      setErrorMessage(message)
-    } finally {
-      setIsSubmitting(false)
+      adminService.clearSession()
+      authService.saveSession(customerResult.token, customerResult.user)
+
+      if (locationState.from) {
+        navigate(locationState.from)
+      } else {
+        navigate('/my-profile')
+      }
+      return
+    } catch (customerError: unknown) {
+      try {
+        // Fallback: if same credentials are an admin account, open admin dashboard.
+        const adminResult = await adminService.login({
+          email: normalizedEmail,
+          password,
+        })
+
+        authService.clearSession()
+        adminService.saveSession(adminResult.token, adminResult.admin)
+        navigate('/admin/dashboard')
+        return
+      } catch (adminError: unknown) {
+        const adminMessage =
+          typeof adminError === 'object' &&
+          adminError !== null &&
+          'response' in adminError &&
+          typeof (adminError as { response?: { data?: { message?: string } } }).response?.data?.message === 'string'
+            ? (adminError as { response: { data: { message: string } } }).response.data.message
+            : null
+
+        const customerMessage =
+          typeof customerError === 'object' &&
+          customerError !== null &&
+          'response' in customerError &&
+          typeof (customerError as { response?: { data?: { message?: string } } }).response?.data?.message === 'string'
+            ? (customerError as { response: { data: { message: string } } }).response.data.message
+            : null
+
+        setErrorMessage(adminMessage || customerMessage || 'Unable to sign in. Please try again.')
+      } finally {
+        setIsSubmitting(false)
+      }
     }
   }
 

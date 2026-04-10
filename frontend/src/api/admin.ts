@@ -1,6 +1,6 @@
 import api from './axios'
 import { API_ENDPOINTS, LOCAL_STORAGE_KEYS } from '@/utils/constants'
-import type { Admin, AdminDashboardStats, ApiResponse } from '@/types'
+import type { Admin, AdminDashboardStats, ApiResponse, PaginatedResponse, Product, SiteConfig } from '@/types'
 
 type AdminLoginPayload = {
   email: string
@@ -21,6 +21,18 @@ type AdminRequestPayload = {
   path: string
   body?: unknown
   query?: Record<string, unknown>
+}
+
+type AdminProductUpdatePayload = {
+  name?: string
+  itemCode?: string
+  price?: string
+  description?: string | null
+  size?: string | null
+  categoryId?: number
+  isBestSeller?: boolean
+  inStock?: boolean
+  subscriptionAvailable?: boolean
 }
 
 export const ADMIN_ENDPOINT_CATALOG = [
@@ -96,6 +108,37 @@ export const adminService = {
 
   async getDashboardStats(): Promise<AdminDashboardStats> {
     const response = await api.get<ApiResponse<AdminDashboardStats>>('/admin/dashboard/stats')
+    return response.data.data
+  },
+
+  async getProducts(): Promise<Product[]> {
+    const response = await api.get<PaginatedResponse<Product> & { data?: { products?: Product[] } }>('/admin/products', {
+      params: { page: 1, limit: 200 },
+    })
+
+    if (Array.isArray(response.data.items)) {
+      return response.data.items
+    }
+
+    if (response.data.data && Array.isArray(response.data.data.products)) {
+      return response.data.data.products
+    }
+
+    return []
+  },
+
+  async updateProduct(id: number, payload: AdminProductUpdatePayload): Promise<Product> {
+    const response = await api.put<ApiResponse<Product>>(`/admin/products/${id}`, payload)
+    return response.data.data
+  },
+
+  async getSiteConfig(): Promise<SiteConfig> {
+    const response = await api.get<ApiResponse<SiteConfig>>('/admin/site-config')
+    return response.data.data
+  },
+
+  async updateSiteConfig(payload: Partial<SiteConfig>): Promise<SiteConfig> {
+    const response = await api.put<ApiResponse<SiteConfig>>('/admin/site-config', payload)
     return response.data.data
   },
 
