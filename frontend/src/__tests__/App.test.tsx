@@ -127,6 +127,17 @@ describe('App routing', () => {
     expect(screen.getByRole('heading', { name: 'Decades of Experience' })).toBeInTheDocument()
   })
 
+  it('renders reviews page on /reviews route', async () => {
+    render(
+      <MemoryRouter initialEntries={['/reviews']}>
+        <App />
+      </MemoryRouter>
+    )
+
+    await screen.findByRole('heading', { name: 'What People Say - Reviews of Social Flowers' })
+    expect(screen.getByText(/earn up to \$50 on a future order\./i)).toBeInTheDocument()
+  })
+
   it('renders product detail page on /item/:itemCode/:slug route', async () => {
     render(
       <MemoryRouter initialEntries={['/item/C15-4790/precious-heart-bouquet']}>
