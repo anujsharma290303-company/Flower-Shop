@@ -5,6 +5,7 @@ import ShopPage from '@/pages/ShopPage'
 import ProductDetailPage from '@/pages/ProductDetailPage'
 import HowItWorksPage from '@/pages/HowItWorksPage'
 import AboutPage from '@/pages/AboutPage'
+import FaqPage from '@/pages/FaqPage'
 import ReviewsPage from '@/pages/ReviewsPage'
 import NotFoundPage from '@/pages/NotFoundPage'
 import AdminLoginPage from '@/pages/admin/AdminLoginPage'
@@ -18,6 +19,7 @@ function App() {
       <Route path="/shop/:slug" element={<ShopPage />} />
       <Route path="/how-it-works" element={<HowItWorksPage />} />
       <Route path="/about" element={<AboutPage />} />
+      <Route path="/faq" element={<FaqPage />} />
       <Route path="/reviews" element={<ReviewsPage />} />
       <Route path="/best-sellers" element={<BestSellersPage />} />
       <Route path="/item/:itemCode/:slug" element={<ProductDetailPage />} />

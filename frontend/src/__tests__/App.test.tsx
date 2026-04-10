@@ -138,6 +138,19 @@ describe('App routing', () => {
     expect(screen.getByText(/earn up to \$50 on a future order\./i)).toBeInTheDocument()
   })
 
+  it('renders faq page on /faq route', async () => {
+    render(
+      <MemoryRouter initialEntries={['/faq']}>
+        <App />
+      </MemoryRouter>
+    )
+
+    await screen.findByRole('heading', { name: 'Frequently Asked Questions' })
+    expect(screen.getByText('GENERAL')).toBeInTheDocument()
+    expect(screen.getByText('SENDER')).toBeInTheDocument()
+    expect(screen.getByText('RECIPIENT')).toBeInTheDocument()
+  })
+
   it('renders product detail page on /item/:itemCode/:slug route', async () => {
     render(
       <MemoryRouter initialEntries={['/item/C15-4790/precious-heart-bouquet']}>
