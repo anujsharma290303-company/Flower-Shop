@@ -1,5 +1,5 @@
 import axios from 'axios'
-import { API_BASE_URL } from '@/utils/constants'
+import { API_BASE_URL, LOCAL_STORAGE_KEYS } from '@/utils/constants'
 
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL || API_BASE_URL,
@@ -9,20 +9,35 @@ const api = axios.create({
 })
 
 api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('adminToken')
-  if (token) {
+  const requestUrl = String(config.url ?? '')
+  const isAdminRequest = requestUrl.includes('/admin')
+  const adminToken = localStorage.getItem('adminToken')
+  const customerToken = localStorage.getItem(LOCAL_STORAGE_KEYS.AUTH_TOKEN)
+  const token = isAdminRequest ? adminToken : customerToken
+
+  if (token && config.headers) {
     config.headers.Authorization = `Bearer ${token}`
   }
+
   return config
 })
 
 api.interceptors.response.use(
   (response) => response,
   (error) => {
+    const requestUrl = String(error?.config?.url ?? '')
+    const isAdminRequest = requestUrl.includes('/admin')
+
     if (error.response?.status === 401) {
-      localStorage.removeItem('adminToken')
-      window.location.href = '/admin/login'
+      if (isAdminRequest) {
+        localStorage.removeItem('adminToken')
+        window.location.href = '/admin/login'
+      } else {
+        localStorage.removeItem(LOCAL_STORAGE_KEYS.AUTH_TOKEN)
+        localStorage.removeItem(LOCAL_STORAGE_KEYS.USER)
+      }
     }
+
     return Promise.reject(error)
   }
 )

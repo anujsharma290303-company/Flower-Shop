@@ -4,10 +4,11 @@
  */
 
 import React, { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { cn } from '@/utils/cn'
 import { SOCIAL_FLOWERS_HOMEPAGE } from '@/utils/socialflowersHomepage'
 import { useCategories } from '@/hooks/useCategories'
+import { authService } from '@/api/auth'
 
 export interface NavigationProps {
   cartCount?: number
@@ -17,15 +18,24 @@ export interface NavigationProps {
 }
 
 const Navigation: React.FC<NavigationProps> = () => {
+  const navigate = useNavigate()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [shopMenuOpen, setShopMenuOpen] = useState(false)
   const { categories } = useCategories()
 
   const navLinks = SOCIAL_FLOWERS_HOMEPAGE.navigation
+  const isLoggedIn = authService.isLoggedIn()
+  const accountHref = isLoggedIn ? '/my-profile' : '/sign-in'
   const shopCategories = categories.slice(0, 12).map((category) => ({
     label: category.name,
     href: `/shop/${category.slug}`,
   }))
+
+  const handleSignOut = () => {
+    authService.clearSession()
+    setMobileMenuOpen(false)
+    navigate('/sign-in')
+  }
 
   return (
     <nav className="sticky top-0 z-40 bg-white border-b border-gray-200">
@@ -98,13 +108,31 @@ const Navigation: React.FC<NavigationProps> = () => {
           </div>
 
           {/* Right Icon */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3">
+            {isLoggedIn ? (
+              <>
+                <Link to="/flowerme/profile" className="hidden md:inline-flex text-[14px] font-semibold text-gray-800 hover:text-red-600 transition-colors">
+                  My FlowerMe
+                </Link>
+                <Link to="/my-orders" className="hidden md:inline-flex text-[14px] font-semibold text-gray-800 hover:text-red-600 transition-colors">
+                  My Orders
+                </Link>
+                <button
+                  type="button"
+                  onClick={handleSignOut}
+                  className="hidden md:inline-flex text-[14px] font-semibold text-gray-800 hover:text-red-600 transition-colors"
+                >
+                  Sign Out
+                </button>
+              </>
+            ) : null}
+
             <Link
-              to="/sign-in"
-              aria-label="Sign In"
+              to={accountHref}
+              aria-label={isLoggedIn ? 'My Profile' : 'Sign In'}
               className="hidden md:inline-flex text-gray-800 hover:text-red-600 transition-colors"
             >
-              <span className="sr-only">Sign In</span>
+              <span className="sr-only">{isLoggedIn ? 'My Profile' : 'Sign In'}</span>
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path
                   strokeLinecap="round"
@@ -171,9 +199,23 @@ const Navigation: React.FC<NavigationProps> = () => {
                   {category.label}
                 </Link>
               ))}
-              <Link to="/sign-in" className="text-gray-800 hover:text-red-600 font-medium py-1">
-                Sign In
-              </Link>
+              {isLoggedIn ? (
+                <>
+                  <Link to="/flowerme/profile" className="text-gray-800 hover:text-red-600 font-medium py-1" onClick={() => setMobileMenuOpen(false)}>
+                    My FlowerMe
+                  </Link>
+                  <Link to="/my-orders" className="text-gray-800 hover:text-red-600 font-medium py-1" onClick={() => setMobileMenuOpen(false)}>
+                    My Orders
+                  </Link>
+                  <button type="button" onClick={handleSignOut} className="text-left text-gray-800 hover:text-red-600 font-medium py-1">
+                    Sign Out
+                  </button>
+                </>
+              ) : (
+                <Link to={accountHref} className="text-gray-800 hover:text-red-600 font-medium py-1" onClick={() => setMobileMenuOpen(false)}>
+                  Sign In
+                </Link>
+              )}
             </div>
           </div>
         </div>

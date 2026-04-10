@@ -75,6 +75,85 @@ vi.mock('@/api/reviews', () => ({
   },
 }))
 
+vi.mock('@/api/auth', () => ({
+  authService: {
+    isLoggedIn: vi.fn().mockReturnValue(false),
+    getMe: vi.fn(),
+    updateMe: vi.fn(),
+    changePassword: vi.fn(),
+    getMyOrders: vi.fn(),
+    getMyOrderById: vi.fn(),
+    login: vi.fn(),
+    register: vi.fn(),
+    saveSession: vi.fn(),
+    clearSession: vi.fn(),
+  },
+}))
+
+vi.mock('@/api/blogs', () => ({
+  blogService: {
+    getAll: vi.fn().mockResolvedValue([
+      {
+        id: 1,
+        title: 'Flower Care Basics',
+        slug: 'flower-care-basics',
+        excerpt: 'Tips to keep your flowers fresh longer.',
+        content: 'Simple watering and trimming habits help your flowers last.',
+        coverImage: null,
+        author: 'Social Flowers Team',
+        isPublished: true,
+        publishedAt: '2026-01-01T00:00:00.000Z',
+        createdAt: '2026-01-01T00:00:00.000Z',
+        updatedAt: '2026-01-01T00:00:00.000Z',
+      },
+    ]),
+    getBySlug: vi.fn().mockResolvedValue({
+      id: 1,
+      title: 'Flower Care Basics',
+      slug: 'flower-care-basics',
+      excerpt: 'Tips to keep your flowers fresh longer.',
+      content: 'Simple watering and trimming habits help your flowers last.',
+      coverImage: null,
+      author: 'Social Flowers Team',
+      isPublished: true,
+      publishedAt: '2026-01-01T00:00:00.000Z',
+      createdAt: '2026-01-01T00:00:00.000Z',
+      updatedAt: '2026-01-01T00:00:00.000Z',
+    }),
+  },
+}))
+
+vi.mock('@/api/flowerme', () => ({
+  flowerMeService: {
+    getMine: vi.fn().mockResolvedValue({
+      id: 1,
+      userId: 1,
+      slug: 'rose-queen',
+      displayName: 'Rose Queen',
+      tagline: 'Petal collector',
+      photoUrl: null,
+      socialLink: null,
+      followersCount: 140,
+      tier: 'socialite',
+      wishlistNotes: 'Peonies and ranunculus',
+      isActive: true,
+      createdAt: '2026-01-01T00:00:00.000Z',
+      updatedAt: '2026-01-01T00:00:00.000Z',
+    }),
+    getBySlug: vi.fn().mockResolvedValue({
+      slug: 'rose-queen',
+      displayName: 'Rose Queen',
+      tagline: 'Petal collector',
+      photoUrl: null,
+      socialLink: null,
+      followersCount: 140,
+      tier: 'socialite',
+      wishlistNotes: 'Peonies and ranunculus',
+    }),
+    upsertMine: vi.fn(),
+  },
+}))
+
 describe('App routing', () => {
   it('renders homepage on / route', async () => {
     render(
@@ -161,6 +240,101 @@ describe('App routing', () => {
     expect(screen.getByText('GENERAL')).toBeInTheDocument()
     expect(screen.getByText('SENDER')).toBeInTheDocument()
     expect(screen.getByText('RECIPIENT')).toBeInTheDocument()
+  })
+
+  it('renders sign in page on /sign-in route', () => {
+    render(
+      <MemoryRouter initialEntries={['/sign-in']}>
+        <App />
+      </MemoryRouter>
+    )
+
+    expect(screen.getByRole('heading', { name: 'Sign In' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Sign In' })).toBeInTheDocument()
+  })
+
+  it('renders create account page on /create-account route', () => {
+    render(
+      <MemoryRouter initialEntries={['/create-account']}>
+        <App />
+      </MemoryRouter>
+    )
+
+    expect(screen.getByRole('heading', { name: 'Create Account' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Create Account' })).toBeInTheDocument()
+  })
+
+  it('renders blog page on /blog route', async () => {
+    render(
+      <MemoryRouter initialEntries={['/blog']}>
+        <App />
+      </MemoryRouter>
+    )
+
+    await screen.findByRole('heading', { name: 'Blog' })
+    expect(screen.getByText('Flower Care Basics')).toBeInTheDocument()
+  })
+
+  it('renders blog detail page on /blog/:slug route', async () => {
+    render(
+      <MemoryRouter initialEntries={['/blog/flower-care-basics']}>
+        <App />
+      </MemoryRouter>
+    )
+
+    await screen.findByRole('heading', { name: 'Flower Care Basics' })
+    expect(screen.getByText('Tips to keep your flowers fresh longer.')).toBeInTheDocument()
+  })
+
+  it('renders flowerme public profile on /flowerme/profile/:slug route', async () => {
+    render(
+      <MemoryRouter initialEntries={['/flowerme/profile/rose-queen']}>
+        <App />
+      </MemoryRouter>
+    )
+
+    await screen.findByRole('heading', { name: 'Rose Queen' })
+    expect(screen.getByText('Petal collector')).toBeInTheDocument()
+  })
+
+  it('renders sign in page on /flowerme/profile route when logged out', () => {
+    render(
+      <MemoryRouter initialEntries={['/flowerme/profile']}>
+        <App />
+      </MemoryRouter>
+    )
+
+    expect(screen.getByRole('heading', { name: 'Sign In' })).toBeInTheDocument()
+  })
+
+  it('renders my profile page on /my-profile route', () => {
+    render(
+      <MemoryRouter initialEntries={['/my-profile']}>
+        <App />
+      </MemoryRouter>
+    )
+
+    expect(screen.getByRole('heading', { name: 'Sign In' })).toBeInTheDocument()
+  })
+
+  it('renders my orders page on /my-orders route', () => {
+    render(
+      <MemoryRouter initialEntries={['/my-orders']}>
+        <App />
+      </MemoryRouter>
+    )
+
+    expect(screen.getByRole('heading', { name: 'Sign In' })).toBeInTheDocument()
+  })
+
+  it('renders my order detail page on /my-orders/:id route', () => {
+    render(
+      <MemoryRouter initialEntries={['/my-orders/1']}>
+        <App />
+      </MemoryRouter>
+    )
+
+    expect(screen.getByRole('heading', { name: 'Sign In' })).toBeInTheDocument()
   })
 
   it('renders product detail page on /item/:itemCode/:slug route', async () => {

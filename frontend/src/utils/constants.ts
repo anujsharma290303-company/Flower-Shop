@@ -31,6 +31,10 @@ export const API_ENDPOINTS = {
   REVIEWS: '/reviews',
   PRODUCT_REVIEWS: (productId: number) => `/products/${productId}/reviews`,
 
+  // Blogs
+  BLOGS: '/blogs',
+  BLOG_BY_SLUG: (slug: string) => `/blogs/slug/${slug}`,
+
   // FAQs
   FAQS: '/faqs',
   
@@ -40,7 +44,15 @@ export const API_ENDPOINTS = {
   // Auth
   AUTH_LOGIN: '/auth/login',
   AUTH_REGISTER: '/auth/register',
+  AUTH_ME: '/auth/me',
+  AUTH_ME_PASSWORD: '/auth/me/password',
+  AUTH_ORDERS: '/auth/orders',
+  AUTH_ORDER_BY_ID: (id: number) => `/auth/orders/${id}`,
   AUTH_LOGOUT: '/auth/logout',
+
+  // FlowerMe
+  FLOWERME_PROFILE: '/flowerme/profile',
+  FLOWERME_PROFILE_BY_SLUG: (slug: string) => `/flowerme/profile/${slug}`,
 }
 
 // ============================================

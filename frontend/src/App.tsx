@@ -7,6 +7,16 @@ import HowItWorksPage from '@/pages/HowItWorksPage'
 import AboutPage from '@/pages/AboutPage'
 import FaqPage from '@/pages/FaqPage'
 import ReviewsPage from '@/pages/ReviewsPage'
+import SignInPage from '@/pages/SignInPage'
+import CreateAccountPage from '@/pages/CreateAccountPage'
+import MyProfilePage from '@/pages/MyProfilePage'
+import MyOrdersPage from '@/pages/MyOrdersPage'
+import MyOrderDetailPage from '@/pages/MyOrderDetailPage'
+import BlogPage from '@/pages/BlogPage'
+import BlogDetailPage from '@/pages/BlogDetailPage'
+import FlowerMeProfilePage from '@/pages/FlowerMeProfilePage'
+import FlowerMePublicProfilePage from '@/pages/FlowerMePublicProfilePage'
+import CustomerProtectedRoute from '@/components/auth/CustomerProtectedRoute'
 import NotFoundPage from '@/pages/NotFoundPage'
 import AdminLoginPage from '@/pages/admin/AdminLoginPage'
 
@@ -21,6 +31,43 @@ function App() {
       <Route path="/about" element={<AboutPage />} />
       <Route path="/faq" element={<FaqPage />} />
       <Route path="/reviews" element={<ReviewsPage />} />
+      <Route path="/sign-in" element={<SignInPage />} />
+      <Route path="/create-account" element={<CreateAccountPage />} />
+      <Route path="/blog" element={<BlogPage />} />
+      <Route path="/blog/:slug" element={<BlogDetailPage />} />
+      <Route path="/flowerme/profile/:slug" element={<FlowerMePublicProfilePage />} />
+      <Route
+        path="/flowerme/profile"
+        element={(
+          <CustomerProtectedRoute>
+            <FlowerMeProfilePage />
+          </CustomerProtectedRoute>
+        )}
+      />
+      <Route
+        path="/my-profile"
+        element={(
+          <CustomerProtectedRoute>
+            <MyProfilePage />
+          </CustomerProtectedRoute>
+        )}
+      />
+      <Route
+        path="/my-orders"
+        element={(
+          <CustomerProtectedRoute>
+            <MyOrdersPage />
+          </CustomerProtectedRoute>
+        )}
+      />
+      <Route
+        path="/my-orders/:id"
+        element={(
+          <CustomerProtectedRoute>
+            <MyOrderDetailPage />
+          </CustomerProtectedRoute>
+        )}
+      />
       <Route path="/best-sellers" element={<BestSellersPage />} />
       <Route path="/item/:itemCode/:slug" element={<ProductDetailPage />} />
       <Route path="/item/:itemCode" element={<ProductDetailPage />} />

@@ -139,6 +139,49 @@ export interface FAQItem {
   updatedAt: string
 }
 
+export interface BlogPost {
+  id: number
+  title: string
+  slug: string
+  excerpt: string
+  content: string
+  coverImage: string | null
+  author: string
+  isPublished: boolean
+  publishedAt: string | null
+  createdAt: string
+  updatedAt: string
+}
+
+export type FlowerMeTier = 'society' | 'socialite' | 'royale'
+
+export interface FlowerMeProfile {
+  id: number
+  userId: number
+  slug: string
+  displayName: string
+  tagline: string | null
+  photoUrl: string | null
+  socialLink: string | null
+  followersCount: number
+  tier: FlowerMeTier
+  wishlistNotes: string | null
+  isActive: boolean
+  createdAt: string
+  updatedAt: string
+}
+
+export interface FlowerMePublicProfile {
+  slug: string
+  displayName: string
+  tagline: string | null
+  photoUrl: string | null
+  socialLink: string | null
+  followersCount: number
+  tier: FlowerMeTier
+  wishlistNotes: string | null
+}
+
 // ============================================
 // USER & AUTH TYPES
 // ============================================
@@ -149,7 +192,56 @@ export interface User {
   firstName: string
   lastName: string
   phone?: string
+  credits?: number
   isActive: boolean
+  createdAt: string
+  updatedAt: string
+}
+
+export interface CustomerProfile extends User {
+  credits: number
+}
+
+export interface CustomerOrderItem {
+  id: number
+  orderId: number
+  productId: number
+  productName: string
+  productImage: string | null
+  quantity: number
+  priceAtPurchase: string
+  createdAt: string
+  updatedAt: string
+}
+
+export interface CustomerOrderStatusLog {
+  id: number
+  orderId: number
+  fromStatus: string | null
+  toStatus: string
+  source: string
+  note: string | null
+  createdAt: string
+  updatedAt: string
+}
+
+export interface CustomerOrder {
+  id: number
+  userId: number | null
+  customerName: string
+  customerEmail: string
+  customerPhone: string
+  recipientName: string
+  recipientEmail: string | null
+  recipientPhone: string
+  deliveryAddress: string
+  deliveryDate: string | null
+  totalPrice: string
+  status: string
+  paymentStatus: string
+  currency: 'USD' | 'CAD'
+  items: CustomerOrderItem[]
+  statusLogs?: CustomerOrderStatusLog[]
   createdAt: string
   updatedAt: string
 }
