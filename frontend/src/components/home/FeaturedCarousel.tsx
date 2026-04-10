@@ -1,6 +1,6 @@
 /**
  * Featured Products Carousel Section
- * Displays best sellers from the backend with live-site fallback content
+ * Displays best sellers from the backend
  */
 
 import React, { useEffect, useState } from 'react'
@@ -13,22 +13,13 @@ type DisplayProduct = {
   name: string
   price: string
   href: string
-  image: string
+  image: string | null
 }
 
-const imageByItemCode: Record<string, string> = {
-  'C15-4790': SOCIAL_FLOWERS_HOMEPAGE.bestsellers[0].image,
-  'C12-4792': SOCIAL_FLOWERS_HOMEPAGE.bestsellers[1].image,
-  'C16-4839': SOCIAL_FLOWERS_HOMEPAGE.bestsellers[2].image,
-  'E4-4819': SOCIAL_FLOWERS_HOMEPAGE.bestsellers[3].image,
-}
-
-const fallbackProducts: DisplayProduct[] = [...SOCIAL_FLOWERS_HOMEPAGE.bestsellers]
-
-const toDisplayProduct = (product: Product, index: number): DisplayProduct => {
+const toDisplayProduct = (product: Product): DisplayProduct => {
   const image = Array.isArray(product.image) && product.image.length > 0
     ? product.image[0]
-    : imageByItemCode[product.itemCode] || fallbackProducts[index % fallbackProducts.length]?.image || fallbackProducts[0].image
+    : null
 
   return {
     name: product.name,
@@ -39,7 +30,8 @@ const toDisplayProduct = (product: Product, index: number): DisplayProduct => {
 }
 
 const FeaturedCarousel: React.FC = () => {
-  const [displayProducts, setDisplayProducts] = useState<DisplayProduct[]>(fallbackProducts)
+  const [displayProducts, setDisplayProducts] = useState<DisplayProduct[]>([])
+  const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
     let isMounted = true
@@ -52,9 +44,9 @@ const FeaturedCarousel: React.FC = () => {
         if (isMounted && items.length > 0) {
           setDisplayProducts(items.map(toDisplayProduct))
         }
-      } catch {
+      } finally {
         if (isMounted) {
-          setDisplayProducts(fallbackProducts)
+          setIsLoading(false)
         }
       }
     }
@@ -76,28 +68,40 @@ const FeaturedCarousel: React.FC = () => {
         </div>
 
         <div className="max-w-245 mx-auto">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-9">
-            {displayProducts.map((product) => (
-              <a
-                key={product.href}
-                href={product.href}
-                className="text-center group"
-              >
-                <div className="h-57.5 mb-4 flex items-end justify-center">
-                  <img
-                    src={product.image}
-                    alt={product.name}
-                    className="max-h-55 w-auto object-contain group-hover:scale-[1.02] transition-transform duration-200"
-                    loading="lazy"
-                  />
-                </div>
-                <p className="text-[18px] md:text-[20px] font-semibold text-[#1f2328] leading-tight min-h-13">
-                  {product.name}
-                </p>
-                <p className="text-[18px] text-gray-600 mt-1">${Number(product.price).toFixed(2)}</p>
-              </a>
-            ))}
-          </div>
+          {isLoading ? (
+            <div className="py-12 text-center text-gray-600">Loading products...</div>
+          ) : displayProducts.length > 0 ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-9">
+              {displayProducts.map((product) => (
+                <a
+                  key={product.href}
+                  href={product.href}
+                  className="text-center group"
+                >
+                  <div className="h-57.5 mb-4 flex items-end justify-center bg-white">
+                    {product.image ? (
+                      <img
+                        src={product.image}
+                        alt={product.name}
+                        className="max-h-55 w-auto object-contain group-hover:scale-[1.02] transition-transform duration-200"
+                        loading="lazy"
+                      />
+                    ) : (
+                      <div className="h-55 w-full max-w-55 rounded border border-dashed border-gray-300 bg-gray-50 flex items-center justify-center text-sm text-gray-500">
+                        No image
+                      </div>
+                    )}
+                  </div>
+                  <p className="text-[18px] md:text-[20px] font-semibold text-[#1f2328] leading-tight min-h-13">
+                    {product.name}
+                  </p>
+                  <p className="text-[18px] text-gray-600 mt-1">${Number(product.price).toFixed(2)}</p>
+                </a>
+              ))}
+            </div>
+          ) : (
+            <div className="py-12 text-center text-gray-600">No best sellers found.</div>
+          )}
 
           <div className="text-center mt-10">
             <Link

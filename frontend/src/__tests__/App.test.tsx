@@ -105,6 +105,28 @@ describe('App routing', () => {
     await screen.findByRole('heading', { name: 'Roses' })
   })
 
+  it('renders how-it-works page on /how-it-works route', async () => {
+    render(
+      <MemoryRouter initialEntries={['/how-it-works']}>
+        <App />
+      </MemoryRouter>
+    )
+
+    await screen.findByRole('heading', { name: 'How Social Flowers Works', level: 1 })
+    expect(screen.getByRole('link', { name: 'Start Shopping' })).toBeInTheDocument()
+  })
+
+  it('renders about page on /about route', async () => {
+    render(
+      <MemoryRouter initialEntries={['/about']}>
+        <App />
+      </MemoryRouter>
+    )
+
+    await screen.findByRole('heading', { name: 'About', level: 1 })
+    expect(screen.getByRole('heading', { name: 'Decades of Experience' })).toBeInTheDocument()
+  })
+
   it('renders product detail page on /item/:itemCode/:slug route', async () => {
     render(
       <MemoryRouter initialEntries={['/item/C15-4790/precious-heart-bouquet']}>

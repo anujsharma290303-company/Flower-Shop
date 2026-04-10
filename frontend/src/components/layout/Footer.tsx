@@ -5,9 +5,9 @@
 
 import React from 'react'
 import { Link } from 'react-router-dom'
-import { SHOP_CATEGORIES, COMPANY_LINKS, USES_LINKS } from '@/utils/constants'
+import { COMPANY_LINKS, USES_LINKS, SOCIAL_LINKS } from '@/utils/constants'
 import { FaFacebookF, FaInstagram, FaLinkedinIn, FaTiktok, FaXTwitter } from 'react-icons/fa6'
-import { useSiteConfig } from '@/hooks/useSiteConfig'
+import { useCategories } from '@/hooks/useCategories'
 
 const socialIconMap = {
   twitter: FaXTwitter,
@@ -19,7 +19,16 @@ const socialIconMap = {
 
 const Footer: React.FC = () => {
   const currentYear = new Date().getFullYear()
-  const { socialLinks } = useSiteConfig()
+  const { categories } = useCategories()
+  const shopLinks = categories.length > 0
+    ? [
+      { label: 'Best Sellers', href: '/best-sellers' },
+      ...categories.slice(0, 11).map((category) => ({
+        label: category.name,
+        href: `/shop/${category.slug}`,
+      })),
+    ]
+    : []
 
   return (
     <footer className="relative overflow-hidden bg-[#15171d] text-gray-100">
@@ -31,7 +40,7 @@ const Footer: React.FC = () => {
           <div>
             <h3 className="text-[14px] uppercase font-semibold tracking-wide text-white mb-4">Follow Us:</h3>
             <div className="flex items-center gap-3">
-              {socialLinks.map((social) => {
+              {SOCIAL_LINKS.map((social) => {
                 const Icon = socialIconMap[social.platform as keyof typeof socialIconMap]
 
                 if (!Icon) {
@@ -57,7 +66,7 @@ const Footer: React.FC = () => {
           <div>
             <h3 className="text-[14px] uppercase font-semibold tracking-wide text-white mb-4">Shop</h3>
             <ul className="space-y-1">
-              {SHOP_CATEGORIES.map((category) => (
+              {shopLinks.map((category) => (
                 <li key={category.href}>
                   <Link to={category.href} className="text-[18px] text-gray-300 hover:text-white transition-colors">
                     {category.label}
