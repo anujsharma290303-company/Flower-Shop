@@ -53,6 +53,10 @@ export const API_ENDPOINTS = {
   // FlowerMe
   FLOWERME_PROFILE: '/flowerme/profile',
   FLOWERME_PROFILE_BY_SLUG: (slug: string) => `/flowerme/profile/${slug}`,
+
+  // Admin Auth
+  ADMIN_LOGIN: '/admin/auth/login',
+  ADMIN_ME: '/admin/auth/me',
 }
 
 // ============================================
@@ -299,6 +303,8 @@ export const LOCAL_STORAGE_KEYS = {
   CART: 'social_flowers_cart',
   AUTH_TOKEN: 'social_flowers_token',
   USER: 'social_flowers_user',
+  ADMIN_TOKEN: 'social_flowers_admin_token',
+  ADMIN_USER: 'social_flowers_admin_user',
   PREFERENCES: 'social_flowers_preferences',
 }
 

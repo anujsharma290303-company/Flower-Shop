@@ -17,8 +17,10 @@ import BlogDetailPage from '@/pages/BlogDetailPage'
 import FlowerMeProfilePage from '@/pages/FlowerMeProfilePage'
 import FlowerMePublicProfilePage from '@/pages/FlowerMePublicProfilePage'
 import CustomerProtectedRoute from '@/components/auth/CustomerProtectedRoute'
+import AdminProtectedRoute from '@/components/auth/AdminProtectedRoute'
 import NotFoundPage from '@/pages/NotFoundPage'
 import AdminLoginPage from '@/pages/admin/AdminLoginPage'
+import AdminDashboardPage from '@/pages/admin/AdminDashboardPage'
 
 function App() {
   return (
@@ -74,6 +76,14 @@ function App() {
 
       {/* Admin routes */}
       <Route path="/admin/login" element={<AdminLoginPage />} />
+      <Route
+        path="/admin/dashboard"
+        element={(
+          <AdminProtectedRoute>
+            <AdminDashboardPage />
+          </AdminProtectedRoute>
+        )}
+      />
 
       {/* 404 */}
       <Route path="*" element={<NotFoundPage />} />

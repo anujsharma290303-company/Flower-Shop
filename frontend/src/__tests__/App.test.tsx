@@ -154,6 +154,19 @@ vi.mock('@/api/flowerme', () => ({
   },
 }))
 
+vi.mock('@/api/admin', () => ({
+  ADMIN_ENDPOINT_CATALOG: ['GET /admin/dashboard/stats'],
+  adminService: {
+    login: vi.fn(),
+    me: vi.fn(),
+    getDashboardStats: vi.fn(),
+    request: vi.fn(),
+    saveSession: vi.fn(),
+    clearSession: vi.fn(),
+    isLoggedIn: vi.fn().mockReturnValue(false),
+  },
+}))
+
 describe('App routing', () => {
   it('renders homepage on / route', async () => {
     render(
@@ -365,5 +378,15 @@ describe('App routing', () => {
       </MemoryRouter>
     )
     expect(screen.getByTestId('admin-login')).toBeInTheDocument()
+  })
+
+  it('renders admin login on /admin/dashboard route when logged out', () => {
+    render(
+      <MemoryRouter initialEntries={['/admin/dashboard']}>
+        <App />
+      </MemoryRouter>
+    )
+
+    expect(screen.getByRole('heading', { name: 'Admin Login' })).toBeInTheDocument()
   })
 })

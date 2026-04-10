@@ -11,7 +11,7 @@ const api = axios.create({
 api.interceptors.request.use((config) => {
   const requestUrl = String(config.url ?? '')
   const isAdminRequest = requestUrl.includes('/admin')
-  const adminToken = localStorage.getItem('adminToken')
+  const adminToken = localStorage.getItem(LOCAL_STORAGE_KEYS.ADMIN_TOKEN)
   const customerToken = localStorage.getItem(LOCAL_STORAGE_KEYS.AUTH_TOKEN)
   const token = isAdminRequest ? adminToken : customerToken
 
@@ -30,7 +30,8 @@ api.interceptors.response.use(
 
     if (error.response?.status === 401) {
       if (isAdminRequest) {
-        localStorage.removeItem('adminToken')
+        localStorage.removeItem(LOCAL_STORAGE_KEYS.ADMIN_TOKEN)
+        localStorage.removeItem(LOCAL_STORAGE_KEYS.ADMIN_USER)
         window.location.href = '/admin/login'
       } else {
         localStorage.removeItem(LOCAL_STORAGE_KEYS.AUTH_TOKEN)

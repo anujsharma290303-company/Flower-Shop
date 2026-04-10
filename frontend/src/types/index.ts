@@ -38,6 +38,14 @@ export interface Admin {
   isActive: boolean
 }
 
+export interface AdminDashboardStats {
+  totalUsers: number
+  activeUsers: number
+  totalOrders: number
+  pendingOrders: number
+  totalRevenue: number | string
+}
+
 export interface PaginatedProducts {
   totalItems: number
   page: number
