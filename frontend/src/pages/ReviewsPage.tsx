@@ -1,106 +1,93 @@
 import React, { useMemo, useState } from 'react'
 import Layout from '@/components/layout/Layout'
+import { useReviews } from '@/hooks/useReviews'
+import type { CustomerReview } from '@/types'
 
 type ReviewMedia = {
-  id: number
+  id: string
   kind: 'image' | 'video'
   src: string
   alt: string
   span?: 'short' | 'tall'
 }
 
-const REVIEW_MEDIA: ReviewMedia[] = [
+const REVIEW_MEDIA: Omit<ReviewMedia, 'id'>[] = [
   {
-    id: 1,
     kind: 'video',
     src: '/videos/sf-how-it-works-hero-video-2024-final.mp4',
     alt: 'Customer flower reveal video',
     span: 'tall',
   },
   {
-    id: 2,
     kind: 'image',
     src: 'https://cdn.socialflowers.com/fit-in/600x600/filters:no_upscale()/blog/images/woman-receiving-flowers.jpg',
     alt: 'Woman holding sunflowers',
     span: 'tall',
   },
   {
-    id: 3,
     kind: 'image',
     src: 'https://cdn.socialflowers.com/fit-in/600x600/filters:no_upscale()/blog/images/taking-picture-of-flowers.jpg',
     alt: 'Customer taking bouquet photo',
   },
   {
-    id: 4,
     kind: 'image',
     src: '/images/happy-birthday-bouquet.jpg',
     alt: 'Birthday bouquet arrangement',
   },
   {
-    id: 5,
     kind: 'image',
     src: '/images/dozen-red-roses.jpg',
     alt: 'Dozen red roses arrangement',
     span: 'tall',
   },
   {
-    id: 6,
     kind: 'image',
     src: '/images/birthday-sunflower-basket.jpg',
     alt: 'Sunflower basket gift',
   },
   {
-    id: 7,
     kind: 'video',
     src: '/videos/sf-how-it-works-hero-video-2024-final.mp4',
     alt: 'Customer smiling with flower delivery',
   },
   {
-    id: 8,
     kind: 'image',
     src: 'https://cdn.socialflowers.com/fit-in/600x600/filters:no_upscale()/blog/images/florist-at-shop.jpg',
     alt: 'Florist with bouquet',
   },
   {
-    id: 9,
     kind: 'image',
     src: '/images/mixed-rose-garden.jpg',
     alt: 'Mixed rose bouquet',
     span: 'tall',
   },
   {
-    id: 10,
     kind: 'image',
     src: 'https://cdn.socialflowers.com/fit-in/600x600/filters:no_upscale()/blog/images/Man%20receiving%20flowers%20in%20hospital3.jpg',
     alt: 'Recipient with flowers in hospital room',
   },
   {
-    id: 11,
     kind: 'image',
     src: '/images/dozen-red-roses.jpg',
     alt: 'Roses close-up',
   },
   {
-    id: 12,
     kind: 'video',
     src: '/videos/sf-how-it-works-hero-video-2024-final.mp4',
     alt: 'Video testimonial clip',
     span: 'tall',
   },
   {
-    id: 13,
     kind: 'image',
     src: '/images/happy-birthday-bouquet.jpg',
     alt: 'Birthday flowers on table',
   },
   {
-    id: 14,
     kind: 'image',
     src: '/images/mixed-rose-garden.jpg',
     alt: 'Fresh mixed roses in vase',
   },
   {
-    id: 15,
     kind: 'image',
     src: '/images/birthday-sunflower-basket.jpg',
     alt: 'Sunflowers and mixed flowers',
@@ -108,23 +95,79 @@ const REVIEW_MEDIA: ReviewMedia[] = [
   },
 ]
 
+const FALLBACK_REVIEWS: CustomerReview[] = [
+  {
+    id: 1,
+    name: 'Happy Customer',
+    location: 'New York, NY',
+    message: 'Beautiful flowers and easy delivery. The recipient loved everything.',
+    rating: 5,
+    isApproved: true,
+    orderId: 1,
+    createdAt: '2026-01-01T00:00:00.000Z',
+    updatedAt: '2026-01-01T00:00:00.000Z',
+  },
+  {
+    id: 2,
+    name: 'Satisfied Sender',
+    location: 'Austin, TX',
+    message: 'Great experience, simple process, and fast support.',
+    rating: 5,
+    isApproved: true,
+    orderId: 2,
+    createdAt: '2026-01-01T00:00:00.000Z',
+    updatedAt: '2026-01-01T00:00:00.000Z',
+  },
+  {
+    id: 3,
+    name: 'Loyal Customer',
+    location: 'Miami, FL',
+    message: 'The flowers looked fresh and the delivery timing was perfect.',
+    rating: 4,
+    isApproved: true,
+    orderId: 3,
+    createdAt: '2026-01-01T00:00:00.000Z',
+    updatedAt: '2026-01-01T00:00:00.000Z',
+  },
+]
+
+type GalleryItem = {
+  id: string
+  media: ReviewMedia
+  review: CustomerReview
+}
+
 const ReviewsPage: React.FC = () => {
-  const [activeId, setActiveId] = useState<number | null>(null)
+  const { reviews, isLoading } = useReviews()
+  const [activeId, setActiveId] = useState<string | null>(null)
+
+  const galleryItems = useMemo<GalleryItem[]>(() => {
+    const reviewSource = reviews.length > 0 ? reviews : FALLBACK_REVIEWS
+
+    return reviewSource.map((review, index) => {
+      const media = REVIEW_MEDIA[index % REVIEW_MEDIA.length]
+      return {
+        id: `${review.id}-${index}`,
+        media: { ...media, id: `${review.id}-${index}` },
+        review,
+      }
+    })
+  }, [reviews])
 
   const activeItem = useMemo(
-    () => REVIEW_MEDIA.find((item) => item.id === activeId) ?? null,
-    [activeId]
+    () => galleryItems.find((item) => item.id === activeId) ?? null,
+    [activeId, galleryItems]
   )
 
   return (
     <Layout>
       <section className="border-t border-gray-200 bg-[#f3f3f3] px-4 pb-10 pt-7 md:pb-14 md:pt-9">
-        <div className="mx-auto max-w-[760px]">
+        <div className="mx-auto max-w-190">
           <h1 className="text-center text-[33px] font-semibold tracking-[-0.02em] text-[#252a31]">
             What People Say - Reviews of Social Flowers
           </h1>
 
-          <div className="mx-auto mt-7 max-w-[720px] space-y-5 text-[18px] leading-[1.45] text-[#4c5562]">
+          <div className="mx-auto mt-7 max-w-180 space-y-5 text-[18px] leading-[1.45] text-[#4c5562]">
             <p>
               Click on a picture to see what people are saying about Social Flowers and how they are
               using our service to make connections.
@@ -136,9 +179,11 @@ const ReviewsPage: React.FC = () => {
             </p>
           </div>
 
+          {isLoading && <p className="mt-4 text-[16px] text-[#687386]">Loading customer reviews...</p>}
+
           <div className="mt-8 columns-1 gap-5 sm:columns-2 lg:columns-3">
-            {REVIEW_MEDIA.map((item) => {
-              const isVideo = item.kind === 'video'
+            {galleryItems.map((item) => {
+              const isVideo = item.media.kind === 'video'
 
               return (
                 <button
@@ -149,18 +194,18 @@ const ReviewsPage: React.FC = () => {
                 >
                   {isVideo ? (
                     <video
-                      src={item.src}
+                      src={item.media.src}
                       muted
                       playsInline
                       preload="metadata"
-                      className={`w-full object-cover ${item.span === 'tall' ? 'h-[430px]' : 'h-[310px]'}`}
+                      className={`w-full object-cover ${item.media.span === 'tall' ? 'h-107.5' : 'h-77.5'}`}
                     />
                   ) : (
                     <img
-                      src={item.src}
-                      alt={item.alt}
+                      src={item.media.src}
+                      alt={item.media.alt}
                       loading="lazy"
-                      className={`w-full object-cover ${item.span === 'tall' ? 'h-[430px]' : 'h-[310px]'}`}
+                      className={`w-full object-cover ${item.media.span === 'tall' ? 'h-107.5' : 'h-77.5'}`}
                     />
                   )}
 
@@ -171,6 +216,13 @@ const ReviewsPage: React.FC = () => {
                   )}
 
                   <span className="pointer-events-none absolute inset-0 bg-black/0 transition group-hover:bg-black/12" />
+
+                  <div className="absolute inset-x-0 bottom-0 bg-linear-to-t from-black/85 to-transparent px-3 pb-3 pt-8 text-white">
+                    <p className="line-clamp-2 text-[13px] leading-[1.35]">{item.review.message}</p>
+                    <p className="mt-2 text-[12px] font-semibold uppercase tracking-[0.08em]">
+                      {item.review.name}{item.review.location ? ` - ${item.review.location}` : ''}
+                    </p>
+                  </div>
                 </button>
               )
             })}
@@ -182,7 +234,7 @@ const ReviewsPage: React.FC = () => {
         <div
           role="presentation"
           onClick={() => setActiveId(null)}
-          className="fixed inset-0 z-[90] flex items-center justify-center bg-black/80 p-4"
+          className="fixed inset-0 z-90 flex items-center justify-center bg-black/80 p-4"
         >
           <div
             role="dialog"
@@ -199,16 +251,23 @@ const ReviewsPage: React.FC = () => {
               Close
             </button>
 
-            {activeItem.kind === 'video' ? (
+            {activeItem.media.kind === 'video' ? (
               <video
-                src={activeItem.src}
+                src={activeItem.media.src}
                 controls
                 autoPlay
                 className="max-h-[90vh] w-full object-contain"
               />
             ) : (
-              <img src={activeItem.src} alt={activeItem.alt} className="max-h-[90vh] w-full object-contain" />
+              <img src={activeItem.media.src} alt={activeItem.media.alt} className="max-h-[90vh] w-full object-contain" />
             )}
+
+            <div className="border-t border-white/20 bg-black/90 px-4 py-3 text-white">
+              <p className="text-[14px] leading-relaxed">{activeItem.review.message}</p>
+              <p className="mt-2 text-[12px] font-semibold uppercase tracking-[0.08em]">
+                {activeItem.review.name}{activeItem.review.location ? ` - ${activeItem.review.location}` : ''}
+              </p>
+            </div>
           </div>
         </div>
       )}

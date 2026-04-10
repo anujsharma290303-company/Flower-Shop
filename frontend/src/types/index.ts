@@ -117,6 +117,28 @@ export interface ProductReview extends Review {
   averageRating?: number
 }
 
+export interface CustomerReview {
+  id: number
+  name: string
+  location: string | null
+  message: string
+  rating: number
+  isApproved: boolean
+  orderId: number
+  createdAt: string
+  updatedAt: string
+}
+
+export interface FAQItem {
+  id: number
+  question: string
+  answer: string
+  displayOrder: number
+  isActive: boolean
+  createdAt: string
+  updatedAt: string
+}
+
 // ============================================
 // USER & AUTH TYPES
 // ============================================
@@ -148,12 +170,23 @@ export interface SiteConfig {
   heroCTA1: string
   heroCTA2: string
   heroImage: string | null
+  flowerMeTitle?: string
+  flowerMeDescription?: string
+  flowerMeVideoUrl?: string | null
+  flowerMeThumbnailUrl?: string | null
+  customBouquetsHeading?: string
+  recipientsChoiceImage?: string | null
+  sendersChoiceImage?: string | null
   howItWorks: Array<{
     step: number
     title: string
     description: string
   }>
-  benefitsData: unknown[]
+  benefitsData: Array<{
+    title: string
+    icon: string
+    points: string[]
+  }>
   contactEmail: string
   contactPhone: string
   socialLinks: Record<string, string>

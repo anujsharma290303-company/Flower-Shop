@@ -63,6 +63,18 @@ vi.mock('@/api/categories', () => ({
   },
 }))
 
+vi.mock('@/api/faqs', () => ({
+  faqService: {
+    getAll: vi.fn().mockResolvedValue([]),
+  },
+}))
+
+vi.mock('@/api/reviews', () => ({
+  reviewService: {
+    getAll: vi.fn().mockResolvedValue([]),
+  },
+}))
+
 describe('App routing', () => {
   it('renders homepage on / route', async () => {
     render(

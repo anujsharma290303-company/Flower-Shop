@@ -8,13 +8,15 @@ import { Link } from 'react-router-dom'
 import { HERO_SECTION } from '@/utils/constants'
 import { SOCIAL_FLOWERS_HOMEPAGE } from '@/utils/socialflowersHomepage'
 import Button from '@/components/ui/Button'
+import { useSiteConfig } from '@/hooks/useSiteConfig'
 
 const HeroSection: React.FC = () => {
-  const heroTitle = SOCIAL_FLOWERS_HOMEPAGE.headings.hero
-  const heroSubheadline = SOCIAL_FLOWERS_HOMEPAGE.heroSubheadline
-  const heroCtaPrimary = HERO_SECTION.ctaPrimary
-  const heroCtaSecondary = HERO_SECTION.ctaSecondary
-  const heroImage = HERO_SECTION.imageUrl
+  const { siteConfig } = useSiteConfig()
+  const heroTitle = siteConfig?.heroTitle || SOCIAL_FLOWERS_HOMEPAGE.headings.hero
+  const heroSubheadline = siteConfig?.heroSubTitle || SOCIAL_FLOWERS_HOMEPAGE.heroSubheadline
+  const heroCtaPrimary = siteConfig?.heroCTA1 || HERO_SECTION.ctaPrimary
+  const heroCtaSecondary = siteConfig?.heroCTA2 || HERO_SECTION.ctaSecondary
+  const heroImage = siteConfig?.heroImage || HERO_SECTION.imageUrl
 
   return (
     <section id="hero" className="px-0 bg-[#e8beb9]">

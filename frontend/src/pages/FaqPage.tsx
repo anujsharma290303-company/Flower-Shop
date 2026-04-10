@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from 'react'
 import Layout from '@/components/layout/Layout'
+import { useFaqs } from '@/hooks/useFaqs'
 
 type FaqItem = {
   question: string
@@ -14,7 +15,7 @@ type FaqSection = {
   items: FaqItem[]
 }
 
-const FAQ_SECTIONS: FaqSection[] = [
+const FALLBACK_FAQ_SECTIONS: FaqSection[] = [
   {
     key: 'general',
     title: 'GENERAL',
@@ -183,24 +184,91 @@ const FAQ_SECTIONS: FaqSection[] = [
   },
 ]
 
+const sectionMeta = [
+  {
+    key: 'general',
+    title: 'GENERAL',
+    iconUrl: 'https://cdn.socialflowers.com/how-it-works/bouquet-flowers.svg',
+    sectionClass: 'bg-[#f4efef]',
+  },
+  {
+    key: 'sender',
+    title: 'SENDER',
+    iconUrl: 'https://cdn.socialflowers.com/how-it-works/got-flowers.svg',
+    sectionClass: 'bg-white',
+  },
+  {
+    key: 'recipient',
+    title: 'RECIPIENT',
+    iconUrl: 'https://cdn.socialflowers.com/how-it-works/women.svg',
+    sectionClass: 'bg-[#f4efef]',
+  },
+] as const
+
+const splitByLengths = <T,>(items: T[], lengths: number[]): T[][] => {
+  const result: T[][] = []
+  let start = 0
+
+  for (const length of lengths) {
+    result.push(items.slice(start, start + length))
+    start += length
+  }
+
+  if (start < items.length) {
+    result[result.length - 1] = [...result[result.length - 1], ...items.slice(start)]
+  }
+
+  return result
+}
+
 const FaqPage: React.FC = () => {
   const [openKey, setOpenKey] = useState<string | null>(null)
+  const { faqs, isLoading } = useFaqs()
 
-  const sections = useMemo(() => FAQ_SECTIONS, [])
+  const dbFaqItems = useMemo(
+    () => faqs.map((faq) => ({ question: faq.question, answer: faq.answer })),
+    [faqs]
+  )
+
+  const sections = useMemo(() => {
+    if (dbFaqItems.length === 0) {
+      return FALLBACK_FAQ_SECTIONS
+    }
+
+    const exactTemplateTotal = 32
+    const chunks = dbFaqItems.length >= exactTemplateTotal
+      ? splitByLengths(dbFaqItems, [10, 14, 8])
+      : splitByLengths(dbFaqItems, [
+        Math.ceil(dbFaqItems.length / 3),
+        Math.ceil((dbFaqItems.length * 2) / 3) - Math.ceil(dbFaqItems.length / 3),
+        dbFaqItems.length - Math.ceil((dbFaqItems.length * 2) / 3),
+      ])
+
+    return sectionMeta.map((meta, index) => ({
+      ...meta,
+      items: chunks[index] ?? [],
+    }))
+  }, [dbFaqItems])
 
   return (
     <Layout>
       <section className="border-t border-gray-200 bg-[#f4efef] px-4 pb-8 pt-6 md:px-6 md:pt-8">
-        <div className="mx-auto max-w-[1100px]">
+        <div className="mx-auto max-w-275">
           <h1 className="text-center text-[48px] font-semibold tracking-[-0.02em] text-[#252a31]">
             Frequently Asked Questions
           </h1>
         </div>
       </section>
 
+      {isLoading && (
+        <section className="bg-[#f4efef] px-4 py-4 md:px-6">
+          <div className="mx-auto max-w-275 text-[18px] text-[#586274]">Loading FAQs...</div>
+        </section>
+      )}
+
       {sections.map((section) => (
         <section key={section.key} className={`${section.sectionClass} px-4 py-5 md:px-6 md:py-6`}>
-          <div className="mx-auto max-w-[1100px]">
+          <div className="mx-auto max-w-275">
             <header className="mb-2 flex items-center gap-4 border-b border-[#dbd8d8] pb-3">
               <h2 className="text-[36px] font-semibold tracking-[-0.015em] text-[#2a2f37]">{section.title}</h2>
               <img src={section.iconUrl} alt="Section icon" className="h-12 w-12 object-contain" loading="lazy" />

@@ -8,21 +8,36 @@ import { Link } from 'react-router-dom'
 import { CUSTOM_BOUQUET_CARDS } from '@/utils/constants'
 import { SOCIAL_FLOWERS_HOMEPAGE } from '@/utils/socialflowersHomepage'
 import Button from '@/components/ui/Button'
+import { useSiteConfig } from '@/hooks/useSiteConfig'
 
 const CustomBouquetSection: React.FC = () => {
+  const { siteConfig } = useSiteConfig()
+  const heading = siteConfig?.customBouquetsHeading || SOCIAL_FLOWERS_HOMEPAGE.headings.customBouquets
+
+  const cards = [
+    {
+      ...CUSTOM_BOUQUET_CARDS[0],
+      imageSrc: siteConfig?.recipientsChoiceImage || CUSTOM_BOUQUET_CARDS[0].imageSrc,
+    },
+    {
+      ...CUSTOM_BOUQUET_CARDS[1],
+      imageSrc: siteConfig?.sendersChoiceImage || CUSTOM_BOUQUET_CARDS[1].imageSrc,
+    },
+  ]
+
   return (
     <section id="custom-bouquets" className="py-14 md:py-16 px-4 md:px-8 bg-white">
       <div className="max-w-245 mx-auto">
         {/* Section Header */}
         <div className="text-center mb-10 md:mb-12">
           <h2 className="text-[22px] md:text-[26px] font-medium font-serif text-gray-900 mb-4">
-            {SOCIAL_FLOWERS_HOMEPAGE.headings.customBouquets}
+            {heading}
           </h2>
         </div>
 
         {/* Cards Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-12 md:gap-16">
-          {CUSTOM_BOUQUET_CARDS.map((card) => (
+          {cards.map((card) => (
             <div
               key={card.id}
               className="text-center"

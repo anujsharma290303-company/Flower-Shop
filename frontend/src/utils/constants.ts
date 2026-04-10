@@ -30,6 +30,9 @@ export const API_ENDPOINTS = {
   // Reviews
   REVIEWS: '/reviews',
   PRODUCT_REVIEWS: (productId: number) => `/products/${productId}/reviews`,
+
+  // FAQs
+  FAQS: '/faqs',
   
   // Site Config
   SITE_CONFIG: '/site-config',

@@ -5,6 +5,7 @@
 
 import React from 'react'
 import { BENEFITS } from '@/utils/constants'
+import { useSiteConfig } from '@/hooks/useSiteConfig'
 
 const benefitIcons = {
   GiftIcon: 'https://cdn.socialflowers.com/benefits/for_everyone.svg',
@@ -13,7 +14,14 @@ const benefitIcons = {
 }
 
 const BenefitsSection: React.FC = () => {
-  const benefitsArray = Object.values(BENEFITS)
+  const { siteConfig } = useSiteConfig()
+  const benefitsArray = siteConfig?.benefitsData.length
+    ? siteConfig.benefitsData.map((benefit) => ({
+      title: benefit.title,
+      icon: benefit.icon,
+      points: benefit.points,
+    }))
+    : Object.values(BENEFITS)
 
   const renderPoint = (benefitTitle: string, pointIndex: number, point: string) => {
     const redTextClass = 'text-red-600 border-b border-red-300 pb-[1px]'

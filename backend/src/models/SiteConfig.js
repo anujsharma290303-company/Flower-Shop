@@ -33,6 +33,41 @@ const SiteConfig = sequelize.define(
       type: DataTypes.STRING,
       allowNull: true,
     },
+    flowerMeTitle: {
+      type: DataTypes.STRING,
+      allowNull: false,
+      defaultValue: 'The FlowerMe Society is Here!',
+    },
+    flowerMeDescription: {
+      type: DataTypes.TEXT,
+      allowNull: false,
+      defaultValue: 'A new way to be celebrated, receive flowers, and feel adored. Watch the video below and learn more.',
+    },
+    flowerMeVideoUrl: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      defaultValue: 'https://cdn.socialflowers.com/flowerme/Blooming_This_Fall_2025.mp4#t=0.001',
+    },
+    flowerMeThumbnailUrl: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      defaultValue: 'https://cdn.socialflowers.com/thumbnails/flowerme/Blooming_This_Fall_2025.mp4.0000024.jpg',
+    },
+    customBouquetsHeading: {
+      type: DataTypes.STRING,
+      allowNull: false,
+      defaultValue: 'Send Flowers Easily With Custom Bouquets',
+    },
+    recipientsChoiceImage: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      defaultValue: 'https://cdn.floristone.com/large/recipients-choice-thumb.jpg',
+    },
+    sendersChoiceImage: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      defaultValue: 'https://cdn.floristone.com/large/senders-choice.jpg',
+    },
     howItWorks: {
       type: DataTypes.JSON,
       allowNull: false,

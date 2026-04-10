@@ -38,7 +38,24 @@ const update = async (req, res) => {
       config = await SiteConfig.create({});
     }
 
-    const { heroTitle, heroSubTitle, heroCTA1, heroCTA2, howItWorks, benefitsData, contactEmail, contactPhone, socialLinks } = req.body;
+    const {
+      heroTitle,
+      heroSubTitle,
+      heroCTA1,
+      heroCTA2,
+      flowerMeTitle,
+      flowerMeDescription,
+      flowerMeVideoUrl,
+      flowerMeThumbnailUrl,
+      customBouquetsHeading,
+      recipientsChoiceImage,
+      sendersChoiceImage,
+      howItWorks,
+      benefitsData,
+      contactEmail,
+      contactPhone,
+      socialLinks,
+    } = req.body;
     const heroImage = req.file ? req.file.path : undefined;
 
     const updates = {};
@@ -46,6 +63,13 @@ const update = async (req, res) => {
     if (heroSubTitle !== undefined) updates.heroSubTitle = heroSubTitle;
     if (heroCTA1 !== undefined) updates.heroCTA1 = heroCTA1;
     if (heroCTA2 !== undefined) updates.heroCTA2 = heroCTA2;
+    if (flowerMeTitle !== undefined) updates.flowerMeTitle = flowerMeTitle;
+    if (flowerMeDescription !== undefined) updates.flowerMeDescription = flowerMeDescription;
+    if (flowerMeVideoUrl !== undefined) updates.flowerMeVideoUrl = flowerMeVideoUrl;
+    if (flowerMeThumbnailUrl !== undefined) updates.flowerMeThumbnailUrl = flowerMeThumbnailUrl;
+    if (customBouquetsHeading !== undefined) updates.customBouquetsHeading = customBouquetsHeading;
+    if (recipientsChoiceImage !== undefined) updates.recipientsChoiceImage = recipientsChoiceImage;
+    if (sendersChoiceImage !== undefined) updates.sendersChoiceImage = sendersChoiceImage;
     if (howItWorks !== undefined) updates.howItWorks = safeJsonParse(howItWorks);
     if (benefitsData !== undefined) updates.benefitsData = safeJsonParse(benefitsData);
     if (contactEmail !== undefined) updates.contactEmail = contactEmail;

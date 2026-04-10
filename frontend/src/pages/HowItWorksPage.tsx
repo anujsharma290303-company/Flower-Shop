@@ -1,6 +1,7 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
 import Layout from '@/components/layout/Layout'
+import { useSiteConfig } from '@/hooks/useSiteConfig'
 
 type DetailSection = {
   title: string
@@ -97,6 +98,8 @@ const DETAIL_SECTIONS: DetailSection[] = [
 ]
 
 const HowItWorksPage: React.FC = () => {
+  const { siteConfig } = useSiteConfig()
+
   return (
     <Layout>
       <section className="py-10 md:py-12 px-4 md:px-8 bg-[#f4eceb] border-t border-gray-200">
@@ -232,6 +235,25 @@ const HowItWorksPage: React.FC = () => {
               <p><span className="text-[#c42126] font-semibold">Share a photo or video</span> of your flowers, earn credits</p>
             </div>
           </div>
+
+          {siteConfig?.howItWorks?.length ? (
+            <div className="mt-10 border-t border-gray-200 pt-8">
+              <h3 className="text-center text-[34px] md:text-[38px] font-semibold text-[#2f3743] mb-6">
+                Quick Steps From Site Settings
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {siteConfig.howItWorks.slice(0, 3).map((step) => (
+                  <div key={step.step} className="bg-[#f7f7f7] border border-gray-200 p-5 text-center">
+                    <div className="text-[12px] uppercase tracking-[0.12em] text-[#c42126] font-semibold mb-2">
+                      Step {step.step}
+                    </div>
+                    <h4 className="text-[18px] font-semibold text-[#2f3743] mb-2">{step.title}</h4>
+                    <p className="text-[15px] text-[#4b5563] leading-[1.55]">{step.description}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ) : null}
         </div>
       </section>
 

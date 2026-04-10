@@ -4,8 +4,15 @@
  */
 
 import React from 'react'
+import { HOW_IT_WORKS_STEPS } from '@/utils/constants'
+import { useSiteConfig } from '@/hooks/useSiteConfig'
 
 const HowItWorks: React.FC = () => {
+  const { siteConfig } = useSiteConfig()
+  const steps = siteConfig?.howItWorks?.length
+    ? siteConfig.howItWorks
+    : HOW_IT_WORKS_STEPS
+
   return (
     <section id="how-it-works" className="py-14 md:py-16 px-4 md:px-8 bg-[#efefef]">
       <div className="max-w-245 mx-auto">
@@ -36,6 +43,18 @@ const HowItWorks: React.FC = () => {
               ►
             </div>
           </div>
+        </div>
+
+        <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-4 max-w-235 mx-auto">
+          {steps.slice(0, 3).map((step) => (
+            <div key={step.step} className="bg-white border border-gray-200 p-4 text-center">
+              <div className="text-[12px] uppercase tracking-[0.12em] text-red-600 font-semibold mb-2">
+                Step {step.step}
+              </div>
+              <h3 className="text-[18px] font-semibold text-gray-900 mb-2">{step.title}</h3>
+              <p className="text-[15px] leading-[1.55] text-gray-700">{step.description}</p>
+            </div>
+          ))}
         </div>
       </div>
     </section>

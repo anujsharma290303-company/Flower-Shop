@@ -1,8 +1,11 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
 import Layout from '@/components/layout/Layout'
+import { useSiteConfig } from '@/hooks/useSiteConfig'
 
 const AboutPage: React.FC = () => {
+  const { siteConfig } = useSiteConfig()
+
   return (
     <Layout>
       <section className="bg-[#f2ecec] border-t border-gray-200 py-7 md:py-8 px-4 md:px-6">
@@ -124,6 +127,23 @@ const AboutPage: React.FC = () => {
                 But every order is more than just a transaction to us, every order represents a heartfelt connection that we&apos;re proud of. We care about the flowers we deliver and the lives we touch.
               </p>
             </div>
+          </div>
+
+          <div className="mt-10 border-t border-gray-200 pt-8 text-center">
+            <h2 className="text-[#2f3743] font-semibold text-[34px] md:text-[38px] leading-tight mb-3">
+              Need Help Getting Started?
+            </h2>
+            <p className="text-[20px] text-[#4b5563]">
+              Reach us at{' '}
+              <a href={`mailto:${siteConfig?.contactEmail || 'contact@flowerstore.com'}`} className="text-[#d2242a] hover:underline">
+                {siteConfig?.contactEmail || 'contact@flowerstore.com'}
+              </a>
+              {' '}or call{' '}
+              <a href={`tel:${siteConfig?.contactPhone || '+1 (555) 123-4567'}`} className="text-[#d2242a] hover:underline">
+                {siteConfig?.contactPhone || '+1 (555) 123-4567'}
+              </a>
+              .
+            </p>
           </div>
         </div>
       </section>
