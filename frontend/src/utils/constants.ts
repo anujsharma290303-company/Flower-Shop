@@ -9,7 +9,7 @@ import { SOCIAL_FLOWERS_HOMEPAGE } from './socialflowersHomepage'
 // API CONFIGURATION
 // ============================================
 
-export const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api'
+export const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://flower-shop-production-54c1.up.railway.app/api'
 
 export const API_ENDPOINTS = {
   // Products
