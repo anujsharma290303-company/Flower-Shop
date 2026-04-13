@@ -1,5 +1,6 @@
 require("dotenv").config();
 const slugify = require("slugify");
+const productImages = require("./productImages");
 const { sequelize, Category, Product, FAQ, SiteConfig } = require("../models");
 
 const seedCategories = async () => {
@@ -1155,12 +1156,18 @@ const seedProducts = async (categories) => {
   ];
 
   // add slug to every product
-  const productsWithSlugs = products.map((p) => ({
-    ...p,
-    slug: slugify(p.name, { lower: true, strict: true }),
-    description: `Beautiful ${p.name.toLowerCase()} arrangement, perfect for any occasion.`,
-    image: [],
-  }));
+  const productsWithSlugs = products.map((p) => {
+    const slug = slugify(p.name, { lower: true, strict: true });
+
+    return {
+      ...p,
+      slug,
+      description: `Beautiful ${p.name.toLowerCase()} arrangement, perfect for any occasion.`,
+      image: productImages[slug] || [
+        "https://images.unsplash.com/photo-1518895949257-7621c3c786d7?w=600&h=600&fit=crop",
+      ],
+    };
+  });
 
   await Product.bulkCreate(productsWithSlugs);
   console.log(`✅ ${productsWithSlugs.length} products seeded`);
