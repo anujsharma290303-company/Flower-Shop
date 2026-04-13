@@ -5,7 +5,7 @@ import Layout from '@/components/layout/Layout'
 const NotFoundPage: React.FC = () => {
   return (
     <Layout>
-      <section className="border-t border-gray-200 bg-white px-4 py-16 md:px-8">
+      <section className="border-t border-gray-200 bg-white px-4 py-16 md:px-8" data-testid="not-found">
         <div className="mx-auto max-w-4xl text-center">
           <p className="text-[13px] font-semibold uppercase tracking-[0.14em] text-[#c82a2f]">404</p>
           <h1 className="mt-3 font-serif text-[44px] font-semibold tracking-[-0.02em] text-[#252a31] md:text-[52px]">
