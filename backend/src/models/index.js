@@ -56,7 +56,7 @@ Order.hasOne(Review, { foreignKey: "orderId", as: "review" });
 Review.belongsTo(Order, { foreignKey: "orderId", as: "order" });
 
 // Order->CustomBouquet
-Order.hasOne(CustomBouquet, { foreignKey: "orderId", as: "customBouquet" });
+Order.hasMany(CustomBouquet, { foreignKey: "orderId", as: "customBouquets" });
 CustomBouquet.belongsTo(Order, { foreignKey: "orderId", as: "order" });
 
 // Order->Payment

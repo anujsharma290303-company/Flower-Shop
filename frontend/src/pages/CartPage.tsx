@@ -1,14 +1,16 @@
-import React from 'react'
+import React, { useMemo } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import Layout from '@/components/layout/Layout'
 import { useBouquetStore } from '../store/bouquetStore'
 
 const CartPage: React.FC = () => {
   const navigate = useNavigate()
-  const { cartItems, updateCartItemQuantity, removeFromCart, getCartTotal } = useBouquetStore()
+  const { cartItems, updateCartItemQuantity, removeFromCart } = useBouquetStore()
 
-  const hasProductItems = cartItems.some((item) => item.type === 'product' && item.productId)
-  const total = getCartTotal()
+  const total = useMemo(
+    () => cartItems.reduce((sum, item) => sum + (item.type === 'bouquet' ? item.price : item.price * item.quantity), 0),
+    [cartItems]
+  )
 
   return (
     <Layout>
@@ -55,25 +57,31 @@ const CartPage: React.FC = () => {
                     </div>
 
                     <div className="mt-4 flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <button
-                          type="button"
-                          onClick={() => updateCartItemQuantity(item.id, item.quantity - 1)}
-                          className="h-9 w-9 border border-gray-300 text-[#2f3743] hover:bg-gray-50"
-                        >
-                          -
-                        </button>
-                        <span className="min-w-10 text-center text-[16px] text-[#2f3743]">{item.quantity}</span>
-                        <button
-                          type="button"
-                          onClick={() => updateCartItemQuantity(item.id, item.quantity + 1)}
-                          className="h-9 w-9 border border-gray-300 text-[#2f3743] hover:bg-gray-50"
-                        >
-                          +
-                        </button>
-                      </div>
+                      {item.type === 'product' ? (
+                        <div className="flex items-center gap-2">
+                          <button
+                            type="button"
+                            onClick={() => updateCartItemQuantity(item.id, item.quantity - 1)}
+                            className="h-9 w-9 border border-gray-300 text-[#2f3743] hover:bg-gray-50"
+                          >
+                            -
+                          </button>
+                          <span className="min-w-10 text-center text-[16px] text-[#2f3743]">{item.quantity}</span>
+                          <button
+                            type="button"
+                            onClick={() => updateCartItemQuantity(item.id, item.quantity + 1)}
+                            className="h-9 w-9 border border-gray-300 text-[#2f3743] hover:bg-gray-50"
+                          >
+                            +
+                          </button>
+                        </div>
+                      ) : (
+                        <p className="text-[14px] text-[#586274]">Quantity: 1</p>
+                      )}
 
-                      <p className="text-[18px] font-semibold text-[#2f3743]">${(item.price * item.quantity).toFixed(2)}</p>
+                      <p className="text-[18px] font-semibold text-[#2f3743]">
+                        ${(item.type === 'bouquet' ? item.price : item.price * item.quantity).toFixed(2)}
+                      </p>
                     </div>
                   </div>
                 ))}
@@ -84,12 +92,6 @@ const CartPage: React.FC = () => {
                   <p className="text-[18px] font-semibold text-[#2f3743]">Cart Total</p>
                   <p className="text-[24px] font-semibold text-[#2f3743]">${total.toFixed(2)}</p>
                 </div>
-
-                {!hasProductItems ? (
-                  <p className="mt-3 text-[14px] text-[#c82a2f]">
-                    Checkout currently requires at least one product item. Bouquet-only checkout will be enabled in a follow-up update.
-                  </p>
-                ) : null}
 
                 <div className="mt-5 flex flex-wrap gap-3">
                   <Link
@@ -102,7 +104,6 @@ const CartPage: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => navigate('/checkout')}
-                    disabled={!hasProductItems}
                     className="inline-flex h-11 items-center justify-center bg-[#c82a2f] px-6 text-white transition hover:bg-[#a81f24] disabled:cursor-not-allowed disabled:opacity-70"
                   >
                     Proceed to Checkout

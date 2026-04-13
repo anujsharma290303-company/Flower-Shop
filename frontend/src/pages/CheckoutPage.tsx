@@ -40,9 +40,24 @@ const CheckoutPage: React.FC = () => {
     [cartItems]
   )
 
+  const customBouquetIds = useMemo(
+    () => bouquetCartItems
+      .map((item) => {
+        const parsedId = Number(String(item.id).replace('bouquet-', ''))
+        return Number.isInteger(parsedId) && parsedId > 0 ? parsedId : null
+      })
+      .filter((id): id is number => id !== null),
+    [bouquetCartItems]
+  )
+
   const cartSubtotal = useMemo(
     () => productCartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0),
     [productCartItems]
+  )
+
+  const bouquetSubtotal = useMemo(
+    () => bouquetCartItems.reduce((sum, item) => sum + item.price, 0),
+    [bouquetCartItems]
   )
 
   const getValidationError = () => {
@@ -70,8 +85,8 @@ const CheckoutPage: React.FC = () => {
       return 'Recipient phone must be between 7 and 30 characters.'
     }
 
-    if (productCartItems.length === 0) {
-      return 'Your cart has no product items. Add at least one product to continue checkout.'
+    if (productCartItems.length === 0 && customBouquetIds.length === 0) {
+      return 'Your cart is empty. Add at least one product or bouquet to continue checkout.'
     }
 
     return null
@@ -145,11 +160,12 @@ const CheckoutPage: React.FC = () => {
         recipientEmail: recipientEmail.trim() || null,
         recipientPhone: recipientPhone.trim(),
         deliveryMode: 'recipient-provides',
-        isRecipientChoice: true,
+        isRecipientChoice: productCartItems.length > 0 || bouquetCartItems.some((item) => item.bouquetData?.type === 'recipient'),
         items: productCartItems.map((item) => ({
           productId: item.productId as number,
           quantity: item.quantity,
         })),
+        customBouquetIds,
       })
 
       setCreatedOrderId(response.order.id)
@@ -201,7 +217,8 @@ const CheckoutPage: React.FC = () => {
       setPayment(response.payment)
       setPaymentMessage('Payment authorized successfully. Your order is confirmed.')
 
-      productCartItems.forEach((item) => {
+      const consumedCartItems = [...productCartItems, ...bouquetCartItems]
+      consumedCartItems.forEach((item) => {
         updateCartItemQuantity(item.id, 0)
       })
     } catch (error: unknown) {
@@ -253,19 +270,25 @@ const CheckoutPage: React.FC = () => {
                   <div className="mt-2 space-y-1">
                     {bouquetCartItems.map((item) => (
                       <p key={item.id} className="text-[14px] text-[#586274]">
-                        {item.name} x {item.quantity}
+                        {item.name} x 1
                       </p>
                     ))}
                   </div>
-                  <p className="mt-2 text-[13px] text-[#586274]">
-                    Bouquet checkout will be finalized in a dedicated follow-up flow.
-                  </p>
+                  <div className="mt-3 flex items-center justify-between border-t border-gray-200 pt-2">
+                    <p className="text-[14px] font-semibold text-[#2f3743]">Bouquet Subtotal</p>
+                    <p className="text-[16px] text-[#2f3743]">${bouquetSubtotal.toFixed(2)}</p>
+                  </div>
                 </div>
               ) : null}
+
+              <div className="mt-4 border-t border-gray-200 pt-3 flex items-center justify-between">
+                <p className="text-[18px] font-semibold text-[#2f3743]">Order Total</p>
+                <p className="text-[24px] text-[#2f3743]">${(cartSubtotal + bouquetSubtotal).toFixed(2)}</p>
+              </div>
             </div>
           ) : (
             <div className="mb-6 rounded border border-gray-200 bg-white p-5 text-center">
-              <p className="text-[16px] text-[#586274]">No product items in cart.</p>
+              <p className="text-[16px] text-[#586274]">No checkout items in cart.</p>
               <Link to="/cart" className="mt-3 inline-flex h-10 items-center justify-center text-[#c82a2f] hover:underline">
                 Go to cart
               </Link>
@@ -302,7 +325,7 @@ const CheckoutPage: React.FC = () => {
 
             <button
               type="submit"
-              disabled={submitLoading || productCartItems.length === 0}
+              disabled={submitLoading || (productCartItems.length === 0 && customBouquetIds.length === 0)}
               className="mt-5 inline-flex h-11 items-center justify-center bg-[#c82a2f] px-6 text-white transition hover:bg-[#a81f24] disabled:cursor-not-allowed disabled:opacity-70"
             >
               {submitLoading ? 'Creating order...' : 'Place Order'}

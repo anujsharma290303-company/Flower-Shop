@@ -154,6 +154,18 @@ const validateOrder = [
     })
     .isInt({ min: 0 })
     .withMessage('creditsToUse must be a non-negative integer'),
+  body('customBouquetIds')
+    .optional({ nullable: true })
+    .isArray()
+    .withMessage('customBouquetIds must be an array when provided'),
+  body('customBouquetIds.*')
+    .optional({ nullable: true })
+    .customSanitizer((value) => {
+      const numberValue = Number(value);
+      return Number.isNaN(numberValue) ? value : numberValue;
+    })
+    .isInt({ min: 1 })
+    .withMessage('Each customBouquetId must be a positive integer'),
   body('subscriptionFrequency').custom((value, { req }) => {
     const subscriptionFlag = req.body.isSubscription;
     const isSubscription = subscriptionFlag === true;

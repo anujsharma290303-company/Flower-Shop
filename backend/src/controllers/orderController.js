@@ -1,4 +1,4 @@
-const { Order, OrderItem, Product, RecipentAccessToken, OrderStatusLog, NotificationLog, CreditTransaction, User, sequelize } = require('../models');
+const { Order, OrderItem, Product, CustomBouquet, RecipentAccessToken, OrderStatusLog, NotificationLog, CreditTransaction, User, sequelize } = require('../models');
 const { v4: uuidv4 } = require('uuid');
 const { CREDIT_REASONS } = require('../constants/credits');
 
@@ -152,15 +152,19 @@ const create = async (req, res) => {
       isRecipientChoice,
       creditsToUse,
       items,
+      customBouquetIds,
     } = req.body;
 
-    if (!Array.isArray(items) || items.length === 0) {
+    const normalizedItemInput = Array.isArray(items) ? items : [];
+    const normalizedBouquetIdInput = Array.isArray(customBouquetIds) ? customBouquetIds : [];
+
+    if (normalizedItemInput.length === 0 && normalizedBouquetIdInput.length === 0) {
       await transaction.rollback();
-      return res.status(400).json({ success: false, message: 'Items must be a non-empty array' });
+      return res.status(400).json({ success: false, message: 'Provide at least one line item: items or customBouquetIds' });
     }
 
-    const productIds = items.map((item) => parsePositiveInt(item.productId)).filter(Boolean);
-    if (productIds.length !== items.length) {
+    const productIds = normalizedItemInput.map((item) => parsePositiveInt(item.productId)).filter(Boolean);
+    if (productIds.length !== normalizedItemInput.length) {
       await transaction.rollback();
       return res.status(400).json({ success: false, message: 'Each item must include a valid productId' });
     }
@@ -177,7 +181,7 @@ const create = async (req, res) => {
 
     const productMap = new Map(products.map((product) => [product.id, product]));
 
-    const normalizedItems = items.map((item) => {
+    const normalizedItems = normalizedItemInput.map((item) => {
       const quantity = parsePositiveInt(item.quantity);
       if (!quantity) {
         return { error: 'Each item must include a positive integer quantity' };
@@ -196,13 +200,41 @@ const create = async (req, res) => {
       };
     });
 
+    const bouquetIds = normalizedBouquetIdInput.map((id) => parsePositiveInt(id)).filter(Boolean);
+    if (bouquetIds.length !== normalizedBouquetIdInput.length) {
+      await transaction.rollback();
+      return res.status(400).json({ success: false, message: 'customBouquetIds must contain positive integer ids' });
+    }
+
+    let attachedBouquets = [];
+    if (bouquetIds.length > 0) {
+      attachedBouquets = await CustomBouquet.findAll({
+        where: { id: bouquetIds },
+        transaction,
+        lock: transaction.LOCK.UPDATE,
+      });
+
+      if (attachedBouquets.length !== bouquetIds.length) {
+        await transaction.rollback();
+        return res.status(404).json({ success: false, message: 'One or more custom bouquets were not found' });
+      }
+
+      const alreadyLinked = attachedBouquets.find((bouquet) => bouquet.orderId !== null);
+      if (alreadyLinked) {
+        await transaction.rollback();
+        return res.status(400).json({ success: false, message: `Custom bouquet ${alreadyLinked.id} is already linked to an order` });
+      }
+    }
+
     const firstError = normalizedItems.find((item) => item.error);
     if (firstError) {
       await transaction.rollback();
       return res.status(400).json({ success: false, message: firstError.error });
     }
 
-    const subtotal = normalizedItems.reduce((sum, item) => sum + (item.priceAtPurchase * item.quantity), 0);
+    const productSubtotal = normalizedItems.reduce((sum, item) => sum + (item.priceAtPurchase * item.quantity), 0);
+    const bouquetSubtotal = attachedBouquets.reduce((sum, bouquet) => sum + Number(bouquet.pricePoint || 0), 0);
+    const subtotal = productSubtotal + bouquetSubtotal;
 
     const parsedCreditsToUse = Number.isInteger(Number(creditsToUse)) ? Math.max(0, Number(creditsToUse)) : 0;
     let creditsApplied = 0;
@@ -322,6 +354,12 @@ const create = async (req, res) => {
       { transaction },
     );
 
+    if (attachedBouquets.length > 0) {
+      await Promise.all(
+        attachedBouquets.map((bouquet) => bouquet.update({ orderId: order.id }, { transaction }))
+      );
+    }
+
     let recipientToken = null;
     const shouldGenerateRecipientToken = Boolean(isRecipientChoice) && normalizedDeliveryMode !== 'sender-provides';
     if (shouldGenerateRecipientToken) {
@@ -361,6 +399,7 @@ const create = async (req, res) => {
     const fullOrder = await Order.findByPk(order.id, {
       include: [
         { model: OrderItem, as: 'items' },
+        { model: CustomBouquet, as: 'customBouquets' },
       ],
     });
 

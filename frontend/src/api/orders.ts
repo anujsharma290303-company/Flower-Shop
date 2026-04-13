@@ -30,6 +30,7 @@ type CreateOrderPayload = {
   cardMessage?: string | null
   isRecipientChoice?: boolean
   items: CreateOrderItemPayload[]
+  customBouquetIds?: number[]
 }
 
 type CreateOrderResponse = {
