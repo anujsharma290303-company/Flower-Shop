@@ -18,6 +18,7 @@ import FlowerMeProfilePage from '@/pages/FlowerMeProfilePage'
 import FlowerMePublicProfilePage from '@/pages/FlowerMePublicProfilePage'
 import CheckoutPage from '@/pages/CheckoutPage'
 import TrackOrderPage from '@/pages/TrackOrderPage'
+import RecipientChoicePage from '@/pages/RecipientChoicePage'
 import CustomerProtectedRoute from '@/components/auth/CustomerProtectedRoute'
 import AdminProtectedRoute from '@/components/auth/AdminProtectedRoute'
 import NotFoundPage from '@/pages/NotFoundPage'
@@ -56,6 +57,7 @@ function App() {
         )}
       />
       <Route path="/track-order" element={<TrackOrderPage />} />
+      <Route path="/recipient/:token" element={<RecipientChoicePage />} />
       <Route path="/flowerme/profile/:slug" element={<FlowerMePublicProfilePage />} />
       <Route
         path="/flowerme/profile"

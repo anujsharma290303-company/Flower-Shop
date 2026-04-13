@@ -54,8 +54,8 @@ const validateOrder = [
     .isString()
     .withMessage('Customer name must be a string')
     .trim()
-    .isLength({ min: 2, max: 120 })
-    .withMessage('Customer name must be between 2 and 120 characters'),
+    .isLength({ min: 1, max: 120 })
+    .withMessage('Customer name must be between 1 and 120 characters'),
   body('customerEmail')
     .notEmpty()
     .withMessage('Customer email is required')
@@ -68,18 +68,18 @@ const validateOrder = [
     .isString()
     .withMessage('Customer phone must be a string')
     .trim()
-    .isLength({ min: 7, max: 30 })
-    .withMessage('Customer phone must be between 7 and 30 characters'),
+    .isLength({ min: 5, max: 30 })
+    .withMessage('Customer phone must be between 5 and 30 characters'),
   body('recipientName')
     .notEmpty()
     .withMessage('Recipient name is required')
     .isString()
     .withMessage('Recipient name must be a string')
     .trim()
-    .isLength({ min: 2, max: 120 })
-    .withMessage('Recipient name must be between 2 and 120 characters'),
+    .isLength({ min: 1, max: 120 })
+    .withMessage('Recipient name must be between 1 and 120 characters'),
   body('recipientEmail')
-    .optional({ nullable: true })
+    .optional({ nullable: true, checkFalsy: true })
     .isEmail()
     .withMessage('Recipient email must be valid')
     .normalizeEmail(),
@@ -89,32 +89,32 @@ const validateOrder = [
     .isString()
     .withMessage('Recipient phone must be a string')
     .trim()
-    .isLength({ min: 7, max: 30 })
-    .withMessage('Recipient phone must be between 7 and 30 characters'),
+    .isLength({ min: 5, max: 30 })
+    .withMessage('Recipient phone must be between 5 and 30 characters'),
   body('deliveryAddress')
-    .optional({ nullable: true })
+    .optional({ nullable: true, checkFalsy: true })
     .isString()
     .withMessage('Delivery address must be a string')
     .trim()
     .isLength({ min: 5, max: 1000 })
     .withMessage('Delivery address must be between 5 and 1000 characters when provided'),
   body('deliveryDate')
-    .optional({ nullable: true })
+    .optional({ nullable: true, checkFalsy: true })
     .isISO8601()
     .withMessage('Delivery date must be a valid ISO date')
     .customSanitizer((value) => (value ? String(value).slice(0, 10) : value)),
   body('country')
-    .optional({ nullable: true })
+    .optional({ nullable: true, checkFalsy: true })
     .customSanitizer((value) => (value ? String(value).trim().toUpperCase() : value))
     .isIn(COUNTRY)
     .withMessage(`country must be one of: ${COUNTRY.join(', ')}`),
   body('currency')
-    .optional({ nullable: true })
+    .optional({ nullable: true, checkFalsy: true })
     .customSanitizer((value) => (value ? String(value).trim().toUpperCase() : value))
     .isIn(CURRENCY)
     .withMessage(`currency must be one of: ${CURRENCY.join(', ')}`),
   body('message')
-    .optional({ nullable: true })
+    .optional({ nullable: true, checkFalsy: true })
     .isString()
     .withMessage('Message must be a string')
     .trim()

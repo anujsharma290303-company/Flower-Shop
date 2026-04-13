@@ -50,11 +50,19 @@ const buildDeliveryAddressFromParts = ({
   zipCode,
   country,
 }) => {
-  const parts = [addressLine1, addressLine2, city, state, zipCode, country]
+  const addressParts = [addressLine1, addressLine2, city, state, zipCode]
     .filter((value) => value !== undefined && value !== null && String(value).trim() !== '')
     .map((value) => String(value).trim());
 
-  return parts.length > 0 ? parts.join(', ') : null;
+  if (addressParts.length === 0) {
+    return null;
+  }
+
+  if (country !== undefined && country !== null && String(country).trim() !== '') {
+    addressParts.push(String(country).trim());
+  }
+
+  return addressParts.join(', ');
 };
 
 const logStatusTransition = async ({ orderId, fromStatus, toStatus, source, note, transaction }) => {

@@ -29,6 +29,11 @@ export const API_ENDPOINTS = {
   ORDER_TRACK: '/orders/track',
   ORDER_MEDIA_BY_ID: (id: number) => `/orders/${id}/media`,
 
+  // Recipient flow
+  RECIPIENT_BY_TOKEN: (token: string) => `/recipient/${token}`,
+  RECIPIENT_ACCEPT: '/recipient/accept',
+  RECIPIENT_REJECT: '/recipient/reject',
+
   // Payments
   PAYMENT_PAY: '/payments/pay',
   PAYMENT_AUTHORIZE: '/payments/authorize',
