@@ -26,6 +26,8 @@ export const API_ENDPOINTS = {
   // Orders
   ORDERS: '/orders',
   ORDER_BY_ID: (id: number) => `/orders/${id}`,
+  ORDER_TRACK: '/orders/track',
+  ORDER_MEDIA_BY_ID: (id: number) => `/orders/${id}/media`,
   
   // Reviews
   REVIEWS: '/reviews',

@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react'
-import { Link, useParams } from 'react-router-dom'
+import { Link, useNavigate, useParams } from 'react-router-dom'
 import Layout from '@/components/layout/Layout'
 import { productService } from '@/api/products'
 import type { Product } from '@/types'
@@ -21,6 +21,7 @@ const DELIVERY_POINTS = [
 
 const ProductDetailPage: React.FC = () => {
   const { itemCode = '' } = useParams<{ itemCode: string; slug?: string }>()
+  const navigate = useNavigate()
   const [product, setProduct] = useState<Product | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -174,6 +175,7 @@ const ProductDetailPage: React.FC = () => {
                 <div className="mt-8">
                   <button
                     type="button"
+                    onClick={() => navigate(`/checkout/${product.itemCode}`)}
                     className="inline-flex items-center justify-center px-8 py-3 bg-red-600 text-white text-[16px] font-semibold hover:bg-red-700 transition-colors"
                   >
                     Buy Now

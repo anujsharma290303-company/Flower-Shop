@@ -16,6 +16,8 @@ import BlogPage from '@/pages/BlogPage'
 import BlogDetailPage from '@/pages/BlogDetailPage'
 import FlowerMeProfilePage from '@/pages/FlowerMeProfilePage'
 import FlowerMePublicProfilePage from '@/pages/FlowerMePublicProfilePage'
+import CheckoutPage from '@/pages/CheckoutPage'
+import TrackOrderPage from '@/pages/TrackOrderPage'
 import CustomerProtectedRoute from '@/components/auth/CustomerProtectedRoute'
 import AdminProtectedRoute from '@/components/auth/AdminProtectedRoute'
 import NotFoundPage from '@/pages/NotFoundPage'
@@ -37,6 +39,9 @@ function App() {
       <Route path="/create-account" element={<CreateAccountPage />} />
       <Route path="/blog" element={<BlogPage />} />
       <Route path="/blog/:slug" element={<BlogDetailPage />} />
+      <Route path="/checkout/:itemCode" element={<CheckoutPage />} />
+      <Route path="/checkout" element={<CheckoutPage />} />
+      <Route path="/track-order" element={<TrackOrderPage />} />
       <Route path="/flowerme/profile/:slug" element={<FlowerMePublicProfilePage />} />
       <Route
         path="/flowerme/profile"

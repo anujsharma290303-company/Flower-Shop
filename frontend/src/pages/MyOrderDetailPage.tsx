@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import Layout from '@/components/layout/Layout'
 import { authService } from '@/api/auth'
+import { orderService } from '@/api/orders'
 import type { CustomerOrder } from '@/types'
 
 const MyOrderDetailPage: React.FC = () => {
@@ -10,6 +11,9 @@ const MyOrderDetailPage: React.FC = () => {
   const [order, setOrder] = useState<CustomerOrder | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
+  const [mediaUploadMessage, setMediaUploadMessage] = useState<string | null>(null)
+  const [mediaUploadError, setMediaUploadError] = useState<string | null>(null)
+  const [mediaUploading, setMediaUploading] = useState(false)
 
   useEffect(() => {
     let isMounted = true
@@ -57,6 +61,45 @@ const MyOrderDetailPage: React.FC = () => {
       isMounted = false
     }
   }, [id, navigate])
+
+  const handleMediaUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (!order) {
+      return
+    }
+
+    const file = event.target.files?.[0]
+    if (!file) {
+      return
+    }
+
+    setMediaUploading(true)
+    setMediaUploadError(null)
+    setMediaUploadMessage(null)
+
+    try {
+      const mediaType = file.type.startsWith('video/') ? 'video' : 'photo'
+      await orderService.uploadOrderMedia(order.id, {
+        media: file,
+        mediaType,
+        sharedWith: 'sender',
+      })
+
+      setMediaUploadMessage('Media uploaded and waiting for admin approval.')
+    } catch (error: unknown) {
+      const message =
+        typeof error === 'object' &&
+        error !== null &&
+        'response' in error &&
+        typeof (error as { response?: { data?: { message?: string } } }).response?.data?.message === 'string'
+          ? (error as { response: { data: { message: string } } }).response.data.message
+          : 'Unable to upload media right now.'
+
+      setMediaUploadError(message)
+    } finally {
+      setMediaUploading(false)
+      event.target.value = ''
+    }
+  }
 
   return (
     <Layout>
@@ -152,6 +195,27 @@ const MyOrderDetailPage: React.FC = () => {
                   </div>
                 </div>
               ) : null}
+
+              <div className="mt-6 rounded border border-gray-200 bg-white p-5">
+                <h2 className="mb-2 text-[24px] font-semibold text-[#2f3743]">Share Delivery Media</h2>
+                <p className="mb-4 text-[15px] text-[#586274]">
+                  Upload a photo or video from this order to share with the sender.
+                </p>
+
+                <label className="inline-flex cursor-pointer items-center justify-center bg-[#c82a2f] px-5 py-2.5 text-white hover:bg-[#a81f24]">
+                  <span>{mediaUploading ? 'Uploading...' : 'Upload Photo or Video'}</span>
+                  <input
+                    type="file"
+                    accept="image/*,video/*"
+                    onChange={handleMediaUpload}
+                    className="hidden"
+                    disabled={mediaUploading}
+                  />
+                </label>
+
+                {mediaUploadMessage ? <p className="mt-3 text-[14px] text-green-700">{mediaUploadMessage}</p> : null}
+                {mediaUploadError ? <p className="mt-3 text-[14px] text-[#c82a2f]">{mediaUploadError}</p> : null}
+              </div>
             </>
           ) : null}
 
