@@ -17,8 +17,10 @@ import BlogDetailPage from '@/pages/BlogDetailPage'
 import FlowerMeProfilePage from '@/pages/FlowerMeProfilePage'
 import FlowerMePublicProfilePage from '@/pages/FlowerMePublicProfilePage'
 import CheckoutPage from '@/pages/CheckoutPage'
+import CartPage from '@/pages/CartPage'
 import TrackOrderPage from '@/pages/TrackOrderPage'
 import RecipientChoicePage from '@/pages/RecipientChoicePage'
+import CustomBouquetBuilderPage from '@/pages/CustomBouquetBuilderPage'
 import CustomerProtectedRoute from '@/components/auth/CustomerProtectedRoute'
 import AdminProtectedRoute from '@/components/auth/AdminProtectedRoute'
 import NotFoundPage from '@/pages/NotFoundPage'
@@ -56,8 +58,17 @@ function App() {
           </CustomerProtectedRoute>
         )}
       />
+      <Route
+        path="/cart"
+        element={(
+          <CustomerProtectedRoute>
+            <CartPage />
+          </CustomerProtectedRoute>
+        )}
+      />
       <Route path="/track-order" element={<TrackOrderPage />} />
       <Route path="/recipient/:token" element={<RecipientChoicePage />} />
+      <Route path="/create-a-bouquet" element={<CustomBouquetBuilderPage />} />
       <Route path="/flowerme/profile/:slug" element={<FlowerMePublicProfilePage />} />
       <Route
         path="/flowerme/profile"

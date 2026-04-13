@@ -33,6 +33,10 @@ export const API_ENDPOINTS = {
   RECIPIENT_BY_TOKEN: (token: string) => `/recipient/${token}`,
   RECIPIENT_ACCEPT: '/recipient/accept',
   RECIPIENT_REJECT: '/recipient/reject',
+  RECIPIENT_UPDATE_PRIVACY: (token: string) => `/recipient/${token}/privacy`,
+
+  // Custom Bouquets
+  BOUQUET_CREATE: '/bouquets',
 
   // Payments
   PAYMENT_PAY: '/payments/pay',

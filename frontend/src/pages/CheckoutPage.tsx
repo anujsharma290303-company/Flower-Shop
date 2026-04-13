@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import Layout from '@/components/layout/Layout'
 import { productService } from '@/api/products'
@@ -6,11 +6,12 @@ import { orderService } from '@/api/orders'
 import { paymentService } from '@/api/payments'
 import type { Product } from '@/types'
 import type { PaymentMethod, PaymentRecord } from '@/api/payments'
+import { useBouquetStore } from '../store/bouquetStore'
 
 const CheckoutPage: React.FC = () => {
   const { itemCode = '' } = useParams<{ itemCode?: string }>()
+  const { cartItems, addToCart, updateCartItemQuantity } = useBouquetStore()
 
-  const [product, setProduct] = useState<Product | null>(null)
   const [loadingProduct, setLoadingProduct] = useState(Boolean(itemCode))
   const [submitLoading, setSubmitLoading] = useState(false)
   const [submitError, setSubmitError] = useState<string | null>(null)
@@ -28,7 +29,21 @@ const CheckoutPage: React.FC = () => {
   const [recipientName, setRecipientName] = useState('')
   const [recipientEmail, setRecipientEmail] = useState('')
   const [recipientPhone, setRecipientPhone] = useState('')
-  const [quantity, setQuantity] = useState(1)
+
+  const productCartItems = useMemo(
+    () => cartItems.filter((item) => item.type === 'product' && typeof item.productId === 'number'),
+    [cartItems]
+  )
+
+  const bouquetCartItems = useMemo(
+    () => cartItems.filter((item) => item.type === 'bouquet'),
+    [cartItems]
+  )
+
+  const cartSubtotal = useMemo(
+    () => productCartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0),
+    [productCartItems]
+  )
 
   const getValidationError = () => {
     if (customerName.trim().length < 2 || customerName.trim().length > 120) {
@@ -55,8 +70,8 @@ const CheckoutPage: React.FC = () => {
       return 'Recipient phone must be between 7 and 30 characters.'
     }
 
-    if (!Number.isInteger(quantity) || quantity < 1) {
-      return 'Quantity must be a positive whole number.'
+    if (productCartItems.length === 0) {
+      return 'Your cart has no product items. Add at least one product to continue checkout.'
     }
 
     return null
@@ -65,21 +80,31 @@ const CheckoutPage: React.FC = () => {
   useEffect(() => {
     let mounted = true
 
-    const loadProduct = async () => {
+    const ensureLegacyItemIsInCart = async () => {
       if (!itemCode) {
         setLoadingProduct(false)
         return
       }
 
+      if (cartItems.some((item) => item.id.startsWith('product-'))) {
+        setLoadingProduct(false)
+        return
+      }
+
       try {
-        const nextProduct = await productService.getByItemCode(itemCode)
+        const legacyProduct: Product = await productService.getByItemCode(itemCode)
         if (mounted) {
-          setProduct(nextProduct)
+          addToCart({
+            id: `product-${legacyProduct.id}`,
+            type: 'product',
+            productId: legacyProduct.id,
+            quantity: 1,
+            price: Number(legacyProduct.price),
+            name: legacyProduct.name,
+          })
         }
       } catch {
-        if (mounted) {
-          setProduct(null)
-        }
+        // Ignore legacy lookup failures and let the normal empty-cart UI handle messaging.
       } finally {
         if (mounted) {
           setLoadingProduct(false)
@@ -87,20 +112,15 @@ const CheckoutPage: React.FC = () => {
       }
     }
 
-    loadProduct()
+    void ensureLegacyItemIsInCart()
 
     return () => {
       mounted = false
     }
-  }, [itemCode])
+  }, [addToCart, cartItems, itemCode])
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
-
-    if (!product) {
-      setSubmitError('Choose a product first from a product detail page.')
-      return
-    }
 
     const validationError = getValidationError()
     if (validationError) {
@@ -126,10 +146,10 @@ const CheckoutPage: React.FC = () => {
         recipientPhone: recipientPhone.trim(),
         deliveryMode: 'recipient-provides',
         isRecipientChoice: true,
-        items: [{
-          productId: product.id,
-          quantity,
-        }],
+        items: productCartItems.map((item) => ({
+          productId: item.productId as number,
+          quantity: item.quantity,
+        })),
       })
 
       setCreatedOrderId(response.order.id)
@@ -180,6 +200,10 @@ const CheckoutPage: React.FC = () => {
 
       setPayment(response.payment)
       setPaymentMessage('Payment authorized successfully. Your order is confirmed.')
+
+      productCartItems.forEach((item) => {
+        updateCartItemQuantity(item.id, 0)
+      })
     } catch (error: unknown) {
       const message =
         typeof error === 'object' &&
@@ -201,26 +225,52 @@ const CheckoutPage: React.FC = () => {
         <div className="mx-auto max-w-4xl">
           <h1 className="mb-6 text-center font-serif text-[42px] text-[#262b33]">Checkout</h1>
 
-          {loadingProduct ? <p className="mb-4 text-center text-[#586274]">Loading selected product...</p> : null}
+          {loadingProduct ? <p className="mb-4 text-center text-[#586274]">Loading cart details...</p> : null}
 
-          {!loadingProduct && !product ? (
-            <p className="mb-6 text-center text-[#586274]">
-              No product selected. Open a product and click Buy Now.
-            </p>
-          ) : null}
-
-          {product ? (
+          {productCartItems.length > 0 ? (
             <div className="mb-6 rounded border border-gray-200 bg-white p-4">
-              <p className="text-[13px] uppercase tracking-[0.08em] text-gray-500">Selected Product</p>
-              <div className="mt-2 flex items-center justify-between gap-4">
-                <div>
-                  <p className="text-[20px] font-semibold text-[#2f3743]">{product.name}</p>
-                  <p className="text-[15px] text-[#586274]">Item {product.itemCode}</p>
-                </div>
-                <p className="text-[22px] text-[#2f3743]">${Number(product.price).toFixed(2)}</p>
+              <p className="text-[13px] uppercase tracking-[0.08em] text-gray-500">Checkout Items</p>
+              <div className="mt-3 space-y-3">
+                {productCartItems.map((item) => (
+                  <div key={item.id} className="flex items-center justify-between gap-4 border-b border-gray-100 pb-3 last:border-b-0 last:pb-0">
+                    <div>
+                      <p className="text-[18px] font-semibold text-[#2f3743]">{item.name}</p>
+                      <p className="text-[14px] text-[#586274]">Qty {item.quantity}</p>
+                    </div>
+                    <p className="text-[18px] text-[#2f3743]">${(item.price * item.quantity).toFixed(2)}</p>
+                  </div>
+                ))}
               </div>
+
+              <div className="mt-4 border-t border-gray-200 pt-3 flex items-center justify-between">
+                <p className="text-[16px] font-semibold text-[#2f3743]">Products Subtotal</p>
+                <p className="text-[22px] text-[#2f3743]">${cartSubtotal.toFixed(2)}</p>
+              </div>
+
+              {bouquetCartItems.length > 0 ? (
+                <div className="mt-4 rounded bg-[#fafafa] p-3">
+                  <p className="text-[13px] uppercase tracking-[0.08em] text-gray-500">Custom Bouquet Requests in Cart</p>
+                  <div className="mt-2 space-y-1">
+                    {bouquetCartItems.map((item) => (
+                      <p key={item.id} className="text-[14px] text-[#586274]">
+                        {item.name} x {item.quantity}
+                      </p>
+                    ))}
+                  </div>
+                  <p className="mt-2 text-[13px] text-[#586274]">
+                    Bouquet checkout will be finalized in a dedicated follow-up flow.
+                  </p>
+                </div>
+              ) : null}
             </div>
-          ) : null}
+          ) : (
+            <div className="mb-6 rounded border border-gray-200 bg-white p-5 text-center">
+              <p className="text-[16px] text-[#586274]">No product items in cart.</p>
+              <Link to="/cart" className="mt-3 inline-flex h-10 items-center justify-center text-[#c82a2f] hover:underline">
+                Go to cart
+              </Link>
+            </div>
+          )}
 
           <form onSubmit={handleSubmit} className="rounded border border-gray-200 bg-white p-5 md:p-6">
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
@@ -248,22 +298,11 @@ const CheckoutPage: React.FC = () => {
                 <span className="text-[13px] font-semibold uppercase tracking-[0.08em] text-gray-600">Recipient Phone</span>
                 <input value={recipientPhone} onChange={(e) => setRecipientPhone(e.target.value)} className="h-11 border border-gray-300 px-3" required />
               </label>
-              <label className="flex flex-col gap-2 md:max-w-36">
-                <span className="text-[13px] font-semibold uppercase tracking-[0.08em] text-gray-600">Quantity</span>
-                <input
-                  type="number"
-                  min={1}
-                  value={quantity}
-                  onChange={(e) => setQuantity(Math.max(1, Number(e.target.value) || 1))}
-                  className="h-11 border border-gray-300 px-3"
-                  required
-                />
-              </label>
             </div>
 
             <button
               type="submit"
-              disabled={submitLoading || !product}
+              disabled={submitLoading || productCartItems.length === 0}
               className="mt-5 inline-flex h-11 items-center justify-center bg-[#c82a2f] px-6 text-white transition hover:bg-[#a81f24] disabled:cursor-not-allowed disabled:opacity-70"
             >
               {submitLoading ? 'Creating order...' : 'Place Order'}

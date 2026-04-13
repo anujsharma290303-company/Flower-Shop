@@ -15,9 +15,16 @@ const RecipientChoicePage: React.FC = () => {
   const [deliveryAddress, setDeliveryAddress] = useState('')
   const [deliveryDate, setDeliveryDate] = useState('')
 
+  const [cardName, setCardName] = useState('')
+  const [cardMessage, setCardMessage] = useState('')
+
   const [submitLoading, setSubmitLoading] = useState(false)
   const [submitError, setSubmitError] = useState<string | null>(null)
   const [submitSuccess, setSubmitSuccess] = useState<string | null>(null)
+
+  const [privacyLoading, setPrivacyLoading] = useState(false)
+  const [privacyError, setPrivacyError] = useState<string | null>(null)
+  const [privacySuccess, setPrivacySuccess] = useState<string | null>(null)
 
   const minDate = useMemo(() => {
     const now = new Date()
@@ -138,6 +145,43 @@ const RecipientChoicePage: React.FC = () => {
     }
   }
 
+  const handleUpdatePrivacy = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+
+    if (!cardName.trim() && !cardMessage.trim()) {
+      setPrivacyError('Please enter either a card name or card message.')
+      return
+    }
+
+    setPrivacyLoading(true)
+    setPrivacyError(null)
+    setPrivacySuccess(null)
+
+    try {
+      await recipientService.updatePrivacy({
+        token,
+        cardName: cardName.trim() || undefined,
+        cardMessage: cardMessage.trim() || undefined,
+      })
+
+      setPrivacySuccess('Privacy preferences saved successfully.')
+      setCardName('')
+      setCardMessage('')
+    } catch (error: unknown) {
+      const message =
+        typeof error === 'object' &&
+        error !== null &&
+        'response' in error &&
+        typeof (error as { response?: { data?: { message?: string } } }).response?.data?.message === 'string'
+          ? (error as { response: { data: { message: string } } }).response.data.message
+          : 'Could not save privacy preferences right now.'
+
+      setPrivacyError(message)
+    } finally {
+      setPrivacyLoading(false)
+    }
+  }
+
   const selectedProduct = details?.products.find((product) => product.id === selectedProductId) ?? null
 
   return (
@@ -243,6 +287,50 @@ const RecipientChoicePage: React.FC = () => {
 
               {submitError ? <p className="mt-4 text-[15px] text-[#c82a2f]">{submitError}</p> : null}
               {submitSuccess ? <p className="mt-4 text-[15px] text-green-700">{submitSuccess}</p> : null}
+
+              <form onSubmit={handleUpdatePrivacy} className="mt-6 rounded border border-gray-200 bg-white p-5 md:p-6">
+                <h2 className="mb-4 text-[18px] font-semibold text-[#2f3743]">Privacy Preferences</h2>
+                <p className="mb-4 text-[14px] text-[#586274]">Customize how the sender's information appears on your card.</p>
+
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                  <label className="flex flex-col gap-2">
+                    <span className="text-[13px] font-semibold uppercase tracking-[0.08em] text-gray-600">Card name (sender name)</span>
+                    <input
+                      type="text"
+                      value={cardName}
+                      onChange={(event) => setCardName(event.target.value)}
+                      placeholder="Leave blank to use default"
+                      className="h-11 border border-gray-300 px-3 text-[16px]"
+                      maxLength={100}
+                    />
+                    <p className="text-[12px] text-gray-500">{cardName.length} / 100 characters</p>
+                  </label>
+
+                  <label className="flex flex-col gap-2">
+                    <span className="text-[13px] font-semibold uppercase tracking-[0.08em] text-gray-600">Card message</span>
+                    <input
+                      type="text"
+                      value={cardMessage}
+                      onChange={(event) => setCardMessage(event.target.value)}
+                      placeholder="Leave blank for default message"
+                      className="h-11 border border-gray-300 px-3 text-[16px]"
+                      maxLength={500}
+                    />
+                    <p className="text-[12px] text-gray-500">{cardMessage.length} / 500 characters</p>
+                  </label>
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={privacyLoading}
+                  className="mt-4 inline-flex h-11 items-center justify-center border border-gray-300 bg-white px-6 text-[#2f3743] transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-70"
+                >
+                  {privacyLoading ? 'Saving...' : 'Save Privacy Preferences'}
+                </button>
+
+                {privacyError ? <p className="mt-3 text-[14px] text-[#c82a2f]">{privacyError}</p> : null}
+                {privacySuccess ? <p className="mt-3 text-[14px] text-green-700">{privacySuccess}</p> : null}
+              </form>
             </>
           ) : null}
         </div>

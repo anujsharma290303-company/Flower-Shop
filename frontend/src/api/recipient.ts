@@ -30,9 +30,21 @@ type RecipientRejectPayload = {
   token: string
 }
 
+type RecipientUpdatePrivacyPayload = {
+  token: string
+  cardName?: string
+  cardMessage?: string
+}
+
 type RecipientActionResponse = {
   orderId: number
   chosenProductId?: number
+}
+
+type RecipientPrivacyResponse = {
+  token: string
+  chosenCardName: string | null
+  cardMessage: string | null
 }
 
 export const recipientService = {
@@ -50,6 +62,15 @@ export const recipientService = {
     const response = await api.post<ApiResponse<RecipientActionResponse>>(API_ENDPOINTS.RECIPIENT_REJECT, payload)
     return response.data.data
   },
+
+  async updatePrivacy(payload: RecipientUpdatePrivacyPayload): Promise<RecipientPrivacyResponse> {
+    const { token, cardName, cardMessage } = payload
+    const response = await api.patch<ApiResponse<RecipientPrivacyResponse>>(API_ENDPOINTS.RECIPIENT_UPDATE_PRIVACY(token), {
+      cardName,
+      cardMessage,
+    })
+    return response.data.data
+  },
 }
 
 export type {
@@ -57,7 +78,9 @@ export type {
   RecipientTokenDetails,
   RecipientAcceptPayload,
   RecipientRejectPayload,
+  RecipientUpdatePrivacyPayload,
   RecipientActionResponse,
+  RecipientPrivacyResponse,
 }
 
 export default recipientService
