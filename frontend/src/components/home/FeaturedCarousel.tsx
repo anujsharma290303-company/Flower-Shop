@@ -44,6 +44,10 @@ const FeaturedCarousel: React.FC = () => {
         if (isMounted && items.length > 0) {
           setDisplayProducts(items.map(toDisplayProduct))
         }
+      } catch {
+        if (isMounted) {
+          setDisplayProducts([])
+        }
       } finally {
         if (isMounted) {
           setIsLoading(false)

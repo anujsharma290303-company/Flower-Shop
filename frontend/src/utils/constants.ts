@@ -145,6 +145,11 @@ export const UI_CONFIG = {
 
 export const SHOP_CATEGORIES = SOCIAL_FLOWERS_HOMEPAGE.footer.shop
 
+export const SHOP_LINKS = SOCIAL_FLOWERS_HOMEPAGE.footer.shop.map((link) => ({
+  label: link.label,
+  href: link.href,
+}))
+
 export const COMPANY_LINKS = [...SOCIAL_FLOWERS_HOMEPAGE.footer.company, { label: 'Terms of Service', href: '/terms' }]
 
 export const USES_LINKS = SOCIAL_FLOWERS_HOMEPAGE.footer.uses.map((link) => ({
@@ -261,7 +266,7 @@ export const CUSTOM_BOUQUET_CARDS = [
     subtitle: 'Your recipient creates the bouquet!',
     description: 'You set the price, your special someone chooses colors, flower types and more',
     ctaLabel: 'Buy Now',
-    ctaHref: '/let-recipient-choose-flowers',
+    ctaHref: '/create-a-bouquet?type=recipient',
     imageSrc: SOCIAL_FLOWERS_HOMEPAGE.customBouquets.recipientsChoiceImage,
   },
   {
@@ -270,7 +275,7 @@ export const CUSTOM_BOUQUET_CARDS = [
     subtitle: 'You create the bouquet!',
     description: 'Set your price and choose colors, flower types, and more',
     ctaLabel: 'Buy Now',
-    ctaHref: '/create-a-bouquet',
+    ctaHref: '/create-a-bouquet?type=sender',
     imageSrc: SOCIAL_FLOWERS_HOMEPAGE.customBouquets.sendersChoiceImage,
   },
 ]

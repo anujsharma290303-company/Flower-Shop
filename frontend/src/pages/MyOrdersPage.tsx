@@ -10,6 +10,21 @@ const MyOrdersPage: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
+  const accountMenuItems = [
+    { label: 'Account Info', href: '/my-profile' },
+    { label: 'FlowerMe Profile', href: '/flowerme/profile' },
+    { label: 'Payment Methods', href: '/my-profile' },
+    { label: 'Orders Placed', href: '/my-orders', isActive: true },
+    { label: 'Orders Received', href: '/my-orders' },
+    { label: 'My Subscriptions', href: '/my-orders' },
+    { label: 'My Credits', href: '/my-profile' },
+  ]
+
+  const handleSignOut = () => {
+    authService.clearSession()
+    navigate('/sign-in')
+  }
+
   useEffect(() => {
     let isMounted = true
 
@@ -52,61 +67,88 @@ const MyOrdersPage: React.FC = () => {
 
   return (
     <Layout>
-      <section className="border-t border-gray-200 bg-[#f5f5f5] px-4 py-10 md:py-12">
-        <div className="mx-auto max-w-210">
-          <h1 className="mb-7 text-center font-serif text-[44px] text-[#262b33]">My Orders</h1>
-
-          {isLoading ? <p className="text-center text-[18px] text-[#586274]">Loading orders...</p> : null}
-
-          {!isLoading && errorMessage ? (
-            <p className="text-center text-[16px] text-[#c82a2f]">{errorMessage}</p>
-          ) : null}
-
-          {!isLoading && !errorMessage && orders.length === 0 ? (
-            <p className="text-center text-[16px] text-[#586274]">You do not have any orders yet.</p>
-          ) : null}
-
-          {!isLoading && !errorMessage && orders.length > 0 ? (
-            <div className="space-y-4">
-              {orders.map((order) => (
-                <Link
-                  key={order.id}
-                  to={`/my-orders/${order.id}`}
-                  className="block rounded border border-gray-200 bg-white p-4 transition hover:border-[#c82a2f]"
+      <section className="border-t border-gray-200 bg-[#f4f4f4] px-4 py-10 md:px-6 md:py-12">
+        <div className="mx-auto max-w-230">
+          <div className="grid grid-cols-1 gap-7 lg:grid-cols-[280px_1fr] lg:gap-10">
+            <aside className="bg-transparent">
+              <nav className="border border-gray-200 bg-white">
+                {accountMenuItems.map((item) => (
+                  <Link
+                    key={item.label}
+                    to={item.href}
+                    className={`flex items-center justify-between border-b border-gray-200 px-5 py-3.5 text-[19px] font-normal last:border-b-0 ${
+                      item.isActive ? 'text-[#1f2328]' : 'text-[#6b7280] hover:text-[#1f2328]'
+                    }`}
+                  >
+                    <span>{item.label}</span>
+                    <span className="text-[20px] text-gray-500">›</span>
+                  </Link>
+                ))}
+                <button
+                  type="button"
+                  onClick={handleSignOut}
+                  className="flex w-full items-center justify-between border-t border-gray-200 px-5 py-3.5 text-left text-[19px] font-normal text-[#6b7280] hover:text-[#1f2328]"
                 >
-                  <div className="grid grid-cols-1 gap-3 md:grid-cols-5">
-                    <div>
-                      <p className="text-[12px] uppercase tracking-[0.08em] text-gray-500">Order ID</p>
-                      <p className="text-[16px] font-semibold text-[#2f3743]">#{order.id}</p>
-                    </div>
-                    <div>
-                      <p className="text-[12px] uppercase tracking-[0.08em] text-gray-500">Status</p>
-                      <p className="text-[16px] text-[#2f3743]">{order.status}</p>
-                    </div>
-                    <div>
-                      <p className="text-[12px] uppercase tracking-[0.08em] text-gray-500">Payment</p>
-                      <p className="text-[16px] text-[#2f3743]">{order.paymentStatus}</p>
-                    </div>
-                    <div>
-                      <p className="text-[12px] uppercase tracking-[0.08em] text-gray-500">Total</p>
-                      <p className="text-[16px] text-[#2f3743]">
-                        {order.currency} {Number(order.totalPrice).toFixed(2)}
-                      </p>
-                    </div>
-                    <div>
-                      <p className="text-[12px] uppercase tracking-[0.08em] text-gray-500">Placed</p>
-                      <p className="text-[16px] text-[#2f3743]">
-                        {new Date(order.createdAt).toLocaleDateString()}
-                      </p>
-                    </div>
-                  </div>
-                </Link>
-              ))}
-            </div>
-          ) : null}
+                  <span>Sign Out</span>
+                  <span className="text-[20px] text-gray-500">›</span>
+                </button>
+              </nav>
+            </aside>
 
-          <div className="mt-8 text-center">
-            <Link to="/my-profile" className="text-[18px] text-[#c82a2f] hover:underline">Back to Profile</Link>
+            <div className="pb-2">
+              <h1 className="mb-6 text-center text-[44px] font-semibold tracking-[-0.02em] text-[#2b2f36] md:text-[52px]">Orders Placed</h1>
+
+              {isLoading ? (
+                <div className="border border-gray-200 bg-white px-6 py-6 text-[18px] text-[#586274]">Loading orders...</div>
+              ) : null}
+
+              {!isLoading && errorMessage ? (
+                <div className="border border-gray-200 bg-white px-6 py-6 text-[16px] text-[#c82a2f]">{errorMessage}</div>
+              ) : null}
+
+              {!isLoading && !errorMessage && orders.length === 0 ? (
+                <div className="border border-gray-200 bg-white px-6 py-6 text-[16px] text-[#2f3743]">No orders placed.</div>
+              ) : null}
+
+              {!isLoading && !errorMessage && orders.length > 0 ? (
+                <div className="space-y-3.5">
+                  {orders.map((order) => (
+                    <Link
+                      key={order.id}
+                      to={`/my-orders/${order.id}`}
+                      className="block border border-gray-200 bg-white px-6 py-4.5 transition hover:border-[#c82a2f]"
+                    >
+                      <div className="grid grid-cols-2 gap-x-6 gap-y-3 md:grid-cols-[1.1fr_1fr_1fr_0.9fr_1fr]">
+                        <div>
+                          <p className="text-[12px] uppercase tracking-[0.08em] text-gray-500">Order ID</p>
+                          <p className="mt-1 text-[16px] font-semibold text-[#2f3743]">#{order.id}</p>
+                        </div>
+                        <div>
+                          <p className="text-[12px] uppercase tracking-[0.08em] text-gray-500">Status</p>
+                          <p className="mt-1 text-[16px] text-[#2f3743] wrap-break-word">{order.status}</p>
+                        </div>
+                        <div>
+                          <p className="text-[12px] uppercase tracking-[0.08em] text-gray-500">Payment</p>
+                          <p className="mt-1 text-[16px] text-[#2f3743] wrap-break-word">{order.paymentStatus}</p>
+                        </div>
+                        <div>
+                          <p className="text-[12px] uppercase tracking-[0.08em] text-gray-500">Total</p>
+                          <p className="mt-1 text-[16px] text-[#2f3743] whitespace-nowrap">
+                            {order.currency} {Number(order.totalPrice).toFixed(2)}
+                          </p>
+                        </div>
+                        <div>
+                          <p className="text-[12px] uppercase tracking-[0.08em] text-gray-500">Placed</p>
+                          <p className="mt-1 text-[16px] text-[#2f3743] whitespace-nowrap">
+                            {new Date(order.createdAt).toLocaleDateString()}
+                          </p>
+                        </div>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              ) : null}
+            </div>
           </div>
         </div>
       </section>

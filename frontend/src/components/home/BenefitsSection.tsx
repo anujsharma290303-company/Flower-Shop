@@ -15,13 +15,26 @@ const benefitIcons = {
 
 const BenefitsSection: React.FC = () => {
   const { siteConfig } = useSiteConfig()
-  const benefitsArray = Array.isArray(siteConfig?.benefitsData) && siteConfig.benefitsData.length > 0
-    ? siteConfig.benefitsData.map((benefit) => ({
-      title: benefit.title || 'Benefits',
-      icon: benefit.icon,
-      points: Array.isArray(benefit.points) ? benefit.points : [],
-    }))
-    : Object.values(BENEFITS)
+  const defaultBenefits = Object.values(BENEFITS)
+
+  const benefitsArray = Array.isArray(siteConfig?.benefitsData)
+    ? siteConfig.benefitsData
+      .slice(0, 3)
+      .map((benefit, index) => {
+        const fallback = defaultBenefits[index]
+        const points = Array.isArray(benefit.points) ? benefit.points.filter((point) => typeof point === 'string' && point.trim().length > 0) : []
+
+        return {
+          title: typeof benefit.title === 'string' && benefit.title.trim().length > 0 ? benefit.title : fallback.title,
+          icon: typeof benefit.icon === 'string' && benefit.icon.trim().length > 0 ? benefit.icon : fallback.icon,
+          points: points.length >= 4 ? points : fallback.points,
+        }
+      })
+    : defaultBenefits
+
+  const normalizedBenefits = benefitsArray.length === 3
+    ? benefitsArray
+    : defaultBenefits
 
   const renderPoint = (benefitTitle: string, pointIndex: number, point: string) => {
     const redTextClass = 'text-red-600 border-b border-red-300 pb-[1px]'
@@ -84,37 +97,37 @@ const BenefitsSection: React.FC = () => {
   }
 
   return (
-    <section id="benefits" className="py-12 md:py-16 px-4 md:px-8 bg-[#f8e8e6]">
-      <div className="max-w-7xl mx-auto">
-        <div className="text-center mb-10 md:mb-12">
-          <h2 className="text-[26px] md:text-[34px] font-medium font-serif text-gray-900">
+    <section id="benefits" className="bg-[#f2ecec] px-4 py-10 md:px-6 md:py-12">
+      <div className="mx-auto max-w-245">
+        <div className="mb-10 text-center md:mb-12">
+          <h2 className="font-serif text-[40px] font-medium leading-tight text-[#1f2328] md:text-[46px]">
             The Benefits of the Social Flowers Solution
           </h2>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-12 md:gap-8 lg:gap-12">
-          {benefitsArray.map((benefit) => (
+        <div className="grid grid-cols-1 gap-10 md:grid-cols-3 md:gap-8 lg:gap-10">
+          {normalizedBenefits.map((benefit) => (
             <div
               key={benefit.title}
-              className="max-w-82.5 mx-auto text-center"
+              className="mx-auto w-full max-w-82 text-center"
             >
-              <h3 className="text-[20px] md:text-[22px] font-normal text-gray-900 mb-5 md:mb-6">
+              <h3 className="mb-5 text-[38px] font-normal leading-tight text-[#222831] md:mb-6 md:text-[43px]">
                 {benefit.title}
               </h3>
-              <div className="flex justify-center mb-5">
+              <div className="mb-6 flex justify-center md:mb-7">
                 <img
                   src={benefitIcons[benefit.icon as keyof typeof benefitIcons] || benefitIcons.GiftIcon}
                   alt={benefit.title}
-                  className="w-30 h-30 md:w-33 md:h-33 shrink-0"
+                  className="h-22 w-22 shrink-0 md:h-26 md:w-26"
                   loading="lazy"
                 />
               </div>
 
-              <ul className="space-y-4 text-left">
+              <ul className="space-y-3.5 text-left">
                 {(Array.isArray(benefit.points) ? benefit.points : []).map((point, pointIndex) => (
-                  <li key={pointIndex} className="flex gap-2 text-[15px] md:text-[16px] leading-[1.55] text-gray-800">
-                    <span className="text-red-600 leading-none mt-0.5">•</span>
-                    <p className="max-w-68.75">
+                  <li key={pointIndex} className="flex gap-2.5 text-[16px] leading-[1.55] text-[#1f2328] md:text-[17px]">
+                    <span className="mt-0.5 leading-none text-[#b40d16]">•</span>
+                    <p className="max-w-69">
                       {renderPoint(benefit.title, pointIndex, point)}
                     </p>
                   </li>

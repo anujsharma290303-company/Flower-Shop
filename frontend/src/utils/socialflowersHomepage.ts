@@ -76,7 +76,7 @@ export const SOCIAL_FLOWERS_HOMEPAGE = {
       { label: 'New Baby', href: '/new-baby-flowers' },
       { label: 'Thank You', href: '/thank-you-flowers' },
       { label: "I'm Sorry", href: '/sorry-flowers' },
-      { label: 'Funeral & Symapthy', href: '/sympathy-flowers' },
+      { label: 'Funeral & Sympathy', href: '/sympathy-flowers' },
       { label: 'Plants', href: '/plants' },
     ],
     company: [
