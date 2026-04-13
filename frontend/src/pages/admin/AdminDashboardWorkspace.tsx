@@ -164,7 +164,7 @@ const taskCards: TaskCard[] = [
 
 const readOnlyTaskFields: Record<Exclude<AdminTask, 'products' | 'orders' | 'categories' | 'blogs' | 'reviews' | 'users' | 'site-config' | 'delivery' | 'advanced'>, string[]> = {
   notifications: ['id', 'type', 'source', 'subject', 'status', 'createdAt'],
-  payments: ['id', 'orderId', 'status', 'amount', 'currency', 'createdAt'],
+  payments: ['id', 'orderId', 'status', 'amount', 'currency', 'transactionId', 'createdAt'],
   subscriptions: ['id', 'userId', 'status', 'frequency', 'createdAt'],
   media: ['id', 'orderId', 'mediaType', 'sharedWith', 'isApproved', 'createdAt'],
   bouquets: ['id', 'type', 'pricePoint', 'orderId', 'createdAt'],
@@ -1073,6 +1073,28 @@ const AdminDashboardWorkspace: React.FC = () => {
     }
   }
 
+  const runPaymentAction = async (paymentId: number, action: 'capture' | 'void' | 'refund') => {
+    setOtherError(null)
+    setOtherMessage(null)
+
+    try {
+      const response = await adminService.request({ method: 'POST', path: `/admin/payments/${paymentId}/${action}` })
+      const payload = getResponseData<unknown>(response)
+      const updatedPayment = payload && typeof payload === 'object' && 'payment' in payload
+        ? (payload as { payment: GenericItem }).payment
+        : null
+
+      if (updatedPayment) {
+        setOtherItems((current) => current.map((entry) => (Number(entry.id) === paymentId ? { ...entry, ...updatedPayment } : entry)))
+      }
+
+      setOtherMessage(`Payment ${action} completed for #${paymentId}.`)
+      setLastRunMessage(`Payment #${paymentId} ${action} completed by admin.`)
+    } catch (error: unknown) {
+      setOtherError(getErrorMessage(error, `Unable to ${action} payment.`))
+    }
+  }
+
   const sendRequest = async () => {
     setErrorMessage(null)
     setResponseStatus(null)
@@ -1585,6 +1607,9 @@ const AdminDashboardWorkspace: React.FC = () => {
 
   const renderReadOnlyPanel = () => {
     const fields = readOnlyTaskFields[selectedTask as keyof typeof readOnlyTaskFields] ?? ['id', 'createdAt']
+    const authorizedPayments = selectedTask === 'payments'
+      ? otherItems.filter((item) => String(item.status || '').toLowerCase() === 'authorized')
+      : []
 
     return (
       <section className="rounded-2xl border border-slate-200 bg-white p-5 md:p-6 shadow-sm">
@@ -1596,6 +1621,18 @@ const AdminDashboardWorkspace: React.FC = () => {
         {otherError ? <p className="mt-4 text-sm text-red-300">{otherError}</p> : null}
         {otherMessage ? <p className="mt-4 text-sm text-green-300">{otherMessage}</p> : null}
 
+        {selectedTask === 'payments' ? (
+          <div className="mt-4 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
+            <p className="font-semibold">Payment Action Notification</p>
+            <p className="mt-1">
+              {authorizedPayments.length > 0
+                ? `${authorizedPayments.length} authorized payment(s) are waiting for admin action.`
+                : 'No authorized payments are waiting for admin action.'}
+            </p>
+            <p className="mt-1">Customers can only authorize payment. Void and refund are admin-only actions.</p>
+          </div>
+        ) : null}
+
         <div className="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
           {otherItems.map((item) => (
             <article key={String(item.id ?? JSON.stringify(item).slice(0, 16))} className="rounded-xl border border-slate-200 bg-slate-50 p-4">
@@ -1606,6 +1643,26 @@ const AdminDashboardWorkspace: React.FC = () => {
               </div>
               {selectedTask === 'media' && item.id ? (
                 <button type="button" onClick={() => void approveMedia(Number(item.id))} className="mt-4 h-9 rounded-md bg-emerald-500 px-3 text-xs font-semibold text-white">Approve</button>
+              ) : null}
+              {selectedTask === 'payments' && item.id ? (
+                <div className="mt-4 flex flex-wrap gap-2">
+                  <button
+                    type="button"
+                    onClick={() => void runPaymentAction(Number(item.id), 'void')}
+                    disabled={String(item.status || '').toLowerCase() !== 'authorized'}
+                    className="h-9 rounded-md bg-amber-400 px-3 text-xs font-semibold text-slate-900 disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    Void
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => void runPaymentAction(Number(item.id), 'refund')}
+                    disabled={String(item.status || '').toLowerCase() !== 'captured'}
+                    className="h-9 rounded-md bg-rose-600 px-3 text-xs font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    Refund
+                  </button>
+                </div>
               ) : null}
               {selectedTask === 'bouquets' && item.id ? (
                 <button type="button" onClick={() => void deleteBouquet(Number(item.id))} className="mt-4 h-9 rounded-md border border-slate-300 bg-white px-3 text-xs font-semibold text-slate-900 hover:bg-slate-50">Delete</button>

@@ -15,11 +15,11 @@ const benefitIcons = {
 
 const BenefitsSection: React.FC = () => {
   const { siteConfig } = useSiteConfig()
-  const benefitsArray = siteConfig?.benefitsData.length
+  const benefitsArray = Array.isArray(siteConfig?.benefitsData) && siteConfig.benefitsData.length > 0
     ? siteConfig.benefitsData.map((benefit) => ({
-      title: benefit.title,
+      title: benefit.title || 'Benefits',
       icon: benefit.icon,
-      points: benefit.points,
+      points: Array.isArray(benefit.points) ? benefit.points : [],
     }))
     : Object.values(BENEFITS)
 
@@ -103,7 +103,7 @@ const BenefitsSection: React.FC = () => {
               </h3>
               <div className="flex justify-center mb-5">
                 <img
-                  src={benefitIcons[benefit.icon as keyof typeof benefitIcons]}
+                  src={benefitIcons[benefit.icon as keyof typeof benefitIcons] || benefitIcons.GiftIcon}
                   alt={benefit.title}
                   className="w-30 h-30 md:w-33 md:h-33 shrink-0"
                   loading="lazy"
@@ -111,7 +111,7 @@ const BenefitsSection: React.FC = () => {
               </div>
 
               <ul className="space-y-4 text-left">
-                {benefit.points.map((point, pointIndex) => (
+                {(Array.isArray(benefit.points) ? benefit.points : []).map((point, pointIndex) => (
                   <li key={pointIndex} className="flex gap-2 text-[15px] md:text-[16px] leading-[1.55] text-gray-800">
                     <span className="text-red-600 leading-none mt-0.5">•</span>
                     <p className="max-w-68.75">

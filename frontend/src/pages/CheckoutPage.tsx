@@ -3,7 +3,9 @@ import { Link, useParams } from 'react-router-dom'
 import Layout from '@/components/layout/Layout'
 import { productService } from '@/api/products'
 import { orderService } from '@/api/orders'
+import { paymentService } from '@/api/payments'
 import type { Product } from '@/types'
+import type { PaymentMethod, PaymentRecord } from '@/api/payments'
 
 const CheckoutPage: React.FC = () => {
   const { itemCode = '' } = useParams<{ itemCode?: string }>()
@@ -11,8 +13,14 @@ const CheckoutPage: React.FC = () => {
   const [product, setProduct] = useState<Product | null>(null)
   const [loadingProduct, setLoadingProduct] = useState(Boolean(itemCode))
   const [submitLoading, setSubmitLoading] = useState(false)
-  const [submitMessage, setSubmitMessage] = useState<string | null>(null)
   const [submitError, setSubmitError] = useState<string | null>(null)
+  const [createdOrderId, setCreatedOrderId] = useState<number | null>(null)
+  const [recipientLink, setRecipientLink] = useState<string | null>(null)
+  const [payment, setPayment] = useState<PaymentRecord | null>(null)
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('mock-card')
+  const [paymentLoading, setPaymentLoading] = useState(false)
+  const [paymentMessage, setPaymentMessage] = useState<string | null>(null)
+  const [paymentError, setPaymentError] = useState<string | null>(null)
 
   const [customerName, setCustomerName] = useState('')
   const [customerEmail, setCustomerEmail] = useState('')
@@ -21,6 +29,38 @@ const CheckoutPage: React.FC = () => {
   const [recipientEmail, setRecipientEmail] = useState('')
   const [recipientPhone, setRecipientPhone] = useState('')
   const [quantity, setQuantity] = useState(1)
+
+  const getValidationError = () => {
+    if (customerName.trim().length < 2 || customerName.trim().length > 120) {
+      return 'Your name must be between 2 and 120 characters.'
+    }
+
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(customerEmail.trim())) {
+      return 'Please enter a valid email address.'
+    }
+
+    if (customerPhone.trim().length < 7 || customerPhone.trim().length > 30) {
+      return 'Your phone must be between 7 and 30 characters.'
+    }
+
+    if (recipientName.trim().length < 2 || recipientName.trim().length > 120) {
+      return 'Recipient name must be between 2 and 120 characters.'
+    }
+
+    if (recipientEmail.trim().length > 0 && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(recipientEmail.trim())) {
+      return 'Recipient email must be valid.'
+    }
+
+    if (recipientPhone.trim().length < 7 || recipientPhone.trim().length > 30) {
+      return 'Recipient phone must be between 7 and 30 characters.'
+    }
+
+    if (!Number.isInteger(quantity) || quantity < 1) {
+      return 'Quantity must be a positive whole number.'
+    }
+
+    return null
+  }
 
   useEffect(() => {
     let mounted = true
@@ -62,9 +102,19 @@ const CheckoutPage: React.FC = () => {
       return
     }
 
+    const validationError = getValidationError()
+    if (validationError) {
+      setSubmitError(validationError)
+      return
+    }
+
     setSubmitLoading(true)
-    setSubmitMessage(null)
     setSubmitError(null)
+    setPaymentMessage(null)
+    setPaymentError(null)
+    setPayment(null)
+    setCreatedOrderId(null)
+    setRecipientLink(null)
 
     try {
       const response = await orderService.createOrder({
@@ -82,13 +132,23 @@ const CheckoutPage: React.FC = () => {
         }],
       })
 
-      setSubmitMessage(
-        response.recipientLink
-          ? `Order created. Recipient link: ${response.recipientLink}`
-          : 'Order created successfully.',
-      )
+      setCreatedOrderId(response.order.id)
+      setRecipientLink(response.recipientLink)
     } catch (error: unknown) {
+      const validationMessage =
+        typeof error === 'object' &&
+        error !== null &&
+        'response' in error &&
+        Array.isArray((error as { response?: { data?: { errors?: Array<{ field?: string; message?: string }> } } }).response?.data?.errors) &&
+        (error as { response: { data: { errors: Array<{ field?: string; message?: string }> } } }).response.data.errors.length > 0
+          ? (() => {
+            const firstError = (error as { response: { data: { errors: Array<{ field?: string; message?: string }> } } }).response.data.errors[0]
+            return firstError.field ? `${firstError.field}: ${firstError.message}` : (firstError.message || null)
+          })()
+          : null
+
       const message =
+        validationMessage ||
         typeof error === 'object' &&
         error !== null &&
         'response' in error &&
@@ -99,6 +159,39 @@ const CheckoutPage: React.FC = () => {
       setSubmitError(message)
     } finally {
       setSubmitLoading(false)
+    }
+  }
+
+  const handleAuthorizePayment = async () => {
+    if (!createdOrderId) {
+      setPaymentError('Create the order first.')
+      return
+    }
+
+    setPaymentLoading(true)
+    setPaymentError(null)
+    setPaymentMessage(null)
+
+    try {
+      const response = await paymentService.authorize({
+        orderId: createdOrderId,
+        method: paymentMethod,
+      })
+
+      setPayment(response.payment)
+      setPaymentMessage('Payment authorized successfully. Your order is confirmed.')
+    } catch (error: unknown) {
+      const message =
+        typeof error === 'object' &&
+        error !== null &&
+        'response' in error &&
+        typeof (error as { response?: { data?: { message?: string } } }).response?.data?.message === 'string'
+          ? (error as { response: { data: { message: string } } }).response.data.message
+          : 'Failed to authorize payment.'
+
+      setPaymentError(message)
+    } finally {
+      setPaymentLoading(false)
     }
   }
 
@@ -177,8 +270,55 @@ const CheckoutPage: React.FC = () => {
             </button>
           </form>
 
-          {submitMessage ? <p className="mt-4 text-[15px] text-green-700">{submitMessage}</p> : null}
           {submitError ? <p className="mt-4 text-[15px] text-[#c82a2f]">{submitError}</p> : null}
+
+          {createdOrderId ? (
+            <div className="mt-6 rounded border border-gray-200 bg-white p-5 md:p-6">
+              <h2 className="text-[26px] font-semibold text-[#2f3743]">Payment Flow</h2>
+              <p className="mt-2 text-[15px] text-[#586274]">Order #{createdOrderId} is ready for payment authorization.</p>
+
+              {recipientLink ? <p className="mt-2 text-[14px] text-[#586274] break-all">Recipient link: {recipientLink}</p> : null}
+
+              <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2">
+                <label className="flex flex-col gap-2">
+                  <span className="text-[13px] font-semibold uppercase tracking-[0.08em] text-gray-600">Payment Method</span>
+                  <select
+                    value={paymentMethod}
+                    onChange={(event) => setPaymentMethod(event.target.value as PaymentMethod)}
+                    className="h-11 border border-gray-300 px-3"
+                  >
+                    <option value="mock-card">mock-card</option>
+                    <option value="mock-upi">mock-upi</option>
+                    <option value="crypto">crypto</option>
+                  </select>
+                </label>
+
+                <div className="flex items-end">
+                  <button
+                    type="button"
+                    onClick={() => void handleAuthorizePayment()}
+                    disabled={paymentLoading}
+                    className="inline-flex h-11 items-center justify-center bg-[#262b33] px-5 text-white transition hover:bg-[#11151b] disabled:cursor-not-allowed disabled:opacity-70"
+                  >
+                    {paymentLoading ? 'Authorizing...' : 'Authorize Payment'}
+                  </button>
+                </div>
+              </div>
+
+              {payment ? (
+                <div className="mt-5 rounded border border-gray-200 bg-[#fafafa] p-4">
+                  <p className="text-[13px] uppercase tracking-[0.08em] text-gray-500">Payment #{payment.id}</p>
+                  <p className="mt-2 text-[15px] text-[#2f3743]">Status: {payment.status}</p>
+                  <p className="text-[15px] text-[#2f3743]">Transaction: {payment.transactionId}</p>
+                  <p className="text-[15px] text-[#2f3743]">Amount: {payment.currency} {payment.amount}</p>
+                  <p className="mt-3 text-[14px] text-[#586274]">Refund and void are managed by admin in the dashboard.</p>
+                </div>
+              ) : null}
+
+              {paymentMessage ? <p className="mt-4 text-[15px] text-green-700">{paymentMessage}</p> : null}
+              {paymentError ? <p className="mt-4 text-[15px] text-[#c82a2f]">{paymentError}</p> : null}
+            </div>
+          ) : null}
 
           <div className="mt-6 text-center">
             <Link to="/track-order" className="text-[16px] text-[#c82a2f] hover:underline">Track an order</Link>

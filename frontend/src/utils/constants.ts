@@ -28,6 +28,13 @@ export const API_ENDPOINTS = {
   ORDER_BY_ID: (id: number) => `/orders/${id}`,
   ORDER_TRACK: '/orders/track',
   ORDER_MEDIA_BY_ID: (id: number) => `/orders/${id}/media`,
+
+  // Payments
+  PAYMENT_PAY: '/payments/pay',
+  PAYMENT_AUTHORIZE: '/payments/authorize',
+  PAYMENT_CAPTURE: (id: number) => `/payments/${id}/capture`,
+  PAYMENT_VOID: (id: number) => `/payments/${id}/void`,
+  PAYMENT_REFUND: (id: number) => `/payments/${id}/refund`,
   
   // Reviews
   REVIEWS: '/reviews',

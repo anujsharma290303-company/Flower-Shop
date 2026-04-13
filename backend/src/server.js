@@ -4,6 +4,7 @@ const cors = require("cors");
 const helmet = require("helmet");
 const morgan = require("morgan");
 const rateLimit = require("express-rate-limit");
+const path = require("path");
 const sequelize = require("./config/database");
 
 require("./models");
@@ -64,7 +65,9 @@ const { expirePendingRecipientTokens } = require("./controllers/recipientControl
 
 const app = express();
 const PORT = process.env.PORT || 5000;
-const DB_SYNC_ALTER = process.env.DB_SYNC_ALTER === "true";
+const DB_SYNC_ALTER = process.env.NODE_ENV === "production"
+  ? process.env.DB_SYNC_ALTER === "true"
+  : process.env.DB_SYNC_ALTER !== "false";
 const DB_SYNC_FORCE = process.env.DB_SYNC_FORCE === "true";
 const ORDER_EXPIRY_SWEEP_INTERVAL_MS = Number(process.env.ORDER_EXPIRY_SWEEP_INTERVAL_MS || 15 * 60 * 1000);
 
@@ -104,7 +107,9 @@ app.use(
 // Rate limiting
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 100,
+  max: process.env.NODE_ENV === "production"
+    ? Number(process.env.API_RATE_LIMIT_MAX || 100)
+    : Number(process.env.API_RATE_LIMIT_MAX || 1000),
   message: { message: "Too many requests, please try again later." },
 });
 app.use("/api/", limiter);
@@ -113,6 +118,7 @@ app.use("/api/", limiter);
 app.use(morgan("dev"));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
 
 // Health
 app.get("/api/health", (req, res) => {

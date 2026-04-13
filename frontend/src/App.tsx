@@ -39,8 +39,22 @@ function App() {
       <Route path="/create-account" element={<CreateAccountPage />} />
       <Route path="/blog" element={<BlogPage />} />
       <Route path="/blog/:slug" element={<BlogDetailPage />} />
-      <Route path="/checkout/:itemCode" element={<CheckoutPage />} />
-      <Route path="/checkout" element={<CheckoutPage />} />
+      <Route
+        path="/checkout/:itemCode"
+        element={(
+          <CustomerProtectedRoute>
+            <CheckoutPage />
+          </CustomerProtectedRoute>
+        )}
+      />
+      <Route
+        path="/checkout"
+        element={(
+          <CustomerProtectedRoute>
+            <CheckoutPage />
+          </CustomerProtectedRoute>
+        )}
+      />
       <Route path="/track-order" element={<TrackOrderPage />} />
       <Route path="/flowerme/profile/:slug" element={<FlowerMePublicProfilePage />} />
       <Route

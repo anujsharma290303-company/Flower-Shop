@@ -83,17 +83,62 @@ const buildFallbackImageFromItemCode = (itemCode) => {
 	return `https://cdn.floristone.com/large/${itemCode.trim()}_d1.jpg`;
 };
 
+const getPublicBaseUrl = () => {
+	const explicitBaseUrl = process.env.BACKEND_URL || process.env.API_PUBLIC_BASE_URL;
+
+	if (explicitBaseUrl && typeof explicitBaseUrl === 'string') {
+		return explicitBaseUrl.replace(/\/$/, '');
+	}
+
+	const port = process.env.PORT || 5000;
+	return `http://localhost:${port}`;
+};
+
+const normalizeUploadedAssetUrl = (value) => {
+	if (typeof value !== 'string' || value.trim() === '') {
+		return null;
+	}
+
+	const rawValue = value.trim();
+	if (/^https?:\/\//i.test(rawValue)) {
+		return rawValue;
+	}
+
+	const normalizedPath = rawValue.replace(/\\/g, '/');
+	const uploadsIndex = normalizedPath.toLowerCase().indexOf('/uploads/');
+	const baseUrl = getPublicBaseUrl();
+
+	if (uploadsIndex >= 0) {
+		return `${baseUrl}${normalizedPath.slice(uploadsIndex)}`;
+	}
+
+	if (normalizedPath.startsWith('uploads/')) {
+		return `${baseUrl}/${normalizedPath}`;
+	}
+
+	if (normalizedPath.startsWith('/uploads/')) {
+		return `${baseUrl}${normalizedPath}`;
+	}
+
+	return normalizedPath;
+};
+
 const normalizeProductPayload = (product) => {
 	if (!product) {
 		return product;
 	}
 
 	const plainProduct = typeof product.toJSON === 'function' ? product.toJSON() : { ...product };
-	const hasImage = Array.isArray(plainProduct.image)
-		&& plainProduct.image.some((value) => typeof value === 'string' && value.trim() !== '');
+	const normalizedImages = Array.isArray(plainProduct.image)
+		? plainProduct.image.map((value) => normalizeUploadedAssetUrl(value)).filter(Boolean)
+		: [];
+	const hasImage = normalizedImages.length > 0;
 
 	if (hasImage) {
-		return plainProduct;
+		return {
+			...plainProduct,
+			image: normalizedImages,
+		};
 	}
 
 	const fallbackImage = buildFallbackImageFromItemCode(plainProduct.itemCode);
@@ -296,7 +341,9 @@ const create = async (req, res) => {
 			return res.status(404).json({ success: false, message: 'Category not found' });
 		}
 
-		const imagePaths = Array.isArray(req.files) ? req.files.map((file) => file.path) : [];
+		const imagePaths = Array.isArray(req.files)
+			? req.files.map((file) => normalizeUploadedAssetUrl(file.path)).filter(Boolean)
+			: [];
 		const slug = await buildUniqueSlug(name);
 
 		const created = await Product.create({
@@ -373,7 +420,7 @@ const update = async (req, res) => {
 		}
 
 		if (Array.isArray(req.files) && req.files.length > 0) {
-			updateData.image = req.files.map((file) => file.path);
+			updateData.image = req.files.map((file) => normalizeUploadedAssetUrl(file.path)).filter(Boolean);
 		}
 
 		await product.update(updateData);
