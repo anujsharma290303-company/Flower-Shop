@@ -1,4 +1,4 @@
-import { Routes, Route, Navigate } from 'react-router-dom'
+import { Routes, Route } from 'react-router-dom'
 import HomePage from '@/pages/HomePage'
 import BestSellersPage from '@/pages/BestSellersPage'
 import ShopPage from '@/pages/ShopPage'
@@ -124,8 +124,8 @@ function App() {
       <Route path="/track-order" element={<TrackOrderPage />} />
       <Route path="/recipient/:token" element={<RecipientChoicePage />} />
       <Route path="/create-a-bouquet" element={<CustomBouquetBuilderPage />} />
-      <Route path="/let-recipient-choose-flowers" element={<Navigate to="/create-a-bouquet?type=recipient" replace />} />
-      <Route path="/recipient-choice-bouquet" element={<Navigate to="/create-a-bouquet?type=recipient" replace />} />
+      <Route path="/let-recipient-choose-flowers" element={<CustomBouquetBuilderPage />} />
+      <Route path="/recipient-choice-bouquet" element={<CustomBouquetBuilderPage />} />
       <Route path="/flowerme/profile/:slug" element={<FlowerMePublicProfilePage />} />
       <Route
         path="/flowerme/profile"

@@ -1,5 +1,7 @@
+import mainLogo from '@/logo.png'
+
 export const SOCIAL_FLOWERS_HOMEPAGE = {
-  logoUrl: 'https://cdn.floristone.com/website-images/social-flowers-logo.svg',
+  logoUrl: mainLogo,
   heroImage: 'https://cdn.socialflowers.com/fit-in/330x600/hero-image/sf-hero-transparent.png',
   heroImageAlt: 'Smiling woman holding red roses',
   heroSubheadline: 'A connection to remember: Fresh flower delivery using email, mobile or social media.',

@@ -3,15 +3,27 @@
  * Screenshot-style media block with heading and video panel.
  */
 
-import React from 'react'
+import React, { useRef, useState } from 'react'
 import { HOW_IT_WORKS_STEPS } from '@/utils/constants'
 import { useSiteConfig } from '@/hooks/useSiteConfig'
 
 const HowItWorks: React.FC = () => {
+  const videoRef = useRef<HTMLVideoElement | null>(null)
+  const [hasStarted, setHasStarted] = useState(false)
   const { siteConfig } = useSiteConfig()
   const steps = siteConfig?.howItWorks?.length
     ? siteConfig.howItWorks
     : HOW_IT_WORKS_STEPS
+
+  const handleManualPlay = async () => {
+    if (!videoRef.current) return
+    try {
+      await videoRef.current.play()
+      setHasStarted(true)
+    } catch {
+      // Ignore play interruption if browser blocks the request.
+    }
+  }
 
   return (
     <section id="how-it-works" className="py-14 md:py-16 px-4 md:px-8 bg-[#efefef]">
@@ -24,25 +36,36 @@ const HowItWorks: React.FC = () => {
 
         <div className="relative overflow-hidden bg-black border border-[#d5d5d5] shadow-none max-w-235 mx-auto">
           <video
+            ref={videoRef}
             className="w-full h-75 md:h-125 object-cover bg-black"
             preload="metadata"
             playsInline
-            muted
-            autoPlay
-            loop
+            controls
+            onPlay={() => setHasStarted(true)}
             aria-label="How Social Flowers Works video"
           >
             <source src="/videos/sf-how-it-works-hero-video-2024-final.mp4" type="video/mp4" />
             Your browser does not support the video tag.
           </video>
-          <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-white/75 py-4 text-center">
-            <p className="font-serif text-[28px] md:text-[32px] text-gray-900 leading-none">www.SocialFlowers.com</p>
-          </div>
-          <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
-            <div className="w-16 h-16 rounded-full bg-white/85 text-gray-900 flex items-center justify-center text-2xl shadow-sm">
-              ►
-            </div>
-          </div>
+          {!hasStarted && (
+            <>
+              <div className="pointer-events-none absolute inset-x-0 bottom-14 bg-white/80 py-4 text-center">
+                <p className="font-serif text-[26px] md:text-[48px] text-gray-900 leading-none px-3">
+                  Make a connection to remember with Social Flowers
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={handleManualPlay}
+                aria-label="Play how it works video"
+                className="absolute inset-0 flex items-center justify-center"
+              >
+                <span className="w-24 h-24 rounded-full bg-white text-gray-900 flex items-center justify-center text-[44px] pl-1 shadow-md transition-transform duration-150 hover:scale-105">
+                  ▶
+                </span>
+              </button>
+            </>
+          )}
         </div>
 
         <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-4 max-w-235 mx-auto">

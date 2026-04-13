@@ -67,17 +67,17 @@ const MyOrdersPage: React.FC = () => {
 
   return (
     <Layout>
-      <section className="border-t border-gray-200 bg-[#f4f4f4] px-4 py-10 md:px-6 md:py-12">
-        <div className="mx-auto max-w-230">
-          <div className="grid grid-cols-1 gap-7 lg:grid-cols-[280px_1fr] lg:gap-10">
+      <section className="border-t border-gray-200 bg-[#f4f4f4] px-4 py-8 md:px-6 md:py-10">
+        <div className="mx-auto max-w-270">
+          <div className="grid grid-cols-1 gap-8 lg:grid-cols-[250px_minmax(0,1fr)] lg:gap-14">
             <aside className="bg-transparent">
-              <nav className="border border-gray-200 bg-white">
+              <nav className="border-t border-gray-200 bg-transparent">
                 {accountMenuItems.map((item) => (
                   <Link
                     key={item.label}
                     to={item.href}
-                    className={`flex items-center justify-between border-b border-gray-200 px-5 py-3.5 text-[19px] font-normal last:border-b-0 ${
-                      item.isActive ? 'text-[#1f2328]' : 'text-[#6b7280] hover:text-[#1f2328]'
+                    className={`flex items-center justify-between border-b border-gray-200 px-0 py-4 text-[19px] font-normal ${
+                      item.isActive ? 'text-[#1f2328]' : 'text-[#7b8491] hover:text-[#1f2328]'
                     }`}
                   >
                     <span>{item.label}</span>
@@ -87,7 +87,7 @@ const MyOrdersPage: React.FC = () => {
                 <button
                   type="button"
                   onClick={handleSignOut}
-                  className="flex w-full items-center justify-between border-t border-gray-200 px-5 py-3.5 text-left text-[19px] font-normal text-[#6b7280] hover:text-[#1f2328]"
+                  className="flex w-full items-center justify-between border-b border-gray-200 px-0 py-4 text-left text-[19px] font-normal text-[#7b8491] hover:text-[#1f2328]"
                 >
                   <span>Sign Out</span>
                   <span className="text-[20px] text-gray-500">›</span>
@@ -96,18 +96,18 @@ const MyOrdersPage: React.FC = () => {
             </aside>
 
             <div className="pb-2">
-              <h1 className="mb-6 text-center text-[44px] font-semibold tracking-[-0.02em] text-[#2b2f36] md:text-[52px]">Orders Placed</h1>
+              <h1 className="mb-6 text-center text-[36px] font-semibold text-[#2b2f36] md:text-[42px]">Orders Placed</h1>
 
               {isLoading ? (
-                <div className="border border-gray-200 bg-white px-6 py-6 text-[18px] text-[#586274]">Loading orders...</div>
+                <div className="border border-gray-200 bg-white px-8 py-5 text-[16px] text-[#586274]">Loading orders...</div>
               ) : null}
 
               {!isLoading && errorMessage ? (
-                <div className="border border-gray-200 bg-white px-6 py-6 text-[16px] text-[#c82a2f]">{errorMessage}</div>
+                <div className="border border-gray-200 bg-white px-8 py-5 text-[16px] text-[#c82a2f]">{errorMessage}</div>
               ) : null}
 
               {!isLoading && !errorMessage && orders.length === 0 ? (
-                <div className="border border-gray-200 bg-white px-6 py-6 text-[16px] text-[#2f3743]">No orders placed.</div>
+                <div className="border border-gray-200 bg-white px-8 py-5 text-[16px] text-[#2f3743]">No orders placed.</div>
               ) : null}
 
               {!isLoading && !errorMessage && orders.length > 0 ? (

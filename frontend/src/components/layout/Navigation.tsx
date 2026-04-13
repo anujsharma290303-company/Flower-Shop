@@ -29,7 +29,6 @@ const Navigation: React.FC<NavigationProps> = () => {
 
   const navLinks = SOCIAL_FLOWERS_HOMEPAGE.navigation
   const isLoggedIn = authService.isLoggedIn()
-  const accountHref = isLoggedIn ? '/my-orders' : '/sign-in'
   const shopCategories = categories.slice(0, 12).map((category) => ({
     label: category.name,
     href: `/shop/${category.slug}`,
@@ -48,15 +47,17 @@ const Navigation: React.FC<NavigationProps> = () => {
   return (
     <nav className="sticky top-0 z-40 bg-white border-b border-gray-200">
       <div className="max-w-270 mx-auto px-4 md:px-6">
-        <div className="flex items-center justify-between h-17 gap-4">
+        <div className="flex items-center justify-between h-22 md:h-24 gap-5">
           {/* Logo */}
-          <Link to="/" className="shrink-0">
+          <Link to="/" className="shrink-0 flex items-center">
+            <span className="block w-26 h-16 md:w-40 md:h-22 overflow-hidden">
             <img
               src={SOCIAL_FLOWERS_HOMEPAGE.logoUrl}
               alt="Social Flowers"
-              className="h-11 md:h-12 w-auto"
+              className="w-full h-full object-contain object-left scale-[1.5] md:scale-[1.6] origin-left"
               loading="eager"
             />
+            </span>
           </Link>
 
           {/* Desktop Menu */}
@@ -72,7 +73,7 @@ const Navigation: React.FC<NavigationProps> = () => {
                   >
                     <Link
                       to="/shop"
-                      className="whitespace-nowrap text-[14px] font-semibold text-gray-800 hover:text-red-600 transition-colors"
+                      className="whitespace-nowrap text-[18px] font-semibold text-gray-800 hover:text-red-600 transition-colors"
                       onFocus={() => setShopMenuOpen(true)}
                     >
                       Shop
@@ -116,7 +117,7 @@ const Navigation: React.FC<NavigationProps> = () => {
                 <Link
                   key={link.label}
                   to={link.href}
-                  className="whitespace-nowrap text-[14px] font-semibold text-gray-800 hover:text-red-600 transition-colors"
+                  className="whitespace-nowrap text-[18px] font-semibold text-gray-800 hover:text-red-600 transition-colors"
                 >
                   {link.label}
                 </Link>
@@ -126,89 +127,67 @@ const Navigation: React.FC<NavigationProps> = () => {
 
           {/* Right Icon */}
           <div className="flex items-center gap-3">
-            {isLoggedIn ? (
-              <div
-                className="relative hidden md:block"
-                onMouseEnter={() => setAccountMenuOpen(true)}
-                onMouseLeave={() => setAccountMenuOpen(false)}
+            <div
+              className="relative hidden md:block"
+              onMouseEnter={() => setAccountMenuOpen(true)}
+              onMouseLeave={() => setAccountMenuOpen(false)}
+            >
+              <button
+                type="button"
+                aria-label={isLoggedIn ? 'My Profile menu' : 'Sign In menu'}
+                className="inline-flex text-gray-800 hover:text-red-600 transition-colors"
+                onClick={() => setAccountMenuOpen((open) => !open)}
               >
-                <button
-                  type="button"
-                  className="inline-flex items-center gap-1 whitespace-nowrap text-[14px] font-semibold text-gray-800 hover:text-red-600 transition-colors"
-                  onFocus={() => setAccountMenuOpen(true)}
-                >
-                  My Account
-                  <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                  </svg>
-                </button>
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                  />
+                </svg>
+              </button>
 
-                {accountMenuOpen && (
-                  <div className="absolute right-0 top-full z-50 w-52 pt-1">
-                    <div className="border border-gray-200 bg-[#efefef] py-2 shadow-sm">
-                      <Link to="/my-profile" className="block px-3 py-1.5 text-[16px] text-gray-700 hover:text-red-600">
-                        Account Info
+              {accountMenuOpen && (
+                <div className="absolute right-0 top-full z-50 w-56 pt-1">
+                  <div className="border border-gray-200 bg-[#efefef] py-2 shadow-sm">
+                    <Link to="/create-a-bouquet?type=sender" className="block px-3 py-1.5 text-[16px] text-gray-700 hover:text-red-600" onClick={() => setAccountMenuOpen(false)}>
+                      Build Bouquet
+                    </Link>
+                    <Link to="/cart" className="block px-3 py-1.5 text-[16px] text-gray-700 hover:text-red-600" onClick={() => setAccountMenuOpen(false)}>
+                      Cart {cartCount > 0 ? `(${cartCount})` : ''}
+                    </Link>
+                    {isLoggedIn ? (
+                      <>
+                        <Link to="/my-profile" className="block px-3 py-1.5 text-[16px] text-gray-700 hover:text-red-600" onClick={() => setAccountMenuOpen(false)}>
+                          Account Info
+                        </Link>
+                        <Link to="/flowerme/profile" className="block px-3 py-1.5 text-[16px] text-gray-700 hover:text-red-600" onClick={() => setAccountMenuOpen(false)}>
+                          FlowerMe Profile
+                        </Link>
+                        <Link to="/my-orders" className="block px-3 py-1.5 text-[16px] text-gray-700 hover:text-red-600" onClick={() => setAccountMenuOpen(false)}>
+                          Orders Placed
+                        </Link>
+                        <Link to="/track-order" className="block px-3 py-1.5 text-[16px] text-gray-700 hover:text-red-600" onClick={() => setAccountMenuOpen(false)}>
+                          Track Order
+                        </Link>
+                        <button
+                          type="button"
+                          onClick={handleSignOut}
+                          className="block w-full px-3 py-1.5 text-left text-[16px] text-gray-700 hover:text-red-600"
+                        >
+                          Sign Out
+                        </button>
+                      </>
+                    ) : (
+                      <Link to="/sign-in" className="block px-3 py-1.5 text-[16px] text-gray-700 hover:text-red-600" onClick={() => setAccountMenuOpen(false)}>
+                        Sign In
                       </Link>
-                      <Link to="/flowerme/profile" className="block px-3 py-1.5 text-[16px] text-gray-700 hover:text-red-600">
-                        FlowerMe Profile
-                      </Link>
-                      <Link to="/my-orders" className="block px-3 py-1.5 text-[16px] text-gray-700 hover:text-red-600">
-                        Orders Placed
-                      </Link>
-                      <Link to="/track-order" className="block px-3 py-1.5 text-[16px] text-gray-700 hover:text-red-600">
-                        Track Order
-                      </Link>
-                      <button
-                        type="button"
-                        onClick={handleSignOut}
-                        className="block w-full px-3 py-1.5 text-left text-[16px] text-gray-700 hover:text-red-600"
-                      >
-                        Sign Out
-                      </button>
-                    </div>
+                    )}
                   </div>
-                )}
-              </div>
-            ) : null}
-
-            <Link to="/create-a-bouquet?type=sender" className="hidden lg:inline-flex whitespace-nowrap text-[13px] font-semibold text-gray-800 hover:text-red-600 transition-colors">
-              Build Bouquet
-            </Link>
-
-            <Link
-              to="/cart"
-              aria-label="Cart"
-              className="relative inline-flex text-gray-800 hover:text-red-600 transition-colors"
-            >
-              <span className="sr-only">Cart</span>
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2m0 0L7 13h10l2-8H5.4zM7 13l-1 5h12M9 20a1 1 0 100 2 1 1 0 000-2zm8 0a1 1 0 100 2 1 1 0 000-2z" />
-              </svg>
-              {cartCount > 0 ? (
-                <span className="absolute -top-2 -right-2 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-red-600 px-1 text-[10px] font-semibold text-white">
-                  {cartCount}
-                </span>
-              ) : null}
-            </Link>
-
-            <Link
-              to={accountHref}
-              aria-label={isLoggedIn ? 'My Profile' : 'Sign In'}
-              className={cn('text-gray-800 hover:text-red-600 transition-colors', {
-                'hidden md:inline-flex': !isLoggedIn,
-                'inline-flex': isLoggedIn,
-              })}
-            >
-              <span className="sr-only">{isLoggedIn ? 'My Profile' : 'Sign In'}</span>
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-                />
-              </svg>
-            </Link>
+                </div>
+              )}
+            </div>
 
             {/* Mobile Menu Button */}
             <button
@@ -303,7 +282,7 @@ const Navigation: React.FC<NavigationProps> = () => {
                   </button>
                 </>
               ) : (
-                <Link to={accountHref} className="text-gray-800 hover:text-red-600 font-medium py-1" onClick={() => setMobileMenuOpen(false)}>
+                <Link to="/sign-in" className="text-gray-800 hover:text-red-600 font-medium py-1" onClick={() => setMobileMenuOpen(false)}>
                   Sign In
                 </Link>
               )}
