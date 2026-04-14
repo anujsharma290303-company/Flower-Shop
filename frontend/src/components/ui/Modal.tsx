@@ -5,7 +5,7 @@
 
 import React, { useEffect } from 'react'
 import { cn } from '@/utils/cn'
-import { ModalProps } from '@/types'
+import type { ModalProps } from '@/types'
 import Button from './Button'
 
 const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children, size = 'md', className }) => {

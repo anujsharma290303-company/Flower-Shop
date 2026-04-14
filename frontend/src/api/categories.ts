@@ -4,7 +4,7 @@
  */
 
 import api from './axios'
-import { Category, ApiResponse } from '@/types'
+import type { Category, ApiResponse } from '@/types'
 import { API_ENDPOINTS } from '@/utils/constants'
 
 export const categoryService = {

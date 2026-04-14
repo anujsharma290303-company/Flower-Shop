@@ -6,7 +6,7 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
 import { cn } from '@/utils/cn'
-import { ProductCardProps } from '@/types'
+import type { ProductCardProps } from '@/types'
 import Button from '@/components/ui/Button'
 import Badge from '@/components/ui/Badge'
 

@@ -23,7 +23,7 @@ export const useReviews = () => {
   useEffect(() => {
     let isMounted = true
 
-    setIsLoading(cachedReviews.length === 0)
+    // Removed direct setIsLoading call to avoid cascading renders
 
     loadReviews()
       .then((nextReviews) => {

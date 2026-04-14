@@ -5,7 +5,7 @@
 
 import React from 'react'
 import { cn } from '@/utils/cn'
-import { BadgeProps } from '@/types'
+import type { BadgeProps } from '@/types'
 
 const Badge: React.FC<BadgeProps> = ({ label, variant = 'primary', size = 'md', className }) => {
   // Variant styles

@@ -5,7 +5,7 @@
 
 import React from 'react'
 import { cn } from '@/utils/cn'
-import { ButtonProps } from '@/types'
+import type { ButtonProps } from '@/types'
 
 const Button: React.FC<ButtonProps> = ({
   label,

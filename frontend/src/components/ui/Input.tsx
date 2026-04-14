@@ -5,7 +5,7 @@
 
 import React from 'react'
 import { cn } from '@/utils/cn'
-import { InputProps } from '@/types'
+import type { InputProps } from '@/types'
 
 const Input: React.FC<InputProps> = ({
   label,

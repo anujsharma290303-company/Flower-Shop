@@ -1,5 +1,5 @@
 import api from './axios'
-import { ApiResponse, FAQItem } from '@/types'
+import type { ApiResponse, FAQItem } from '@/types'
 import { API_ENDPOINTS } from '@/utils/constants'
 
 export const faqService = {

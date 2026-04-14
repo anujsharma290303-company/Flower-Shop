@@ -23,7 +23,7 @@ export const useFaqs = () => {
   useEffect(() => {
     let isMounted = true
 
-    setIsLoading(cachedFaqs.length === 0)
+    // Removed direct setIsLoading call to avoid cascading renders
 
     loadFaqs()
       .then((nextFaqs) => {

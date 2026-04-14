@@ -5,7 +5,7 @@
 
 import React from 'react'
 import { cn } from '@/utils/cn'
-import { SpinnerProps } from '@/types'
+import type { SpinnerProps } from '@/types'
 
 const Spinner: React.FC<SpinnerProps> = ({ size = 'md', className, label }) => {
   // Size styles
