@@ -1,0 +1,12 @@
+# Cloudflare Pages configuration file
+# Docs: https://developers.cloudflare.com/pages/configuration/
+
+[build]
+command = "npm run build"
+
+[build.environment]
+NODE_VERSION = "18"
+
+[deploy]
+# Output directory for Vite
+output = "dist"
