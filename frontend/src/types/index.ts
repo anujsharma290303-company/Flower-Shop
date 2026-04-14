@@ -1,3 +1,13 @@
+import type { Product } from './Product';
+import type { PaginatedResponse } from './PaginatedResponse';
+import type { ApiResponse } from './ApiResponse';
+import type { SiteConfig } from './SiteConfig';
+
+// Only re-export types/interfaces that are in separate files
+export { Product } from './Product';
+export { PaginatedResponse } from './PaginatedResponse';
+export { ApiResponse } from './ApiResponse';
+export { SiteConfig } from './SiteConfig';
 export interface Category {
   id: number
   name: string
@@ -13,23 +23,6 @@ export interface Category {
   updatedAt: string
 }
 
-export interface Product {
-  id: number
-  name: string
-  slug: string
-  itemCode: string
-  price: string
-  description: string | null
-  image: string[]
-  size: string | null
-  categoryId: number
-  category?: Category
-  isBestSeller: boolean
-  inStock: boolean
-  subscriptionAvailable: boolean
-  createdAt: string
-  updatedAt: string
-}
 
 export interface Admin {
   id: number
@@ -263,54 +256,14 @@ export interface AuthResponse {
 // SITE CONFIGURATION
 // ============================================
 
-export interface SiteConfig {
-  id: number
-  heroTitle: string
-  heroSubTitle: string
-  heroCTA1: string
-  heroCTA2: string
-  heroImage: string | null
-  flowerMeTitle?: string
-  flowerMeDescription?: string
-  flowerMeVideoUrl?: string | null
-  flowerMeThumbnailUrl?: string | null
-  customBouquetsHeading?: string
-  recipientsChoiceImage?: string | null
-  sendersChoiceImage?: string | null
-  howItWorks: Array<{
-    step: number
-    title: string
-    description: string
-  }>
-  benefitsData: Array<{
-    title: string
-    icon: string
-    points: string[]
-  }>
-  contactEmail: string
-  contactPhone: string
-  socialLinks: Record<string, string>
-  createdAt: string
-  updatedAt: string
-}
 
 // ============================================
 // API RESPONSE TYPES
 // ============================================
 
-export interface ApiResponse<T> {
-  success: boolean
-  data: T
-  message?: string
-}
 
-export interface PaginatedResponse<T> {
-  items: T[]
-  totalItems: number
-  page: number
-  limit: number
-  totalPages: number
-}
+
+// Explicit exports for build alias resolution (for Vite/Rollup compatibility)
 
 // ============================================
 // COMPONENT PROP TYPES

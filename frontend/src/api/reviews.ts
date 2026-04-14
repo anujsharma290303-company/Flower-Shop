@@ -1,5 +1,5 @@
 import api from './axios'
-import { ApiResponse, CustomerReview } from '@/types'
+import type { ApiResponse, CustomerReview } from '@/types'
 import { API_ENDPOINTS } from '@/utils/constants'
 
 export const reviewService = {

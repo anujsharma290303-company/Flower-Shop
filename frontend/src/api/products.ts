@@ -4,7 +4,7 @@
  */
 
 import api from './axios'
-import { Product, PaginatedResponse, ApiResponse } from '@/types'
+import type { Product, PaginatedResponse, ApiResponse } from '@/types'
 import { API_ENDPOINTS } from '@/utils/constants'
 
 export const productService = {

@@ -4,7 +4,7 @@
  */
 
 import api from './axios'
-import { SiteConfig, ApiResponse } from '@/types'
+import type { SiteConfig, ApiResponse } from '@/types'
 import { API_ENDPOINTS } from '@/utils/constants'
 
 export const siteConfigService = {
