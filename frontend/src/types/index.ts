@@ -1,13 +1,9 @@
 import type { Product } from './Product';
-import type { PaginatedResponse } from './PaginatedResponse';
-import type { ApiResponse } from './ApiResponse';
-import type { SiteConfig } from './SiteConfig';
-
 // Only re-export types/interfaces that are in separate files
-export { Product } from './Product';
-export { PaginatedResponse } from './PaginatedResponse';
-export { ApiResponse } from './ApiResponse';
-export { SiteConfig } from './SiteConfig';
+export type { Product } from './Product';
+export type { PaginatedResponse } from './PaginatedResponse';
+export type { ApiResponse } from './ApiResponse';
+export type { SiteConfig } from './SiteConfig';
 export interface Category {
   id: number
   name: string
